@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 extern crate sdl2; 
 
 use std::time::Duration;
@@ -6,6 +9,8 @@ use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
+
+mod pulser;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -28,13 +33,18 @@ fn main() -> Result<(), String> {
     
     let mut event_pump = sdl_context.event_pump()?;
     let mut i: u32 = 0;
+
+    let pulser = pulser::Pulser::new();
+    let mut mainbuf: Vec<f32> = vec![0.0; 160];
+        
     'running: loop {
         i = i+1;
+        pulser.render(&mut mainbuf);
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
             for xpos in 0..160 {
-                let val = ((xpos as f32) + (i as f32) * 0.1).sin();
+                //let val = ((xpos as f32) + (i as f32) * 0.1).sin();
                 let offset = (xpos as usize) * 3;
-                buffer[offset] = (128.0 + val * 128.0).floor() as u8;
+                buffer[offset] = (mainbuf[xpos] * 255.0) as u8;
                 buffer[offset+1] = 64;
                 buffer[offset+2] = 0;
             }
