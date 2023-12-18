@@ -79,12 +79,14 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 }
 
 pub struct Pulse {
+    birth: f64,
     pub spaceshape: PulseShape,
     pub timeshape: PulseShape,
 }
 
 pub struct Pulser {
     birth: f64,
+    nextpulse: f64,
     pulses: Vec<Pulse>,
 }
 
@@ -92,13 +94,18 @@ impl Pulser {
     pub fn new(ctx: &context::RunContext) -> Pulser {
         Pulser {
             birth: ctx.age(),
+            nextpulse: 0.5,
             pulses: Vec::new(),
         }
     }
 
-    pub fn tick(&mut self) {
-        if self.pulses.is_empty() {
-            self.pulses.push(Pulse { spaceshape:PulseShape::SqrDecay, timeshape:PulseShape::Flat });
+    pub fn tick(&mut self, ctx: &context::RunContext) {
+        let age = ctx.age() - self.birth;
+        if age >= self.nextpulse && self.pulses.is_empty() {
+            self.pulses.push(Pulse {
+                birth: ctx.age(),
+                spaceshape:PulseShape::Triangle,
+                timeshape:PulseShape::Triangle });
         }
     }
 
@@ -106,11 +113,11 @@ impl Pulser {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
         if !self.pulses.is_empty() {
-            let time = ctx.age() as f32;
             for ix in 0..buf.len() {
                 let pos = (ix as f32) / bufrange;
                 let mut val = 0.0;
                 for pulse in &self.pulses {
+                    let time = (ctx.age() - pulse.birth) as f32;
                     let spaceval = samplepulse(&pulse.spaceshape, pos);
                     let timeval = samplepulse(&pulse.timeshape, time);
                     val += spaceval * timeval;

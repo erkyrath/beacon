@@ -41,7 +41,7 @@ fn main() -> Result<(), String> {
     'running: loop {
         ctx.tick();
 
-        pulser.tick();
+        pulser.tick(&ctx);
         pulser.render(&ctx, &mut mainbuf);
         
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
