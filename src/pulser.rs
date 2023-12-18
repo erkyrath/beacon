@@ -7,6 +7,8 @@ pub enum PulseShape {
     Square,
     Triangle,
     Sawtooth,
+    Sqrtooth,
+    Sine,
 }
 
 fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
@@ -28,12 +30,28 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
                 0.0
             }
         },
+        PulseShape::Sqrtooth => {
+            if pos >= 0.0 && pos < 1.0 {
+                pos*pos
+            }
+            else {
+                0.0
+            }
+        },
         PulseShape::Triangle => {
             if pos >= 0.0 && pos < 0.5 {
                 pos * 2.0
             }
             else if pos >= 0.5 && pos < 1.0 {
                 (1.0 - pos) * 2.0
+            }
+            else {
+                0.0
+            }
+        },
+        PulseShape::Sine => {
+            if pos >= 0.0 && pos < 1.0 {
+                0.5 - 0.5 * (2.0*std::f32::consts::PI*pos).cos()
             }
             else {
                 0.0
@@ -60,7 +78,7 @@ impl Pulser {
 
     pub fn tick(&mut self) {
         if self.pulses.is_empty() {
-            self.pulses.push(Pulse { spaceshape:PulseShape::Triangle, timeshape:PulseShape::Triangle });
+            self.pulses.push(Pulse { spaceshape:PulseShape::Sine, timeshape:PulseShape::Flat });
         }
     }
 
