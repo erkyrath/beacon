@@ -7,7 +7,7 @@ use rand::SeedableRng;
 pub struct RunContext {
     birth: Instant,
     age: f64,
-    rng: Rc<RefCell<SmallRng>>,
+    pub rng: Rc<RefCell<SmallRng>>,
 }
 
 impl RunContext {

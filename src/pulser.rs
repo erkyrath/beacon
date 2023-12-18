@@ -1,3 +1,4 @@
+use rand::Rng;
 
 use crate::context;
 
@@ -99,24 +100,29 @@ impl Pulser {
     pub fn new(ctx: &context::RunContext) -> Pulser {
         Pulser {
             birth: ctx.age(),
-            nextpulse: 0.5,
+            nextpulse: 0.0,
             pulses: Vec::new(),
         }
     }
 
     pub fn tick(&mut self, ctx: &context::RunContext) {
         let age = ctx.age() - self.birth;
-        if age >= self.nextpulse && self.pulses.is_empty() {
+        if age >= self.nextpulse {
             self.pulses.push(Pulse {
                 birth: ctx.age(),
-                duration: 1.0,
-                startpos: 0.5,
-                width: 0.1,
-                velocity: 0.1,
-                spaceshape:PulseShape::Square,
-                timeshape:PulseShape::SawDecay,
+                duration: 3.0,
+                startpos: -0.2,
+                width: 0.2,
+                velocity: 0.5,
+                spaceshape:PulseShape::SawTooth,
+                timeshape:PulseShape::SqrDecay,
                 dead: false,
             });
+
+            {
+                let mut rng = ctx.rng.borrow_mut();
+                self.nextpulse = ctx.age() + rng.gen_range(0.1..0.4);
+            }
         }
 
         self.pulses.retain(|pulse| !pulse.dead);
