@@ -112,18 +112,16 @@ impl Pulser {
     pub fn render(&self, ctx: &context::RunContext, buf: &mut [f32]) {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
-        if !self.pulses.is_empty() {
+
+        for pulse in &self.pulses {
+            let time = (ctx.age() - pulse.birth) as f32;
+            let timeval = samplepulse(&pulse.timeshape, time);
             for ix in 0..buf.len() {
                 let pos = (ix as f32) / bufrange;
-                let mut val = 0.0;
-                for pulse in &self.pulses {
-                    let time = (ctx.age() - pulse.birth) as f32;
-                    let spaceval = samplepulse(&pulse.spaceshape, pos);
-                    let timeval = samplepulse(&pulse.timeshape, time);
-                    val += spaceval * timeval;
-                }
-                buf[ix] = val;
-            }
+                let spaceval = samplepulse(&pulse.spaceshape, pos);
+                let val = spaceval * timeval;
+                buf[ix] += val;
+            }            
         }
     }
 }
