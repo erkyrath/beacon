@@ -81,6 +81,9 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 pub struct Pulse {
     birth: f64,
     duration: f32,
+    startpos: f32,
+    width: f32,
+    velocity: f32,
     pub spaceshape: PulseShape,
     pub timeshape: PulseShape,
     dead: bool,
@@ -107,8 +110,11 @@ impl Pulser {
             self.pulses.push(Pulse {
                 birth: ctx.age(),
                 duration: 1.5,
-                spaceshape:PulseShape::Triangle,
-                timeshape:PulseShape::SawDecay,
+                startpos: 0.25,
+                width: 0.5,
+                velocity: 1.0,
+                spaceshape:PulseShape::Sine,
+                timeshape:PulseShape::Flat,
                 dead: false,
             });
         }
@@ -136,8 +142,17 @@ impl Pulser {
                 }
             }
             for ix in 0..buf.len() {
-                let pos = (ix as f32) / bufrange;
-                let spaceval = samplepulse(&pulse.spaceshape, pos);
+                let spaceval: f32;
+                match pulse.spaceshape {
+                    PulseShape::Flat => {
+                        spaceval = 1.0;
+                    },
+                    _ => {
+                        let pos = (ix as f32) / bufrange;
+                        let rpos = (pos - pulse.startpos) / pulse.width;
+                        spaceval = samplepulse(&pulse.spaceshape, rpos);
+                    }
+                }
                 let val = spaceval * timeval;
                 buf[ix] += val;
             }            
