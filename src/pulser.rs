@@ -84,12 +84,14 @@ pub struct Pulse {
 }
 
 pub struct Pulser {
+    birth: f64,
     pulses: Vec<Pulse>,
 }
 
 impl Pulser {
-    pub fn new() -> Pulser {
+    pub fn new(ctx: &context::RunContext) -> Pulser {
         Pulser {
+            birth: ctx.age(),
             pulses: Vec::new(),
         }
     }
