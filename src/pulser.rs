@@ -109,12 +109,12 @@ impl Pulser {
         if age >= self.nextpulse && self.pulses.is_empty() {
             self.pulses.push(Pulse {
                 birth: ctx.age(),
-                duration: 1.5,
-                startpos: -1.25,
-                width: 0.5,
-                velocity: 0.5,
-                spaceshape:PulseShape::Sine,
-                timeshape:PulseShape::Flat,
+                duration: 1.0,
+                startpos: 0.5,
+                width: 0.1,
+                velocity: 0.1,
+                spaceshape:PulseShape::Square,
+                timeshape:PulseShape::SawDecay,
                 dead: false,
             });
         }
@@ -142,7 +142,25 @@ impl Pulser {
                     timeval = samplepulse(&pulse.timeshape, time);
                 }
             }
-            let startpos = pulse.startpos + age * pulse.velocity;
+            
+            let startpos: f32;
+            match pulse.spaceshape {
+                PulseShape::Flat => {
+                    startpos = 0.0;
+                },
+                _ => {
+                    startpos = pulse.startpos + age * pulse.velocity;
+                    if pulse.velocity >= 0.0 && startpos > 1.0 {
+                        pulse.dead = true;
+                        continue;
+                    }
+                    if pulse.velocity <= 0.0 && startpos+pulse.width < 0.0 {
+                        pulse.dead = true;
+                        continue;
+                    }
+                }
+            }
+            
             for ix in 0..buf.len() {
                 let spaceval: f32;
                 match pulse.spaceshape {
