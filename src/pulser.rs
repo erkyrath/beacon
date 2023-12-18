@@ -121,9 +121,11 @@ impl Pulser {
         buf.fill(0.0);
 
         for pulse in &mut self.pulses {
-            let mut timeval: f32 = 1.0;
+            let timeval: f32;
             match pulse.timeshape {
-                PulseShape::Flat => {},
+                PulseShape::Flat => {
+                    timeval = 1.0;
+                },
                 _ => {
                     let time = (ctx.age() - pulse.birth) as f32 / pulse.duration;
                     if time > 1.0 {
