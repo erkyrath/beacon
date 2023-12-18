@@ -1,4 +1,6 @@
 
+use crate::context;
+
 #[derive(Debug, Clone)]
 pub enum PulseShape {
     Flat,
@@ -58,20 +60,22 @@ impl Pulser {
 
     pub fn tick(&mut self) {
         if self.pulses.is_empty() {
-            self.pulses.push(Pulse { spaceshape:PulseShape::Triangle, timeshape:PulseShape::Flat });
+            self.pulses.push(Pulse { spaceshape:PulseShape::Triangle, timeshape:PulseShape::Triangle });
         }
     }
 
-    pub fn render(&self, buf: &mut [f32]) {
+    pub fn render(&self, ctx: &context::RunContext, buf: &mut [f32]) {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
         if !self.pulses.is_empty() {
+            let time = ctx.age as f32 / 60.0;
             for ix in 0..buf.len() {
                 let pos = (ix as f32) / bufrange;
                 let mut val = 0.0;
                 for pulse in &self.pulses {
                     let spaceval = samplepulse(&pulse.spaceshape, pos);
-                    val += spaceval;
+                    let timeval = samplepulse(&pulse.timeshape, time);
+                    val += spaceval * timeval;
                 }
                 buf[ix] = val;
             }

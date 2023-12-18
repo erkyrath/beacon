@@ -11,6 +11,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
 
 mod pulser;
+mod context;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -32,16 +33,16 @@ fn main() -> Result<(), String> {
     canvas.present();
     
     let mut event_pump = sdl_context.event_pump()?;
-    let mut i: u32 = 0;
 
+    let mut ctx = context::RunContext { age: 0 };
     let mut pulser = pulser::Pulser::new();
     let mut mainbuf: Vec<f32> = vec![0.0; 160];
         
     'running: loop {
-        i = i+1;
+        ctx.age += 1;
 
         pulser.tick();
-        pulser.render(&mut mainbuf);
+        pulser.render(&ctx, &mut mainbuf);
         
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
             for xpos in 0..160 {
