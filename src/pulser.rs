@@ -80,8 +80,10 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 
 pub struct Pulse {
     birth: f64,
+    duration: f32,
     pub spaceshape: PulseShape,
     pub timeshape: PulseShape,
+    dead: bool,
 }
 
 pub struct Pulser {
@@ -104,18 +106,33 @@ impl Pulser {
         if age >= self.nextpulse && self.pulses.is_empty() {
             self.pulses.push(Pulse {
                 birth: ctx.age(),
+                duration: 1.5,
                 spaceshape:PulseShape::Triangle,
-                timeshape:PulseShape::Triangle });
+                timeshape:PulseShape::SawDecay,
+                dead: false,
+            });
         }
+
+        self.pulses.retain(|pulse| !pulse.dead);
     }
 
-    pub fn render(&self, ctx: &context::RunContext, buf: &mut [f32]) {
+    pub fn render(&mut self, ctx: &context::RunContext, buf: &mut [f32]) {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
 
-        for pulse in &self.pulses {
-            let time = (ctx.age() - pulse.birth) as f32;
-            let timeval = samplepulse(&pulse.timeshape, time);
+        for pulse in &mut self.pulses {
+            let mut timeval: f32 = 1.0;
+            match pulse.timeshape {
+                PulseShape::Flat => {},
+                _ => {
+                    let time = (ctx.age() - pulse.birth) as f32 / pulse.duration;
+                    if time > 1.0 {
+                        pulse.dead = true;
+                        continue;
+                    }
+                    timeval = samplepulse(&pulse.timeshape, time);
+                }
+            }
             for ix in 0..buf.len() {
                 let pos = (ix as f32) / bufrange;
                 let spaceval = samplepulse(&pulse.spaceshape, pos);
