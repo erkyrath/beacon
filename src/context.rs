@@ -1,8 +1,13 @@
 use std::time::Instant;
+use std::rc::Rc;
+use std::cell::RefCell;
+use rand::rngs::SmallRng;
+use rand::SeedableRng;
 
 pub struct RunContext {
     birth: Instant,
     age: f64,
+    rng: Rc<RefCell<SmallRng>>,
 }
 
 impl RunContext {
@@ -10,6 +15,7 @@ impl RunContext {
         RunContext {
             birth: Instant::now(),
             age: 0.0,
+            rng: Rc::new(RefCell::new(SmallRng::from_entropy())),
         }
     }
 
