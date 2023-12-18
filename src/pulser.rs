@@ -6,8 +6,10 @@ pub enum PulseShape {
     Flat,
     Square,
     Triangle,
-    Sawtooth,
-    Sqrtooth,
+    SawTooth,
+    SqrTooth,
+    SawDecay,
+    SqrDecay,
     Sine,
 }
 
@@ -22,7 +24,7 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
                 0.0
             }
         },
-        PulseShape::Sawtooth => {
+        PulseShape::SawTooth => {
             if pos >= 0.0 && pos < 1.0 {
                 pos
             }
@@ -30,9 +32,25 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
                 0.0
             }
         },
-        PulseShape::Sqrtooth => {
+        PulseShape::SqrTooth => {
             if pos >= 0.0 && pos < 1.0 {
                 pos*pos
+            }
+            else {
+                0.0
+            }
+        },
+        PulseShape::SawDecay => {
+            if pos >= 0.0 && pos < 1.0 {
+                1.0 - pos
+            }
+            else {
+                0.0
+            }
+        },
+        PulseShape::SqrDecay => {
+            if pos >= 0.0 && pos < 1.0 {
+                (1.0-pos)*(1.0-pos)
             }
             else {
                 0.0
@@ -78,7 +96,7 @@ impl Pulser {
 
     pub fn tick(&mut self) {
         if self.pulses.is_empty() {
-            self.pulses.push(Pulse { spaceshape:PulseShape::Sine, timeshape:PulseShape::Sine });
+            self.pulses.push(Pulse { spaceshape:PulseShape::SqrDecay, timeshape:PulseShape::Flat });
         }
     }
 
