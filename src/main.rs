@@ -34,12 +34,12 @@ fn main() -> Result<(), String> {
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = context::RunContext { age: 0 };
+    let mut ctx = context::RunContext::new();
     let mut pulser = pulser::Pulser::new();
     let mut mainbuf: Vec<f32> = vec![0.0; 160];
         
     'running: loop {
-        ctx.age += 1;
+        ctx.tick();
 
         pulser.tick();
         pulser.render(&ctx, &mut mainbuf);

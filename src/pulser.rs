@@ -78,7 +78,7 @@ impl Pulser {
 
     pub fn tick(&mut self) {
         if self.pulses.is_empty() {
-            self.pulses.push(Pulse { spaceshape:PulseShape::Sine, timeshape:PulseShape::Flat });
+            self.pulses.push(Pulse { spaceshape:PulseShape::Sine, timeshape:PulseShape::Sine });
         }
     }
 
@@ -86,7 +86,7 @@ impl Pulser {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
         if !self.pulses.is_empty() {
-            let time = ctx.age as f32 / 60.0;
+            let time = ctx.age() as f32;
             for ix in 0..buf.len() {
                 let pos = (ix as f32) / bufrange;
                 let mut val = 0.0;
