@@ -110,9 +110,9 @@ impl Pulser {
             self.pulses.push(Pulse {
                 birth: ctx.age(),
                 duration: 1.5,
-                startpos: 0.25,
+                startpos: -1.25,
                 width: 0.5,
-                velocity: 1.0,
+                velocity: 0.5,
                 spaceshape:PulseShape::Sine,
                 timeshape:PulseShape::Flat,
                 dead: false,
@@ -127,13 +127,14 @@ impl Pulser {
         buf.fill(0.0);
 
         for pulse in &mut self.pulses {
+            let age = (ctx.age() - pulse.birth) as f32;
             let timeval: f32;
             match pulse.timeshape {
                 PulseShape::Flat => {
                     timeval = 1.0;
                 },
                 _ => {
-                    let time = (ctx.age() - pulse.birth) as f32 / pulse.duration;
+                    let time = age / pulse.duration;
                     if time > 1.0 {
                         pulse.dead = true;
                         continue;
@@ -141,6 +142,7 @@ impl Pulser {
                     timeval = samplepulse(&pulse.timeshape, time);
                 }
             }
+            let startpos = pulse.startpos + age * pulse.velocity;
             for ix in 0..buf.len() {
                 let spaceval: f32;
                 match pulse.spaceshape {
@@ -149,7 +151,7 @@ impl Pulser {
                     },
                     _ => {
                         let pos = (ix as f32) / bufrange;
-                        let rpos = (pos - pulse.startpos) / pulse.width;
+                        let rpos = (pos - startpos) / pulse.width;
                         spaceval = samplepulse(&pulse.spaceshape, rpos);
                     }
                 }
