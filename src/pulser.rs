@@ -6,7 +6,7 @@ pub enum PulseShape {
     Flat,
     Square,
     Triangle,
-    SawTooth,
+    Sawtooth,
 }
 
 fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
@@ -20,7 +20,7 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
                 0.0
             }
         },
-        PulseShape::SawTooth => {
+        PulseShape::Sawtooth => {
             if pos >= 0.0 && pos < 1.0 {
                 pos
             }
