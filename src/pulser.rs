@@ -83,7 +83,7 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 pub struct Pulse {
     birth: f64,
     duration: Param,
-    startpos: Param,
+    pos: Param,
     width: f32,
     velocity: f32,
     pub spaceshape: PulseShape,
@@ -110,12 +110,12 @@ impl Pulser {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
             //let dur = eval(&Param::RandFlat(1.0, 5.0), ctx, age as f32);
-            let pos = Param::RandNorm(0.4, 0.15).eval(ctx, age as f32);
+            let pos = Param::RandNorm(0.5, 0.15).eval(ctx, age as f32);
             self.pulses.push(Pulse {
                 birth: ctx.age(),
                 duration: Param::Constant(2.0),
-                startpos: Param::Constant(pos),
-                width: 0.2,
+                pos: Param::Constant(pos),
+                width: 0.3,
                 velocity: 0.0,
                 spaceshape:PulseShape::Triangle,
                 timeshape:PulseShape::SqrDecay,
@@ -159,7 +159,7 @@ impl Pulser {
                     startpos = 0.0;
                 },
                 _ => {
-                    startpos = pulse.startpos.eval(ctx, age) + age * pulse.velocity;
+                    startpos = pulse.pos.eval(ctx, age) - pulse.width*0.5 + age * pulse.velocity;
                     if pulse.velocity >= 0.0 && startpos > 1.0 {
                         pulse.dead = true;
                         continue;
