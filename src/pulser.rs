@@ -2,7 +2,6 @@ use rand::Rng;
 
 use crate::context::RunContext;
 use crate::param::Param;
-use crate::param::eval;
 
 #[derive(Debug, Clone)]
 pub enum PulseShape {
@@ -111,7 +110,7 @@ impl Pulser {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
             //let dur = eval(&Param::RandFlat(1.0, 5.0), ctx, age as f32);
-            let pos = eval(&Param::RandNorm(0.4, 0.25), ctx, age as f32);
+            let pos = Param::RandNorm(0.4, 0.15).eval(ctx, age as f32);
             self.pulses.push(Pulse {
                 birth: ctx.age(),
                 duration: Param::Constant(2.0),
@@ -144,7 +143,7 @@ impl Pulser {
                     timeval = 1.0;
                 },
                 _ => {
-                    let duration = eval(&pulse.duration, ctx, age);
+                    let duration = pulse.duration.eval(ctx, age);
                     let time = age / duration;
                     if time > 1.0 {
                         pulse.dead = true;
@@ -160,7 +159,7 @@ impl Pulser {
                     startpos = 0.0;
                 },
                 _ => {
-                    startpos = eval(&pulse.startpos, ctx, age) + age * pulse.velocity;
+                    startpos = pulse.startpos.eval(ctx, age) + age * pulse.velocity;
                     if pulse.velocity >= 0.0 && startpos > 1.0 {
                         pulse.dead = true;
                         continue;
