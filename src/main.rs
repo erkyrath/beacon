@@ -10,8 +10,9 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
 
-mod pulser;
+mod param;
 mod context;
+mod pulser;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;

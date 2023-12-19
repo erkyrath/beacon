@@ -1,6 +1,8 @@
 use rand::Rng;
 
-use crate::context;
+use crate::context::RunContext;
+use crate::param::Param;
+use crate::param::eval;
 
 #[derive(Debug, Clone)]
 pub enum PulseShape {
@@ -81,7 +83,7 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 
 pub struct Pulse {
     birth: f64,
-    duration: f32,
+    duration: Param,
     startpos: f32,
     width: f32,
     velocity: f32,
@@ -97,7 +99,7 @@ pub struct Pulser {
 }
 
 impl Pulser {
-    pub fn new(ctx: &context::RunContext) -> Pulser {
+    pub fn new(ctx: &RunContext) -> Pulser {
         Pulser {
             birth: ctx.age(),
             nextpulse: 0.0,
@@ -105,12 +107,12 @@ impl Pulser {
         }
     }
 
-    pub fn tick(&mut self, ctx: &context::RunContext) {
+    pub fn tick(&mut self, ctx: &RunContext) {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
             self.pulses.push(Pulse {
                 birth: ctx.age(),
-                duration: 3.0,
+                duration: Param::Constant(3.0),
                 startpos: -0.2,
                 width: 0.2,
                 velocity: 0.5,
@@ -128,7 +130,7 @@ impl Pulser {
         self.pulses.retain(|pulse| !pulse.dead);
     }
 
-    pub fn render(&mut self, ctx: &context::RunContext, buf: &mut [f32]) {
+    pub fn render(&mut self, ctx: &RunContext, buf: &mut [f32]) {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
 
@@ -140,7 +142,8 @@ impl Pulser {
                     timeval = 1.0;
                 },
                 _ => {
-                    let time = age / pulse.duration;
+                    let duration = eval(&pulse.duration, ctx, age);
+                    let time = age / duration;
                     if time > 1.0 {
                         pulse.dead = true;
                         continue;
