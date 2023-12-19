@@ -94,6 +94,7 @@ pub struct Pulse {
 pub struct Pulser {
     birth: f64,
     nextpulse: f64,
+    interval: Param,
     pulses: Vec<Pulse>,
 }
 
@@ -102,6 +103,7 @@ impl Pulser {
         Pulser {
             birth: ctx.age(),
             nextpulse: 0.0,
+            interval: Param::Constant(0.4),
             pulses: Vec::new(),
         }
     }
@@ -122,10 +124,7 @@ impl Pulser {
                 dead: false,
             });
 
-            {
-                let mut rng = ctx.rng.borrow_mut();
-                self.nextpulse = ctx.age() + rng.gen_range(0.1..0.4);
-            }
+            self.nextpulse = ctx.age() + self.interval.eval(ctx, age as f32) as f64;
         }
 
         self.pulses.retain(|pulse| !pulse.dead);
