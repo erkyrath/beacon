@@ -84,7 +84,7 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 pub struct Pulse {
     birth: f64,
     duration: Param,
-    startpos: f32,
+    startpos: Param,
     width: f32,
     velocity: f32,
     pub spaceshape: PulseShape,
@@ -110,13 +110,15 @@ impl Pulser {
     pub fn tick(&mut self, ctx: &RunContext) {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
+            //let dur = eval(&Param::RandFlat(1.0, 5.0), ctx, age as f32);
+            let pos = eval(&Param::RandNorm(0.4, 0.25), ctx, age as f32);
             self.pulses.push(Pulse {
                 birth: ctx.age(),
-                duration: Param::Constant(3.0),
-                startpos: -0.2,
+                duration: Param::Constant(2.0),
+                startpos: Param::Constant(pos),
                 width: 0.2,
-                velocity: 0.5,
-                spaceshape:PulseShape::SawTooth,
+                velocity: 0.0,
+                spaceshape:PulseShape::Triangle,
                 timeshape:PulseShape::SqrDecay,
                 dead: false,
             });
@@ -158,7 +160,7 @@ impl Pulser {
                     startpos = 0.0;
                 },
                 _ => {
-                    startpos = pulse.startpos + age * pulse.velocity;
+                    startpos = eval(&pulse.startpos, ctx, age) + age * pulse.velocity;
                     if pulse.velocity >= 0.0 && startpos > 1.0 {
                         pulse.dead = true;
                         continue;
