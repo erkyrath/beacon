@@ -21,7 +21,9 @@ pub fn eval(param: &Param, ctx: &RunContext, age: f32) -> f32 {
             let val = rng.gen_range(0.0..1.0) + rng.gen_range(0.0..1.0) + rng.gen_range(0.0..1.0) - 1.5;
             (val * stdev / 0.522) + mean
         },
-        _ => 0.0, //###
+        Param::Changing(start, velocity) => {
+            start + age * velocity
+        }
     }
 }
 
