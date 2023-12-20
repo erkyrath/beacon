@@ -112,13 +112,13 @@ impl Pulser {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
             //let dur = eval(&Param::RandFlat(1.0, 5.0), ctx, age as f32);
-            let pos = Param::RandNorm(0.5, 0.15).eval(ctx, age as f32);
+            let pos = Param::RandNorm(0.5, 0.3).eval(ctx, age as f32);
             self.pulses.push(Pulse {
                 birth: ctx.age(),
                 duration: Param::Constant(2.0),
                 pos: Param::Constant(pos),
                 width: 0.3,
-                velocity: 0.0,
+                velocity: 0.1,
                 spaceshape:PulseShape::Triangle,
                 timeshape:PulseShape::SqrDecay,
                 dead: false,
