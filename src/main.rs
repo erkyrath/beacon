@@ -10,6 +10,8 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
 
+mod pixel;
+mod op;
 mod param;
 mod context;
 mod pulser;
