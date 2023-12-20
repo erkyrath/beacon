@@ -53,7 +53,7 @@ pub fn build_script(ctx: &RunContext) -> Script {
     let pulser = Pulser::new(ctx);
     let op = Op1 {
         def: Op1Def::Pulser(pulser),
-        buf: vec![0.0; 160],
+        buf: vec![0.0; ctx.size()],
     };
 
     script.op1s.push(op);

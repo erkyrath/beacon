@@ -37,9 +37,9 @@ fn main() -> Result<(), String> {
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = context::RunContext::new();
+    let mut ctx = context::RunContext::new(160);
     let mut pulser = pulser::Pulser::new(&ctx);
-    let mut mainbuf: Vec<f32> = vec![0.0; 160];
+    let mut mainbuf: Vec<f32> = vec![0.0; ctx.size()];
 
     let _script = op::build_script(&ctx);
         
