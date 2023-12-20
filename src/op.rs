@@ -1,4 +1,4 @@
-
+use crate::context::RunContext;
 use crate::pixel::Pix;
 use crate::pulser::Pulser;
 
@@ -37,3 +37,27 @@ pub struct Script {
     op3s: Vec<Op3>,
 }
 
+impl Script {
+    pub fn new() -> Script {
+        Script {
+            order: Vec::default(),
+            op1s: Vec::default(),
+            op3s: Vec::default(),
+        }
+    }
+}
+
+pub fn build_script(ctx: &RunContext) -> Script {
+    let mut script = Script::new();
+
+    let pulser = Pulser::new(ctx);
+    let op = Op1 {
+        def: Op1Def::Pulser(pulser),
+        buf: vec![0.0; 160],
+    };
+
+    script.op1s.push(op);
+    script.order.push(ScriptIndex::Op1(0));
+    
+    return script;
+}

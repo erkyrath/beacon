@@ -40,6 +40,8 @@ fn main() -> Result<(), String> {
     let mut ctx = context::RunContext::new();
     let mut pulser = pulser::Pulser::new(&ctx);
     let mut mainbuf: Vec<f32> = vec![0.0; 160];
+
+    let _script = op::build_script(&ctx);
         
     'running: loop {
         ctx.tick();
