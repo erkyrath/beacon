@@ -4,6 +4,7 @@ use crate::pulser::Pulser;
 
 pub enum Op1Def {
     Constant(f32),
+    Invert(usize), // op1
     Pulser(Pulser),
     Brightness(usize), // op3
     Sum(Vec<usize>), // op1...
@@ -38,6 +39,12 @@ impl Op1 {
             Op1Def::Pulser(pulser) => {
                 pulser.tick(&ctx);
                 pulser.render(&ctx, &mut self.buf);
+            }
+
+            Op1Def::Invert(src) => {
+                for ix in 0..self.buf.len() {
+                    self.buf[ix] = 0.5; //###
+                }
             }
 
             _ => {
@@ -116,14 +123,19 @@ impl Script {
 pub fn build_script(ctx: &RunContext) -> Script {
     let mut script = Script::new();
 
-    let pulser = Pulser::new(ctx);
-    let op = Op1 {
-        def: Op1Def::Pulser(pulser),
+    let inverter = Op1 {
+        def: Op1Def::Invert(0),
         buf: vec![0.0; ctx.size()],
     };
-
-    script.op1s.push(op);
-    script.order.push(ScriptIndex::Op1(0));
+    script.order.push(ScriptIndex::Op1(script.op1s.len()));
+    script.op1s.push(inverter);
     
+    let pulser = Op1 {
+        def: Op1Def::Pulser(Pulser::new(ctx)),
+        buf: vec![0.0; ctx.size()],
+    };
+    script.order.push(ScriptIndex::Op1(script.op1s.len()));
+    script.op1s.push(pulser);
+
     return script;
 }
