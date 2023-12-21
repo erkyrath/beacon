@@ -16,6 +16,8 @@ mod param;
 mod context;
 mod pulser;
 
+use op::ScriptBuffer;
+
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -40,24 +42,31 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut ctx = context::RunContext::new(pixsize);
-    let mut pulser = pulser::Pulser::new(&ctx);
-    let mut mainbuf: Vec<f32> = vec![0.0; ctx.size()];
-
-    let _script = op::build_script(&ctx);
+    let mut script = op::build_script(&ctx);
         
     'running: loop {
         ctx.tick();
 
-        pulser.tick(&ctx);
-        pulser.render(&ctx, &mut mainbuf);
+        script.tick(&ctx);
         
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
-            for xpos in 0..pixsize {
-                //let val = ((xpos as f32) + (i as f32) * 0.1).sin();
-                let offset = (xpos as usize) * 3;
-                buffer[offset] = (mainbuf[xpos] * 255.0) as u8;
-                buffer[offset+1] = 64;
-                buffer[offset+2] = 0;
+            match script.getrootbuf() {
+                ScriptBuffer::Op1(buf) => {
+                    for xpos in 0..pixsize {
+                        let offset = (xpos as usize) * 3;
+                        buffer[offset] = (buf[xpos] * 255.0) as u8;
+                        buffer[offset+1] = buffer[offset];
+                        buffer[offset+2] = buffer[offset];
+                    }
+                },
+                ScriptBuffer::Op3(buf) => {
+                    for xpos in 0..pixsize {
+                        let offset = (xpos as usize) * 3;
+                        buffer[offset] = (buf[xpos].r * 255.0) as u8;
+                        buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
+                        buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
+                    }
+                },
             }
         })?;
         canvas.copy(&texture, None, None)?;

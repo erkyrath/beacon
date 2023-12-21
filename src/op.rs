@@ -48,7 +48,7 @@ impl Op1 {
 }
 
 impl Op3 {
-    fn tick(&mut self, ctx: &RunContext) {
+    fn tick(&mut self, _ctx: &RunContext) {
         match &mut self.def {
             Op3Def::Constant(val) => {
                 for ix in 0..self.buf.len() {
@@ -68,6 +68,11 @@ pub enum ScriptIndex {
     Op3(usize),
 }
 
+pub enum ScriptBuffer<'a> {
+    Op1(&'a [f32]),
+    Op3(&'a [Pix<f32>]),
+}
+
 pub struct Script {
     order: Vec<ScriptIndex>, // 0 is root
     op1s: Vec<Op1>,
@@ -80,6 +85,17 @@ impl Script {
             order: Vec::default(),
             op1s: Vec::default(),
             op3s: Vec::default(),
+        }
+    }
+
+    pub fn getrootbuf(&self) -> ScriptBuffer {
+        match &self.order[0] {
+            ScriptIndex::Op1(val) => {
+                ScriptBuffer::Op1(&self.op1s[*val].buf)
+            },
+            ScriptIndex::Op3(val) => {
+                ScriptBuffer::Op3(&self.op3s[*val].buf)
+            },
         }
     }
 
