@@ -5,15 +5,15 @@ use crate::pulser::Pulser;
 pub enum Op1Def {
     Constant(f32),
     Pulser(Pulser),
-    Brightness(u32), // op3
-    Sum(Vec<u32>), // op1...
+    Brightness(usize), // op3
+    Sum(Vec<usize>), // op1...
 }
 
 pub enum Op3Def {
     Constant(Pix<f32>),
-    Grey(u32), // op1
-    RGB(u32, u32, u32), // op1, op1, op1
-    Sum(Vec<u32>), // op3...
+    Grey(usize), // op1
+    RGB(usize, usize, usize), // op1, op1, op1
+    Sum(Vec<usize>), // op3...
 }
 
 pub struct Op1 {
@@ -26,9 +26,41 @@ pub struct Op3 {
     buf: Vec<Pix<f32>>,
 }
 
+impl Op1 {
+    fn tick(&mut self, ctx: &RunContext) {
+        match &self.def {
+            Op1Def::Constant(val) => {
+                for ix in 0..self.buf.len() {
+                    self.buf[ix] = *val;
+                }
+            }
+
+            _ => {
+                panic!("unimplemented Op1");
+            }
+        }
+    }
+}
+
+impl Op3 {
+    fn tick(&mut self, ctx: &RunContext) {
+        match &self.def {
+            Op3Def::Constant(val) => {
+                for ix in 0..self.buf.len() {
+                    self.buf[ix] = val.clone();
+                }
+            }
+
+            _ => {
+                panic!("unimplemented Op3");
+            }
+        }
+    }
+}
+
 pub enum ScriptIndex {
-    Op1(u32),
-    Op3(u32),
+    Op1(usize),
+    Op3(usize),
 }
 
 pub struct Script {
@@ -43,6 +75,20 @@ impl Script {
             order: Vec::default(),
             op1s: Vec::default(),
             op3s: Vec::default(),
+        }
+    }
+
+    pub fn tick(&mut self, ctx: &RunContext) {
+        //### backwards please
+        for scix in &self.order {
+            match scix {
+                ScriptIndex::Op1(val) => {
+                    self.op1s[*val].tick(ctx);
+                },
+                ScriptIndex::Op3(val) => {
+                    self.op3s[*val].tick(ctx);
+                },
+            }
         }
     }
 }
