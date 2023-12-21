@@ -28,11 +28,16 @@ pub struct Op3 {
 
 impl Op1 {
     fn tick(&mut self, ctx: &RunContext) {
-        match &self.def {
+        match &mut self.def {
             Op1Def::Constant(val) => {
                 for ix in 0..self.buf.len() {
                     self.buf[ix] = *val;
                 }
+            }
+
+            Op1Def::Pulser(pulser) => {
+                pulser.tick(&ctx);
+                pulser.render(&ctx, &mut self.buf);
             }
 
             _ => {
@@ -44,7 +49,7 @@ impl Op1 {
 
 impl Op3 {
     fn tick(&mut self, ctx: &RunContext) {
-        match &self.def {
+        match &mut self.def {
             Op3Def::Constant(val) => {
                 for ix in 0..self.buf.len() {
                     self.buf[ix] = val.clone();
