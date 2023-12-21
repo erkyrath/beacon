@@ -12,11 +12,12 @@ use sdl2::pixels::PixelFormatEnum;
 
 mod pixel;
 mod op;
+mod script;
 mod param;
 mod context;
 mod pulser;
 
-use op::ScriptBuffer;
+use script::ScriptBuffer;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -42,7 +43,7 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut ctx = context::RunContext::new(pixsize);
-    let mut script = op::build_script(&ctx);
+    let mut script = script::build_script(&ctx);
         
     'running: loop {
         ctx.tick();
