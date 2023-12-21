@@ -100,8 +100,7 @@ impl Script {
     }
 
     pub fn tick(&mut self, ctx: &RunContext) {
-        //### backwards please
-        for scix in &self.order {
+        for scix in (&self.order).iter().rev() {
             match scix {
                 ScriptIndex::Op1(val) => {
                     self.op1s[*val].tick(ctx);
