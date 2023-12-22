@@ -11,8 +11,8 @@ use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
 
 pub struct RunContext {
-    script: Script,
-    size: usize,
+    pub script: Script,
+    pub size: usize,
     
     birth: Instant,
     age: f64,
@@ -47,16 +47,32 @@ impl RunContext {
     pub fn age(&self) -> f64 {
         self.age
     }
-    
+
+    /*###
     pub fn getrootbuf(&self) -> ScriptBuffer {
         match &self.script.order[0] {
             ScriptIndex::Op1(val) => {
-                ScriptBuffer::Op1(&self.op1s[*val].buf)
+                let buf = self.op1s[*val].buf.borrow();
+                ScriptBuffer::Op1(&buf)
             },
             ScriptIndex::Op3(val) => {
-                ScriptBuffer::Op3(&self.op3s[*val].buf)
+                let buf = self.op3s[*val].buf.borrow();
+                ScriptBuffer::Op3(&buf)
             },
         }
+    }
+    ###*/
+    
+    pub fn applybuf1<F>(&self, val: usize, mut func: F)
+    where F: FnMut(&[f32]) -> () {
+        let buf = self.op1s[val].buf.borrow();
+        func(&buf);
+    }
+
+    pub fn applybuf3<F>(&self, val: usize, mut func: F)
+    where F: FnMut(&[Pix<f32>]) -> () {
+        let buf = self.op3s[val].buf.borrow();
+        func(&buf);
     }
 
     pub fn tick(&mut self) {
@@ -68,15 +84,16 @@ impl RunContext {
                 ScriptIndex::Op1(val) => {
                     //###self.op1s[*val].tick(self, &self.script.op1s[*val]);
                     let opdef = &self.script.op1s[*val];
-                    let buf = &mut self.op1s[*val].buf;
-                    let state = &mut self.op1s[*val].state;
+                    let mut _state = self.op1s[*val].state.borrow_mut();
+                    let mut buf = self.op1s[*val].buf.borrow_mut();
                     match &opdef {
                         Op1Def::Constant(val) => {
                             for ix in 0..buf.len() {
                                 buf[ix] = *val;
                             }
                         }
-                        
+
+                        /*###
                         Op1Def::Pulser(_pulser) => {
                             if let Op1State::Pulser(pstate) = state {
                                 pstate.tick(self);
@@ -86,6 +103,7 @@ impl RunContext {
                                 panic!("Op1 state mismatch: PulserState");
                             }
                         }
+                        ###*/
                         
                         _ => {
                             panic!("unimplemented Op1");
@@ -95,7 +113,8 @@ impl RunContext {
                 ScriptIndex::Op3(val) => {
                     //###self.op3s[*val].tick(self, &self.script.op3s[*val]);
                     let opdef = &self.script.op3s[*val];
-                    let buf = &mut self.op3s[*val].buf;
+                    let mut _state = self.op3s[*val].state.borrow_mut();
+                    let mut buf = self.op3s[*val].buf.borrow_mut();
                     match &opdef {
                         Op3Def::Constant(val) => {
                             for ix in 0..buf.len() {

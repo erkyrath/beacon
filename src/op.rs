@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use crate::context::RunContext;
 use crate::pixel::Pix;
 use crate::pulser::{Pulser, PulserState};
@@ -27,15 +29,16 @@ pub enum Op3State {
 }
 
 pub struct Op1Ctx {
-    pub state: Op1State,
-    pub buf: Vec<f32>,
+    pub state: RefCell<Op1State>,
+    pub buf: RefCell<Vec<f32>>,
 }
 
 pub struct Op3Ctx {
-    pub state: Op3State,
-    pub buf: Vec<Pix<f32>>,
+    pub state: RefCell<Op3State>,
+    pub buf: RefCell<Vec<Pix<f32>>>,
 }
 
+/*###
 impl Op1Ctx {
     pub fn tick(&mut self, _ctx: &mut RunContext, opdef: &Op1Def) {
         match &opdef {
@@ -45,7 +48,6 @@ impl Op1Ctx {
                 }
             }
 
-            /*###
             Op1Def::Pulser(_pulser) => {
                 if let Op1State::Pulser(state) = self.state {
                     state.tick(&ctx);
@@ -61,7 +63,6 @@ impl Op1Ctx {
                     self.buf[ix] = 0.5; //### script.op1s[src].buf
                 }
             }
-            ###*/
 
             _ => {
                 panic!("unimplemented Op1");
@@ -86,3 +87,4 @@ impl Op3Ctx {
     }
 }
 
+###*/

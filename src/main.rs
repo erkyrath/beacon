@@ -18,6 +18,7 @@ mod context;
 mod pulser;
 
 use context::ScriptBuffer;
+use script::{Script, ScriptIndex};
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -49,22 +50,26 @@ fn main() -> Result<(), String> {
         ctx.tick();
 
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
-            match ctx.getrootbuf() {
-                ScriptBuffer::Op1(buf) => {
-                    for xpos in 0..pixsize {
-                        let offset = (xpos as usize) * 3;
-                        buffer[offset] = (buf[xpos] * 255.0) as u8;
-                        buffer[offset+1] = buffer[offset];
-                        buffer[offset+2] = buffer[offset];
-                    }
+            match &ctx.script.order[0] {
+                ScriptIndex::Op1(val) => {
+                    ctx.applybuf1(*val, |buf| {
+                        for xpos in 0..pixsize {
+                            let offset = (xpos as usize) * 3;
+                            buffer[offset] = (buf[xpos] * 255.0) as u8;
+                            buffer[offset+1] = buffer[offset];
+                            buffer[offset+2] = buffer[offset];
+                        }
+                    });
                 },
-                ScriptBuffer::Op3(buf) => {
-                    for xpos in 0..pixsize {
-                        let offset = (xpos as usize) * 3;
-                        buffer[offset] = (buf[xpos].r * 255.0) as u8;
-                        buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
-                        buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
-                    }
+                ScriptIndex::Op3(val) => {
+                    ctx.applybuf3(*val, |buf| {
+                        for xpos in 0..pixsize {
+                            let offset = (xpos as usize) * 3;
+                            buffer[offset] = (buf[xpos].r * 255.0) as u8;
+                            buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
+                            buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
+                        }
+                    });
                 },
             }
         })?;
