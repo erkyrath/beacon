@@ -56,15 +56,17 @@ impl Script {
 pub fn build_script(ctx: &RunContext) -> Script {
     let mut script = Script::new();
 
+    /*
     let inverter = Op1 {
         def: Op1Def::Invert(1),
         buf: vec![0.0; ctx.size()],
     };
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
     script.op1s.push(inverter);
+    */
     
     let pulser = Op1 {
-        def: Op1Def::Pulser(Pulser::new(ctx)),
+        def: Op1Def::Pulser(Pulser::new()),
         buf: vec![0.0; ctx.size()],
     };
     script.order.push(ScriptIndex::Op1(script.op1s.len()));

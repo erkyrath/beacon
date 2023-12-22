@@ -99,9 +99,9 @@ pub struct Pulser {
 }
 
 impl Pulser {
-    pub fn new(ctx: &RunContext) -> Pulser {
+    pub fn new() -> Pulser {
         Pulser {
-            birth: ctx.age(),
+            birth: 0.0, // not handling on-the-fly pulsers yet
             nextpulse: 0.0,
             interval: Param::Constant(0.4),
             pulses: Vec::new(),

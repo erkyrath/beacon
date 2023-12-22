@@ -41,7 +41,7 @@ impl Op1 {
                 pulser.render(&ctx, &mut self.buf);
             }
 
-            Op1Def::Invert(src) => {
+            Op1Def::Invert(_src) => {
                 for ix in 0..self.buf.len() {
                     self.buf[ix] = 0.5; //### script.op1s[src].buf
                 }
