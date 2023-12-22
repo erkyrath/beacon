@@ -28,11 +28,9 @@ impl Script {
 pub fn build_script() -> Script {
     let mut script = Script::new();
 
-    /*
     let inverter = Op1Def::Invert(1);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
     script.op1s.push(inverter);
-    */
     
     let pulser = Op1Def::Pulser(Pulser::new());
     script.order.push(ScriptIndex::Op1(script.op1s.len()));

@@ -68,6 +68,14 @@ impl Op1Ctx {
                 }
             }
 
+            Op1Def::Invert(obufnum) => {
+                let obuf = ctx.op1s[*obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = 1.0 - obuf[ix];
+                }
+            }
+
             Op1Def::Pulser(_pulser) => {
                 let mut state = ctx.op1s[val].state.borrow_mut();
                 if let Op1State::Pulser(pstate) = &mut *state {
