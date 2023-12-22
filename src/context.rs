@@ -9,7 +9,6 @@ use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
-use crate::op::{tickop1, tickop3};
 
 pub struct RunContext {
     pub script: Script,
@@ -80,10 +79,10 @@ impl RunContext {
         for ix in (0..self.script.order.len()).rev() {
             match self.script.order[ix] {
                 ScriptIndex::Op1(val) => {
-                    tickop1(self, val);
+                    Op1Ctx::tickop(self, val);
                 },
                 ScriptIndex::Op3(val) => {
-                    tickop3(self, val);
+                    Op3Ctx::tickop(self, val);
                 },
             }
         }
