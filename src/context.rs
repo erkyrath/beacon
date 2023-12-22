@@ -34,19 +34,15 @@ impl RunContext {
         let mut op3s: Vec<Op3Ctx> = Vec::default();
         
         for op in &script.op1s {
-            let state = match op {
-                Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
-                _ => Op1State::NoState,
-            };
             op1s.push(Op1Ctx {
-                state: RefCell::new(state),
+                state: RefCell::new(Op1State::new_for(&op)),
                 buf: RefCell::new(vec![0.0; size]),
             });
         }
         
-        for _op in &script.op3s {
+        for op in &script.op3s {
             op3s.push(Op3Ctx {
-                state: RefCell::new(Op3State::NoState),
+                state: RefCell::new(Op3State::new_for(&op)),
                 buf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
             });
         }

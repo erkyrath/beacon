@@ -38,6 +38,23 @@ pub struct Op3Ctx {
     pub buf: RefCell<Vec<Pix<f32>>>,
 }
 
+impl Op1State {
+    pub fn new_for(op: &Op1Def) -> Op1State {
+        match op {
+            Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
+            _ => Op1State::NoState,
+        }
+    }
+}
+
+impl Op3State {
+    pub fn new_for(op: &Op3Def) -> Op3State {
+        match op {
+            _ => Op3State::NoState,
+        }
+    }
+}
+
 /*###
 impl Op1Ctx {
     pub fn tick(&mut self, _ctx: &mut RunContext, opdef: &Op1Def) {
