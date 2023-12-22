@@ -80,6 +80,16 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
     }                
 }
 
+pub struct Pulser {
+    //### pulse def info...
+}
+
+impl Pulser {
+    pub fn new() -> Pulser {
+        Pulser {}
+    }
+}
+
 pub struct Pulse {
     birth: f64,
     duration: Param,
@@ -91,16 +101,16 @@ pub struct Pulse {
     dead: bool,
 }
 
-pub struct Pulser {
+pub struct PulserState {
     birth: f64,
     nextpulse: f64,
     interval: Param,
     pulses: Vec<Pulse>,
 }
 
-impl Pulser {
-    pub fn new() -> Pulser {
-        Pulser {
+impl PulserState {
+    pub fn new() -> PulserState {
+        PulserState {
             birth: 0.0, // not handling on-the-fly pulsers yet
             nextpulse: 0.0,
             interval: Param::Constant(0.4),

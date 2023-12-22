@@ -1,6 +1,6 @@
 use crate::context::RunContext;
 use crate::pixel::Pix;
-use crate::pulser::Pulser;
+use crate::pulser::{Pulser, PulserState};
 
 pub enum Op1Def {
     Constant(f32),
@@ -17,28 +17,43 @@ pub enum Op3Def {
     Sum(Vec<usize>), // op3...
 }
 
-pub struct Op1 {
-    pub def: Op1Def,
+pub enum Op1State {
+    NoState,
+    Pulser(PulserState),
+}
+
+pub enum Op3State {
+    NoState,
+}
+
+pub struct Op1Ctx {
+    pub state: Op1State,
     pub buf: Vec<f32>,
 }
 
-pub struct Op3 {
-    pub def: Op3Def,
+pub struct Op3Ctx {
+    pub state: Op3State,
     pub buf: Vec<Pix<f32>>,
 }
 
-impl Op1 {
-    pub fn tick(&mut self, ctx: &RunContext) {
-        match &mut self.def {
+impl Op1Ctx {
+    pub fn tick(&mut self, _ctx: &mut RunContext, opdef: &Op1Def) {
+        match &opdef {
             Op1Def::Constant(val) => {
                 for ix in 0..self.buf.len() {
                     self.buf[ix] = *val;
                 }
             }
 
-            Op1Def::Pulser(pulser) => {
-                pulser.tick(&ctx);
-                pulser.render(&ctx, &mut self.buf);
+            /*###
+            Op1Def::Pulser(_pulser) => {
+                if let Op1State::Pulser(state) = self.state {
+                    state.tick(&ctx);
+                    state.render(&ctx, &mut self.buf);
+                }
+                else {
+                    panic!("Op1 state mismatch: PulserState");
+                }
             }
 
             Op1Def::Invert(_src) => {
@@ -46,6 +61,7 @@ impl Op1 {
                     self.buf[ix] = 0.5; //### script.op1s[src].buf
                 }
             }
+            ###*/
 
             _ => {
                 panic!("unimplemented Op1");
@@ -54,9 +70,9 @@ impl Op1 {
     }
 }
 
-impl Op3 {
-    pub fn tick(&mut self, _ctx: &RunContext) {
-        match &mut self.def {
+impl Op3Ctx {
+    pub fn tick(&mut self, _ctx: &mut RunContext, opdef: &Op3Def) {
+        match &opdef {
             Op3Def::Constant(val) => {
                 for ix in 0..self.buf.len() {
                     self.buf[ix] = val.clone();

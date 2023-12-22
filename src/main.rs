@@ -17,7 +17,7 @@ mod param;
 mod context;
 mod pulser;
 
-use script::ScriptBuffer;
+use context::ScriptBuffer;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -42,16 +42,14 @@ fn main() -> Result<(), String> {
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = context::RunContext::new(pixsize);
-    let mut script = script::build_script(&ctx);
+    let script = script::build_script();
+    let mut ctx = context::RunContext::new(script, pixsize);
         
     'running: loop {
         ctx.tick();
 
-        script.tick(&ctx);
-        
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
-            match script.getrootbuf() {
+            match ctx.getrootbuf() {
                 ScriptBuffer::Op1(buf) => {
                     for xpos in 0..pixsize {
                         let offset = (xpos as usize) * 3;
