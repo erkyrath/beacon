@@ -1,6 +1,7 @@
 use crate::context::RunContext;
 use crate::pixel::Pix;
 use crate::op::{Op1Def, Op3Def};
+
 use crate::pulser::Pulser;
 
 #[derive(Copy, Clone)]
@@ -28,13 +29,26 @@ impl Script {
 pub fn build_script() -> Script {
     let mut script = Script::new();
 
+    /*
     let inverter = Op1Def::Invert(1);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
     script.op1s.push(inverter);
+     */
+    let rgb = Op3Def::RGB(0, 1, 2);
+    script.order.push(ScriptIndex::Op3(script.op3s.len()));
+    script.op3s.push(rgb);
     
     let pulser = Op1Def::Pulser(Pulser::new());
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
     script.op1s.push(pulser);
+
+    let pulser2 = Op1Def::Pulser(Pulser::new());
+    script.order.push(ScriptIndex::Op1(script.op1s.len()));
+    script.op1s.push(pulser2);
+
+    let pulser3 = Op1Def::Pulser(Pulser::new());
+    script.order.push(ScriptIndex::Op1(script.op1s.len()));
+    script.op1s.push(pulser3);
 
     return script;
 }

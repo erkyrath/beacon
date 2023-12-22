@@ -106,6 +106,18 @@ impl Op3Ctx {
                 }
             }
             
+            Op3Def::RGB(obufnum1, obufnum2, obufnum3) => {
+                let obuf1 = ctx.op1s[*obufnum1].buf.borrow();
+                let obuf2 = ctx.op1s[*obufnum2].buf.borrow();
+                let obuf3 = ctx.op1s[*obufnum3].buf.borrow();
+                assert!(buf.len() == obuf1.len());
+                assert!(buf.len() == obuf2.len());
+                assert!(buf.len() == obuf3.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = Pix::new(obuf1[ix], obuf2[ix], obuf3[ix]);
+                }
+            }
+
             _ => {
                 panic!("unimplemented Op3");
             }
