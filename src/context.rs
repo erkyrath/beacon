@@ -10,7 +10,6 @@ use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
 use crate::op::tickop;
-use crate::pulser::{Pulser, PulserState};
 
 pub struct RunContext {
     pub script: Script,
@@ -22,12 +21,6 @@ pub struct RunContext {
 
     pub op1s: Vec<Op1Ctx>,
     pub op3s: Vec<Op3Ctx>,
-}
-
-//### del
-pub enum ScriptBuffer<'a> {
-    Op1(&'a [f32]),
-    Op3(&'a [Pix<f32>]),
 }
 
 impl RunContext {

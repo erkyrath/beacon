@@ -17,7 +17,6 @@ mod param;
 mod context;
 mod pulser;
 
-use context::ScriptBuffer;
 use script::{Script, ScriptIndex};
 
 fn main() -> Result<(), String> {
