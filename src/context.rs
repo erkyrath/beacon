@@ -9,6 +9,7 @@ use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
+use crate::op::tickop;
 use crate::pulser::{Pulser, PulserState};
 
 pub struct RunContext {
@@ -19,10 +20,11 @@ pub struct RunContext {
     age: f64,
     pub rng: Rc<RefCell<SmallRng>>,
 
-    op1s: Vec<Op1Ctx>,
-    op3s: Vec<Op3Ctx>,
+    pub op1s: Vec<Op1Ctx>,
+    pub op3s: Vec<Op3Ctx>,
 }
 
+//### del
 pub enum ScriptBuffer<'a> {
     Op1(&'a [f32]),
     Op3(&'a [Pix<f32>]),
@@ -81,52 +83,9 @@ impl RunContext {
     pub fn tick(&mut self) {
         let dur = self.birth.elapsed();
         self.age = dur.as_secs_f64();
-        
-        for scix in (&self.script.order).iter().rev() {
-            match scix {
-                ScriptIndex::Op1(val) => {
-                    let opdef = &self.script.op1s[*val];
-                    let mut buf = self.op1s[*val].buf.borrow_mut();
-                    match &opdef {
-                        Op1Def::Constant(val) => {
-                            for ix in 0..buf.len() {
-                                buf[ix] = *val;
-                            }
-                        }
 
-                        Op1Def::Pulser(_pulser) => {
-                            let mut state = self.op1s[*val].state.borrow_mut();
-                            if let Op1State::Pulser(pstate) = &mut *state {
-                                pstate.tick(self);
-                                pstate.render(self, &mut buf);
-                            }
-                            else {
-                                panic!("Op1 state mismatch: PulserState");
-                            }
-                        }
-                        
-                        _ => {
-                            panic!("unimplemented Op1");
-                        }
-                    }
-                },
-                ScriptIndex::Op3(val) => {
-                    let opdef = &self.script.op3s[*val];
-                    //let mut _state = self.op3s[*val].state.borrow_mut();
-                    let mut buf = self.op3s[*val].buf.borrow_mut();
-                    match &opdef {
-                        Op3Def::Constant(val) => {
-                            for ix in 0..buf.len() {
-                                buf[ix] = val.clone();
-                            }
-                        }
-                        
-                        _ => {
-                            panic!("unimplemented Op3");
-                        }
-                    }
-                },
-            }
+        for ix in (0..self.script.order.len()).rev() {
+            tickop(self, self.script.order[ix]);
         }
     }
 }

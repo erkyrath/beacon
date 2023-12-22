@@ -3,6 +3,7 @@ use crate::pixel::Pix;
 use crate::op::{Op1Def, Op3Def};
 use crate::pulser::Pulser;
 
+#[derive(Copy, Clone)]
 pub enum ScriptIndex {
     Op1(usize),
     Op3(usize),
