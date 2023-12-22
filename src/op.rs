@@ -58,9 +58,9 @@ impl Op3State {
 }
 
 impl Op1Ctx {
-    pub fn tickop(ctx: &mut RunContext, val: usize) {
-        let opdef = &ctx.script.op1s[val];
-        let mut buf = ctx.op1s[val].buf.borrow_mut();
+    pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
+        let opdef = &ctx.script.op1s[bufnum];
+        let mut buf = ctx.op1s[bufnum].buf.borrow_mut();
         match &opdef {
             Op1Def::Constant(val) => {
                 for ix in 0..buf.len() {
@@ -77,7 +77,7 @@ impl Op1Ctx {
             }
 
             Op1Def::Pulser(_pulser) => {
-                let mut state = ctx.op1s[val].state.borrow_mut();
+                let mut state = ctx.op1s[bufnum].state.borrow_mut();
                 if let Op1State::Pulser(pstate) = &mut *state {
                     pstate.tick(ctx);
                     pstate.render(ctx, &mut buf);
@@ -95,10 +95,10 @@ impl Op1Ctx {
 }
 
 impl Op3Ctx {
-    pub fn tickop(ctx: &mut RunContext, val: usize) {
-        let opdef = &ctx.script.op3s[val];
-        //let mut _state = ctx.op3s[val].state.borrow_mut();
-        let mut buf = ctx.op3s[val].buf.borrow_mut();
+    pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
+        let opdef = &ctx.script.op3s[bufnum];
+        //let mut _state = ctx.op3s[bufnum].state.borrow_mut();
+        let mut buf = ctx.op3s[bufnum].buf.borrow_mut();
         match &opdef {
             Op3Def::Constant(val) => {
                 for ix in 0..buf.len() {
