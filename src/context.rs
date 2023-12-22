@@ -9,7 +9,7 @@ use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
-use crate::op::tickop;
+use crate::op::{tickop1, tickop3};
 
 pub struct RunContext {
     pub script: Script,
@@ -78,7 +78,14 @@ impl RunContext {
         self.age = dur.as_secs_f64();
 
         for ix in (0..self.script.order.len()).rev() {
-            tickop(self, self.script.order[ix]);
+            match self.script.order[ix] {
+                ScriptIndex::Op1(val) => {
+                    tickop1(self, val);
+                },
+                ScriptIndex::Op3(val) => {
+                    tickop3(self, val);
+                },
+            }
         }
     }
 }

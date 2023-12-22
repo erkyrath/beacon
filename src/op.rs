@@ -57,50 +57,46 @@ impl Op3State {
     }
 }
 
-pub fn tickop(ctx: &mut RunContext, scix: ScriptIndex) {
-    match scix {
-        ScriptIndex::Op1(val) => {
-            let opdef = &ctx.script.op1s[val];
-            let mut buf = ctx.op1s[val].buf.borrow_mut();
-            match &opdef {
-                Op1Def::Constant(val) => {
-                    for ix in 0..buf.len() {
-                        buf[ix] = *val;
-                    }
-                }
+pub fn tickop1(ctx: &mut RunContext, val: usize) {
+    let opdef = &ctx.script.op1s[val];
+    let mut buf = ctx.op1s[val].buf.borrow_mut();
+    match &opdef {
+        Op1Def::Constant(val) => {
+            for ix in 0..buf.len() {
+                buf[ix] = *val;
+            }
+        }
 
-                Op1Def::Pulser(_pulser) => {
-                    let mut state = ctx.op1s[val].state.borrow_mut();
-                    if let Op1State::Pulser(pstate) = &mut *state {
-                        pstate.tick(ctx);
-                        pstate.render(ctx, &mut buf);
-                    }
-                    else {
-                        panic!("Op1 state mismatch: PulserState");
-                    }
-                }
-                
-                _ => {
-                    panic!("unimplemented Op1");
-                }
+        Op1Def::Pulser(_pulser) => {
+            let mut state = ctx.op1s[val].state.borrow_mut();
+            if let Op1State::Pulser(pstate) = &mut *state {
+                pstate.tick(ctx);
+                pstate.render(ctx, &mut buf);
             }
-        },
-        ScriptIndex::Op3(val) => {
-            let opdef = &ctx.script.op3s[val];
-            //let mut _state = ctx.op3s[val].state.borrow_mut();
-            let mut buf = ctx.op3s[val].buf.borrow_mut();
-            match &opdef {
-                Op3Def::Constant(val) => {
-                    for ix in 0..buf.len() {
-                        buf[ix] = val.clone();
-                    }
-                }
-                
-                _ => {
-                    panic!("unimplemented Op3");
-                }
+            else {
+                panic!("Op1 state mismatch: PulserState");
             }
-        },
+        }
+        
+        _ => {
+            panic!("unimplemented Op1");
+        }
     }
 }
 
+pub fn tickop3(ctx: &mut RunContext, val: usize) {
+    let opdef = &ctx.script.op3s[val];
+    //let mut _state = ctx.op3s[val].state.borrow_mut();
+    let mut buf = ctx.op3s[val].buf.borrow_mut();
+    match &opdef {
+        Op3Def::Constant(val) => {
+            for ix in 0..buf.len() {
+                buf[ix] = val.clone();
+            }
+        }
+        
+        _ => {
+            panic!("unimplemented Op3");
+        }
+    }
+}
