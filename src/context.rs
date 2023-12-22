@@ -99,8 +99,8 @@ impl RunContext {
                         }
 
                         Op1Def::Pulser(_pulser) => {
-                            //let mut state = self.op1s[*val].state.borrow_mut();
-                            if let Op1State::Pulser(pstate) = &mut *self.op1s[*val].state.borrow_mut() {
+                            let mut state = self.op1s[*val].state.borrow_mut();
+                            if let Op1State::Pulser(pstate) = &mut *state {
                                 pstate.tick(self);
                                 pstate.render(self, &mut buf);
                             }
