@@ -67,13 +67,13 @@ impl RunContext {
     }
     
     pub fn applybuf1<F>(&self, val: usize, mut func: F)
-    where F: FnMut(&[f32]) -> () {
+    where F: FnMut(&[f32]) {
         let buf = self.op1s[val].buf.borrow();
         func(&buf);
     }
 
     pub fn applybuf3<F>(&self, val: usize, mut func: F)
-    where F: FnMut(&[Pix<f32>]) -> () {
+    where F: FnMut(&[Pix<f32>]) {
         let buf = self.op3s[val].buf.borrow();
         func(&buf);
     }
