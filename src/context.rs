@@ -69,21 +69,6 @@ impl RunContext {
     pub fn age(&self) -> f64 {
         self.age
     }
-
-    /*###
-    pub fn getrootbuf(&self) -> ScriptBuffer {
-        match &self.script.order[0] {
-            ScriptIndex::Op1(val) => {
-                let buf = self.op1s[*val].buf.borrow();
-                ScriptBuffer::Op1(&buf)
-            },
-            ScriptIndex::Op3(val) => {
-                let buf = self.op3s[*val].buf.borrow();
-                ScriptBuffer::Op3(&buf)
-            },
-        }
-    }
-    ###*/
     
     pub fn applybuf1<F>(&self, val: usize, mut func: F)
     where F: FnMut(&[f32]) -> () {
@@ -104,7 +89,6 @@ impl RunContext {
         for scix in (&self.script.order).iter().rev() {
             match scix {
                 ScriptIndex::Op1(val) => {
-                    //###self.op1s[*val].tick(self, &self.script.op1s[*val]);
                     let opdef = &self.script.op1s[*val];
                     let mut buf = self.op1s[*val].buf.borrow_mut();
                     match &opdef {
@@ -131,7 +115,6 @@ impl RunContext {
                     }
                 },
                 ScriptIndex::Op3(val) => {
-                    //###self.op3s[*val].tick(self, &self.script.op3s[*val]);
                     let opdef = &self.script.op3s[*val];
                     //let mut _state = self.op3s[*val].state.borrow_mut();
                     let mut buf = self.op3s[*val].buf.borrow_mut();
