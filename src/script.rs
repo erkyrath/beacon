@@ -1,5 +1,4 @@
-use crate::context::RunContext;
-use crate::pixel::Pix;
+use crate::param::Param;
 use crate::op::{Op1Def, Op3Def};
 
 use crate::pulser::Pulser;
@@ -29,7 +28,10 @@ impl Script {
 pub fn build_script() -> Script {
     let mut script = Script::new();
 
-    let pulser = Op1Def::Pulser(Pulser::new());
+    let mut pulserdef = Pulser::new();
+    pulserdef.pos = Param::Constant(0.0);
+    
+    let pulser = Op1Def::Pulser(pulserdef);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
     script.op1s.push(pulser);
 

@@ -81,7 +81,7 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 }
 
 pub struct Pulser {
-    pos: Param,
+    pub pos: Param,
 }
 
 impl Pulser {
