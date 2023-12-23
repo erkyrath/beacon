@@ -6,6 +6,7 @@ use crate::waves::WaveShape;
 
 pub struct Pulser {
     pub interval: Param,
+    pub duration: Param,
     pub pos: Param,
     pub width: Param,
     pub spaceshape: WaveShape,
@@ -16,6 +17,7 @@ impl Pulser {
     pub fn new() -> Pulser {
         Pulser {
             interval: Param::Constant(1.0),
+            duration: Param::Constant(1.0),
             pos: Param::Constant(0.5),
             width: Param::Constant(0.5),
             spaceshape: WaveShape::Triangle,
@@ -57,9 +59,10 @@ impl PulserState {
             //let pos = Param::RandNorm(0.5, 0.3).eval(ctx, age as f32);
             let posparam = pulser.pos.resolve(ctx, age as f32);
             let widthparam = pulser.width.resolve(ctx, age as f32);
+            let durparam = pulser.duration.resolve(ctx, age as f32);
             self.pulses.push(Pulse {
                 birth: ctx.age(),
-                duration: Param::Constant(2.0),
+                duration: durparam,
                 pos: posparam,
                 width: widthparam,
                 velocity: 0.5,
