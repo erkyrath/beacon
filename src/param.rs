@@ -35,11 +35,10 @@ impl Param {
     }
 
     pub fn resolve(&self, ctx: &RunContext, age: f32) -> Param {
-        if let Param::Quote(param) = self {
-            *param.clone()
-        }
-        else {
-            Param::Constant(self.eval(ctx, age))
+        match self {
+            Param::Quote(param) => *param.clone(),
+            Param::Constant(_) => self.clone(),
+            _ => Param::Constant(self.eval(ctx, age))
         }
     }
 
