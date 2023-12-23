@@ -32,19 +32,32 @@ impl Script {
             return;
         }
 
-        for ix in 0..self.order.len() {
-            match self.order[ix] {
-                ScriptIndex::Op1(bufnum) => {
-                    let op = &self.op1s[bufnum];
-                    println!("{} (1/{}): {:?}", ix, bufnum, op);
-                },
-                ScriptIndex::Op3(bufnum) => {
-                    let op = &self.op3s[bufnum];
-                    println!("{} (3/{}): {:?}", ix, bufnum, op);
-                },
-            }
+        self.dumpop(self.order[0], 0);
+    }
+    
+    fn dumpop(&self, scix: ScriptIndex, indent: usize) {
+        let desc: String;
+        let bufs: Vec<ScriptIndex>;
+        let scstr: String;
+        match scix {
+            ScriptIndex::Op1(bufnum) => {
+                (desc, bufs) = self.op1s[bufnum].describe();
+                scstr = format!("1/{}", bufnum);
+            },
+            ScriptIndex::Op3(bufnum) => {
+                (desc, bufs) = self.op3s[bufnum].describe();
+                scstr = format!("3/{}", bufnum);
+            },
+        }
+
+        let indentstr: String = vec![" "; 2*indent].join("");
+        println!("({}): {}{}", scstr, indentstr, desc);
+        
+        for val in bufs {
+            self.dumpop(val, indent+1);
         }
     }
+    
 }
 
 pub fn build_script() -> Script {
