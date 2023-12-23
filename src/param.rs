@@ -1,3 +1,4 @@
+use std::fmt;
 use rand::Rng;
 
 use crate::waves::WaveShape;
@@ -19,6 +20,20 @@ pub enum Param {
     WaveCycle(WaveShape, f32, f32, f32), // shape, min, max, period
 
     Quote(Box<Param>),
+}
+
+impl fmt::Debug for Param {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Param::Constant(val) => write!(f, "Constant({})", val),
+            Param::RandFlat(min, max) => write!(f, "RandFlat(min={}, max={})", min, max),
+            Param::RandNorm(mean, stdev) => write!(f, "RandNorm(mean={}, stdev={})", mean, stdev),
+            Param::Changing(start, velocity) => write!(f, "Changing(start={}, velocity={})", start, velocity),
+            Param::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={}, max={}, duration={})", shape, min, max, duration),
+            Param::WaveCycle(shape, min, max, period) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={})", shape, min, max, period),
+            Param::Quote(param) => write!(f, "'{:?}", *param)
+        }
+    }
 }
 
 impl Param {
