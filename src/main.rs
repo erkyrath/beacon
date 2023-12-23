@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
+use gumdrop::Options;
 extern crate sdl2; 
 
 use std::time::Duration;
@@ -20,7 +21,33 @@ mod pulser;
 
 use script::{Script, ScriptIndex};
 
-fn main() -> Result<(), String> {
+#[derive(Options, Debug)]
+pub struct AppOptions {
+    #[options(help = "print help message")]
+    help: bool,
+
+    #[options(long="dump", help = "dump script to stdout")]
+    dump: bool,
+
+}
+
+fn main() {
+    let opts = AppOptions::parse_args_default_or_exit();
+
+    let script = script::build_script();
+    
+    if opts.dump {
+        println!("### script");
+    }
+    else {
+        let res = sdlmain(script);
+        if let Err(msg) = res {
+            println!("{msg}");
+        }
+    }
+}
+
+fn sdlmain(script: Script) -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
  
@@ -43,7 +70,6 @@ fn main() -> Result<(), String> {
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let script = script::build_script();
     let mut ctx = context::RunContext::new(script, pixsize);
         
     'running: loop {
