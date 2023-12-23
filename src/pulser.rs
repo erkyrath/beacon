@@ -7,8 +7,8 @@ use crate::waves::WaveShape;
 pub struct Pulser {
     pub pos: Param,
     pub width: Param,
-    spaceshape: WaveShape,
-    timeshape: WaveShape,
+    pub spaceshape: WaveShape,
+    pub timeshape: WaveShape,
 }
 
 impl Pulser {
