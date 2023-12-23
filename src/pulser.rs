@@ -5,6 +5,7 @@ use crate::param::Param;
 use crate::waves::WaveShape;
 
 pub struct Pulser {
+    pub interval: Param,
     pub pos: Param,
     pub width: Param,
     pub spaceshape: WaveShape,
@@ -14,6 +15,7 @@ pub struct Pulser {
 impl Pulser {
     pub fn new() -> Pulser {
         Pulser {
+            interval: Param::Constant(1.0),
             pos: Param::Constant(0.5),
             width: Param::Constant(0.5),
             spaceshape: WaveShape::Triangle,
@@ -36,7 +38,6 @@ pub struct Pulse {
 pub struct PulserState {
     birth: f64,
     nextpulse: f64,
-    interval: Param,
     pulses: Vec<Pulse>,
 }
 
@@ -45,7 +46,6 @@ impl PulserState {
         PulserState {
             birth: 0.0, // not handling on-the-fly pulsers yet
             nextpulse: 0.0,
-            interval: Param::Constant(0.4),
             pulses: Vec::new(),
         }
     }
@@ -68,7 +68,7 @@ impl PulserState {
                 dead: false,
             });
 
-            self.nextpulse = ctx.age() + self.interval.eval(ctx, age as f32) as f64;
+            self.nextpulse = ctx.age() + pulser.interval.eval(ctx, age as f32) as f64;
         }
 
         self.pulses.retain(|pulse| !pulse.dead);
