@@ -16,6 +16,7 @@ pub enum Op3Def {
     Constant(Pix<f32>),
     Grey(usize), // op1
     RGB(usize, usize, usize), // op1, op1, op1
+    CMulS(usize, usize), // op3, op1
     Sum(Vec<usize>), // op3...
 }
 
@@ -113,6 +114,16 @@ impl Op3Ctx {
                 assert!(buf.len() == obuf3.len());
                 for ix in 0..buf.len() {
                     buf[ix] = Pix::new(obuf1[ix], obuf2[ix], obuf3[ix]);
+                }
+            }
+
+            Op3Def::CMulS(obufnum1, obufnum2) => {
+                let obuf1 = ctx.op3s[*obufnum1].buf.borrow();
+                let obuf2 = ctx.op1s[*obufnum2].buf.borrow();
+                assert!(buf.len() == obuf1.len());
+                assert!(buf.len() == obuf2.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = Pix::new(obuf1[ix].r*obuf2[ix], obuf1[ix].g*obuf2[ix], obuf1[ix].b*obuf2[ix]);
                 }
             }
 

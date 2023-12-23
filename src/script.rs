@@ -1,5 +1,6 @@
 use crate::param::Param;
 use crate::op::{Op1Def, Op3Def};
+use crate::pixel::Pix;
 
 use crate::pulser::Pulser;
 use crate::waves::WaveShape;
@@ -28,6 +29,14 @@ impl Script {
 
 pub fn build_script() -> Script {
     let mut script = Script::new();
+
+    let cmuls = Op3Def::CMulS(1, 0);
+    script.order.push(ScriptIndex::Op3(script.op3s.len()));
+    script.op3s.push(cmuls);
+
+    let cconst = Op3Def::Constant(Pix::new(1.0, 0.2, 1.0));
+    script.order.push(ScriptIndex::Op3(script.op3s.len()));
+    script.op3s.push(cconst);
 
     let mut pulserdef = Pulser::new();
     pulserdef.pos = Param::Constant(-0.2);
