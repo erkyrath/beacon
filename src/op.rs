@@ -14,6 +14,7 @@ pub enum Op1Def {
 
 pub enum Op3Def {
     Constant(Pix<f32>),
+    Invert(usize), // op3
     Grey(usize), // op1
     RGB(usize, usize, usize), // op1, op1, op1
     CMulS(usize, usize), // op3, op1
@@ -105,6 +106,14 @@ impl Op3Ctx {
                 }
             }
             
+            Op3Def::Invert(obufnum) => {
+                let obuf = ctx.op3s[*obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = Pix::new(1.0-obuf[ix].r, 1.0-obuf[ix].g, 1.0-obuf[ix].b);
+                }
+            }
+
             Op3Def::RGB(obufnum1, obufnum2, obufnum3) => {
                 let obuf1 = ctx.op1s[*obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[*obufnum2].buf.borrow();
