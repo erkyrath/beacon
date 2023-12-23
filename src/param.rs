@@ -15,7 +15,8 @@ pub enum Param {
     RandFlat(f32, f32),  // min, max
     RandNorm(f32, f32),  // mean, stddev
     Changing(f32, f32),  // start, velocity
-    Wave(WaveShape, f32, f32, f32), // shape, min, max, period
+    Wave(WaveShape, f32, f32, f32), // shape, min, max, duration
+    WaveCycle(WaveShape, f32, f32, f32), // shape, min, max, period
 
     Quote(Box<Param>),
 }
@@ -36,8 +37,11 @@ impl Param {
             Param::Changing(start, velocity) => {
                 start + age * velocity
             },
-            Param::Wave(shape, min, max, period) => {
-                shape.sample(age/period) * (max-min) + min
+            Param::Wave(shape, min, max, dur) => {
+                shape.sample(age/dur) * (max-min) + min
+            },
+            Param::WaveCycle(shape, min, max, period) => {
+                shape.sample((age/period) % 1.0) * (max-min) + min
             },
             Param::Quote(_) => {
                 panic!("eval Quote");
@@ -61,6 +65,7 @@ impl Param {
                 }
             },
             Param::Wave(_shape, min, _max, _period) => Some(*min),
+            Param::WaveCycle(_shape, min, _max, _period) => Some(*min),
             Param::Quote(_) => {
                 panic!("eval Quote");
             },
@@ -83,6 +88,7 @@ impl Param {
                 }
             },
             Param::Wave(_shape, _min, max, _period) => Some(*max),
+            Param::WaveCycle(_shape, _min, max, _period) => Some(*max),
             Param::Quote(_) => {
                 panic!("eval Quote");
             },
