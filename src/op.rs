@@ -76,10 +76,10 @@ impl Op1Ctx {
                 }
             }
 
-            Op1Def::Pulser(_pulser) => {
+            Op1Def::Pulser(pulser) => {
                 let mut state = ctx.op1s[bufnum].state.borrow_mut();
                 if let Op1State::Pulser(pstate) = &mut *state {
-                    pstate.tick(ctx);
+                    pstate.tick(ctx, &pulser);
                     pstate.render(ctx, &mut buf);
                 }
                 else {
