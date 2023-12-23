@@ -3,7 +3,7 @@ use rand::Rng;
 use crate::context::RunContext;
 use crate::param::Param;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum PulseShape {
     Flat,
     Square,
@@ -83,6 +83,8 @@ fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
 pub struct Pulser {
     pub pos: Param,
     pub width: Param,
+    spaceshape: PulseShape,
+    timeshape: PulseShape,
 }
 
 impl Pulser {
@@ -90,6 +92,8 @@ impl Pulser {
         Pulser {
             pos: Param::Constant(0.5),
             width: Param::Constant(0.5),
+            spaceshape: PulseShape::Triangle,
+            timeshape: PulseShape::SqrDecay,
         }
     }
 }
@@ -100,8 +104,8 @@ pub struct Pulse {
     pos: Param,
     width: Param,
     velocity: f32,
-    pub spaceshape: PulseShape,
-    pub timeshape: PulseShape,
+    spaceshape: PulseShape,
+    timeshape: PulseShape,
     dead: bool,
 }
 
@@ -135,8 +139,8 @@ impl PulserState {
                 pos: posparam,
                 width: widthparam,
                 velocity: 0.5,
-                spaceshape:PulseShape::Triangle,
-                timeshape:PulseShape::SqrDecay,
+                spaceshape: pulser.spaceshape,
+                timeshape: pulser.timeshape,
                 dead: false,
             });
 
