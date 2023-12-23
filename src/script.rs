@@ -39,7 +39,8 @@ pub fn build_script() -> Script {
     script.op3s.push(cconst);
 
     let mut pulserdef = Pulser::new();
-    pulserdef.pos = Param::Quote(Box::new(Param::Changing(1.2, -0.4)));
+    //pulserdef.pos = Param::Quote(Box::new(Param::Changing(1.2, -0.4)));
+    pulserdef.pos = Param::Quote(Box::new(Param::Wave(WaveShape::SqrTooth, 0.1, 0.9, 2.0)));
     //pulserdef.width = Param::Quote(Box::new(Param::Changing(0.2, 0.2)));
     pulserdef.width = Param::Constant(0.2);
     pulserdef.spaceshape = WaveShape::Sine;
