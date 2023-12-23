@@ -15,6 +15,7 @@ mod op;
 mod script;
 mod param;
 mod context;
+mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
