@@ -4,8 +4,6 @@ use crate::context::RunContext;
 use crate::pixel::Pix;
 use crate::pulser::{Pulser, PulserState};
 
-use crate::script::ScriptIndex;
-
 pub enum Op1Def {
     Constant(f32),
     Invert(usize), // op1
