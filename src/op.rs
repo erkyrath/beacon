@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use crate::context::RunContext;
 use crate::pixel::Pix;
 use crate::pulser::{Pulser, PulserState};
+use crate::script::ScriptIndex;
 
 pub enum Op1Def {
     Constant(f32),
@@ -20,6 +21,59 @@ pub enum Op3Def {
     RGB(usize, usize, usize), // op1, op1, op1
     CMulS(usize, usize), // op3, op1
     Sum(Vec<usize>), // op3...
+}
+
+impl Op1Def {
+    pub fn describe(&self) -> (String, Vec<ScriptIndex>) {
+        match self {
+            Op1Def::Constant(val) => {
+                (format!("Constant({})", val), Vec::default())
+            },
+            Op1Def::Invert(bufnum) => {
+                (format!("Invert({bufnum})"), vec![ ScriptIndex::Op1(*bufnum) ])
+            },
+            Op1Def::Pulser(_pulser) => {
+                (format!("Pulser(###)"), Vec::default())
+            },
+            Op1Def::Brightness(bufnum) => {
+                (format!("Brightness({bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
+            },
+            Op1Def::Sum(bufnums) => {
+                let str = bufnums.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(",");
+                let ls = bufnums.iter().map(|val| ScriptIndex::Op1(*val)).collect::<Vec<ScriptIndex>>();
+                (format!("Sum({str})"), ls)
+            },
+            //_ => ("?Op1Def".to_string(), Vec::default()),
+        }
+    }
+}
+
+impl Op3Def {
+    pub fn describe(&self) -> (String, Vec<ScriptIndex>) {
+        match self {
+            Op3Def::Constant(pix) => {
+                (format!("Constant(r={}, g={}, b={})", pix.r, pix.g, pix.b), Vec::default())
+            },
+            Op3Def::Invert(bufnum) => {
+                (format!("Invert({bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
+            },
+            Op3Def::Grey(bufnum) => {
+                (format!("Grey({bufnum})"), vec![ ScriptIndex::Op1(*bufnum) ])
+            },
+            Op3Def::RGB(bufnum1, bufnum2, bufnum3) => {
+                (format!("RGB({bufnum1}, {bufnum2}, {bufnum3})"), vec![ ScriptIndex::Op1(*bufnum1), ScriptIndex::Op1(*bufnum2), ScriptIndex::Op1(*bufnum3) ])
+            },
+            Op3Def::CMulS(bufnum1, bufnum2) => {
+                (format!("CMulS({bufnum1}, {bufnum2})"), vec![ ScriptIndex::Op3(*bufnum1), ScriptIndex::Op1(*bufnum2) ])
+            },
+            Op3Def::Sum(bufnums) => {
+                let str = bufnums.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(",");
+                let ls = bufnums.iter().map(|val| ScriptIndex::Op3(*val)).collect::<Vec<ScriptIndex>>();
+                (format!("Sum({str})"), ls)
+            },
+            //_ => ("?Op1Def".to_string(), Vec::default()),
+        }
+    }
 }
 
 impl fmt::Debug for Op1Def {
