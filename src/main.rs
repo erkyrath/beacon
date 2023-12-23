@@ -37,7 +37,7 @@ fn main() {
     let script = script::build_script();
     
     if opts.dump {
-        println!("### script");
+        script.dump();
     }
     else {
         let res = sdlmain(script);

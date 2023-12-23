@@ -25,6 +25,26 @@ impl Script {
             op3s: Vec::default(),
         }
     }
+
+    pub fn dump(&self) {
+        if self.order.len() == 0 {
+            println!("script is empty");
+            return;
+        }
+
+        for ix in 0..self.order.len() {
+            match self.order[ix] {
+                ScriptIndex::Op1(bufnum) => {
+                    let op = &self.op1s[bufnum];
+                    println!("(#{}=1:{}) {:?}", ix, bufnum, op);
+                },
+                ScriptIndex::Op3(bufnum) => {
+                    let op = &self.op3s[bufnum];
+                    println!("(#{}=3:{}) {:?}", ix, bufnum, op);
+                },
+            }
+        }
+    }
 }
 
 pub fn build_script() -> Script {
