@@ -2,89 +2,14 @@ use rand::Rng;
 
 use crate::context::RunContext;
 use crate::param::Param;
-
-#[derive(Debug, Clone, Copy)]
-pub enum PulseShape {
-    Flat,
-    Square,
-    Triangle,
-    SawTooth,
-    SqrTooth,
-    SawDecay,
-    SqrDecay,
-    Sine,
-}
-
-fn samplepulse(shape: &PulseShape, pos: f32) -> f32 {
-    match shape {
-        PulseShape::Flat => 1.0,
-        PulseShape::Square => {
-            if pos >= 0.0 && pos < 1.0 {
-                1.0
-            }
-            else {
-                0.0
-            }
-        },
-        PulseShape::SawTooth => {
-            if pos >= 0.0 && pos < 1.0 {
-                pos
-            }
-            else {
-                0.0
-            }
-        },
-        PulseShape::SqrTooth => {
-            if pos >= 0.0 && pos < 1.0 {
-                pos*pos
-            }
-            else {
-                0.0
-            }
-        },
-        PulseShape::SawDecay => {
-            if pos >= 0.0 && pos < 1.0 {
-                1.0 - pos
-            }
-            else {
-                0.0
-            }
-        },
-        PulseShape::SqrDecay => {
-            if pos >= 0.0 && pos < 1.0 {
-                (1.0-pos)*(1.0-pos)
-            }
-            else {
-                0.0
-            }
-        },
-        PulseShape::Triangle => {
-            if pos >= 0.0 && pos < 0.5 {
-                pos * 2.0
-            }
-            else if pos >= 0.5 && pos < 1.0 {
-                (1.0 - pos) * 2.0
-            }
-            else {
-                0.0
-            }
-        },
-        PulseShape::Sine => {
-            if pos >= 0.0 && pos < 1.0 {
-                0.5 - 0.5 * (2.0*std::f32::consts::PI*pos).cos()
-            }
-            else {
-                0.0
-            }
-        },
-    }                
-}
+use crate::waves::WaveShape;
+use crate::waves::samplepulse;
 
 pub struct Pulser {
     pub pos: Param,
     pub width: Param,
-    spaceshape: PulseShape,
-    timeshape: PulseShape,
+    spaceshape: WaveShape,
+    timeshape: WaveShape,
 }
 
 impl Pulser {
@@ -92,8 +17,8 @@ impl Pulser {
         Pulser {
             pos: Param::Constant(0.5),
             width: Param::Constant(0.5),
-            spaceshape: PulseShape::Triangle,
-            timeshape: PulseShape::SqrDecay,
+            spaceshape: WaveShape::Triangle,
+            timeshape: WaveShape::SqrDecay,
         }
     }
 }
@@ -104,8 +29,8 @@ pub struct Pulse {
     pos: Param,
     width: Param,
     velocity: f32,
-    spaceshape: PulseShape,
-    timeshape: PulseShape,
+    spaceshape: WaveShape,
+    timeshape: WaveShape,
     dead: bool,
 }
 
@@ -158,7 +83,7 @@ impl PulserState {
             let age = (ctx.age() - pulse.birth) as f32;
             let timeval: f32;
             match pulse.timeshape {
-                PulseShape::Flat => {
+                WaveShape::Flat => {
                     timeval = 1.0;
                 },
                 _ => {
@@ -175,7 +100,7 @@ impl PulserState {
             let width: f32 = pulse.width.eval(ctx, age);
             let startpos: f32;
             match pulse.spaceshape {
-                PulseShape::Flat => {
+                WaveShape::Flat => {
                     startpos = 0.0;
                 },
                 _ => {
@@ -194,7 +119,7 @@ impl PulserState {
             for ix in 0..buf.len() {
                 let spaceval: f32;
                 match pulse.spaceshape {
-                    PulseShape::Flat => {
+                    WaveShape::Flat => {
                         spaceval = 1.0;
                     },
                     _ => {
