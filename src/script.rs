@@ -29,7 +29,8 @@ pub fn build_script() -> Script {
     let mut script = Script::new();
 
     let mut pulserdef = Pulser::new();
-    pulserdef.pos = Param::Constant(0.0);
+    //pulserdef.pos = Param::Constant(0.0);
+    //pulserdef.width = Param::Constant(0.1);
     
     let pulser = Op1Def::Pulser(pulserdef);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
