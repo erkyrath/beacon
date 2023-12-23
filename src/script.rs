@@ -50,7 +50,7 @@ impl Script {
             },
         }
 
-        let indentstr: String = vec![" "; 2*indent].join("");
+        let indentstr: String = vec!["  "; indent].join("");
         println!("({}): {}{}", scstr, indentstr, desc);
         
         for val in bufs {
