@@ -2,6 +2,12 @@ use rand::Rng;
 
 use crate::context::RunContext;
 
+// To think about:
+// Params containing params? RandFlat(0, Changing())
+// Params with state? (RandomWalk?) Currently not possible.
+
+// (In an ideal universe, Params would be unified with Ops anyway.)
+
 #[derive(Clone)]
 pub enum Param {
     Constant(f32),
