@@ -39,6 +39,7 @@ pub struct Pulse {
 pub struct PulserState {
     birth: f64,
     nextpulse: f64,
+    totalcount: usize,
     pulses: Vec<Pulse>,
 }
 
@@ -47,6 +48,7 @@ impl PulserState {
         PulserState {
             birth: 0.0, // not handling on-the-fly pulsers yet
             nextpulse: 0.0,
+            totalcount: 0,
             pulses: Vec::new(),
         }
     }
@@ -67,6 +69,7 @@ impl PulserState {
                 dead: false,
             });
 
+            self.totalcount += 1;
             self.nextpulse = ctx.age() + pulser.interval.eval(ctx, age as f32) as f64;
         }
 
