@@ -78,35 +78,15 @@ impl Op3Def {
 
 impl fmt::Debug for Op1Def {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Op1Def::Constant(val) => write!(f, "Constant({})", val),
-            Op1Def::Invert(bufnum) => write!(f, "Invert({bufnum})"),
-            Op1Def::Brightness(bufnum) => write!(f, "Brightness({bufnum})"),
-            Op1Def::Sum(bufnums) => {
-                let str = bufnums.iter().map(|val|val.to_string()).collect::<Vec<String>>().join(",");
-                write!(f, "Sum({str})")
-            },
-            Op1Def::Pulser(_pulser) => write!(f, "Pulser(###)"),
-            //_ => write!(f, "###Op1Def"),
-        }
+        let (desc, _bufs) = self.describe();
+        write!(f, "{}", desc)
     }
 }
 
 impl fmt::Debug for Op3Def {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Op3Def::Constant(pix) => write!(f, "Constant(r={}, g={}, b={})", pix.r, pix.g, pix.b),
-            Op3Def::Invert(bufnum) => write!(f, "Invert({bufnum})"),
-            Op3Def::Grey(bufnum) => write!(f, "Grey({bufnum})"),
-            Op3Def::RGB(bufnum1, bufnum2, bufnum3) => write!(f, "RGB({bufnum1}, {bufnum2}, {bufnum3})"),
-            Op3Def::CMulS(bufnum1, bufnum2) => write!(f, "CMulS({bufnum1}, {bufnum2})"),
-            Op3Def::Sum(bufnums) => {
-                let str = bufnums.iter().map(|val|val.to_string()).collect::<Vec<String>>().join(",");
-                write!(f, "Sum({str})")
-            },
-            //_ => write!(f, "###Op3Def"),
-        }
-
+        let (desc, _bufs) = self.describe();
+        write!(f, "{}", desc)
     }
 }
 
