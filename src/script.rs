@@ -45,7 +45,8 @@ pub fn build_script() -> Script {
     pulserdef.spaceshape = WaveShape::Sine;
     pulserdef.timeshape = WaveShape::Flat;
     pulserdef.duration = Param::Constant(3.0);
-    pulserdef.interval = Param::Constant(2.0);
+    pulserdef.interval = Param::Constant(0.5);
+    pulserdef.countlimit = Some(1);
     
     let pulser = Op1Def::Pulser(pulserdef);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));

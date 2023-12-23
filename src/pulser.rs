@@ -6,6 +6,7 @@ use crate::waves::WaveShape;
 
 pub struct Pulser {
     pub interval: Param,
+    pub countlimit: Option<usize>,
     pub duration: Param,
     pub pos: Param,
     pub width: Param,
@@ -17,6 +18,7 @@ impl Pulser {
     pub fn new() -> Pulser {
         Pulser {
             interval: Param::Constant(1.0),
+            countlimit: None,
             duration: Param::Constant(1.0),
             pos: Param::Constant(0.5),
             width: Param::Constant(0.5),
@@ -71,6 +73,11 @@ impl PulserState {
 
             self.totalcount += 1;
             self.nextpulse = ctx.age() + pulser.interval.eval(ctx, age as f32) as f64;
+            if let Some(countlimit) = pulser.countlimit {
+                if self.totalcount >= countlimit {
+                    self.nextpulse = f64::INFINITY;
+                }
+            }
         }
 
         self.pulses.retain(|pulse| !pulse.dead);
