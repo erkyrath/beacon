@@ -34,6 +34,48 @@ impl Param {
         }
     }
 
+    pub fn min(&self, _ctx: &RunContext, age: f32) -> Option<f32> {
+        match self {
+            Param::Constant(val) => Some(*val),
+            Param::RandFlat(min, _max) => Some(*min),
+            Param::RandNorm(mean, stdev) => {
+                Some((-1.5 * stdev / 0.522) + mean)
+            },
+            Param::Changing(start, velocity) => {
+                if *velocity < 0.0 {
+                    None
+                }
+                else {
+                    Some(start + age * velocity)
+                }
+            },
+            Param::Quote(_) => {
+                panic!("eval Quote");
+            }
+        }
+    }
+
+    pub fn max(&self, _ctx: &RunContext, age: f32) -> Option<f32> {
+        match self {
+            Param::Constant(val) => Some(*val),
+            Param::RandFlat(_min, max) => Some(*max),
+            Param::RandNorm(mean, stdev) => {
+                Some((1.5 * stdev / 0.522) + mean)
+            },
+            Param::Changing(start, velocity) => {
+                if *velocity > 0.0 {
+                    None
+                }
+                else {
+                    Some(start + age * velocity)
+                }
+            },
+            Param::Quote(_) => {
+                panic!("eval Quote");
+            }
+        }
+    }
+
     pub fn resolve(&self, ctx: &RunContext, age: f32) -> Param {
         match self {
             Param::Quote(param) => *param.clone(),
