@@ -3,7 +3,6 @@ use rand::Rng;
 use crate::context::RunContext;
 use crate::param::Param;
 use crate::waves::WaveShape;
-use crate::waves::samplepulse;
 
 pub struct Pulser {
     pub pos: Param,
@@ -93,7 +92,7 @@ impl PulserState {
                         pulse.dead = true;
                         continue;
                     }
-                    timeval = samplepulse(&pulse.timeshape, time);
+                    timeval = pulse.timeshape.sample(time);
                 }
             }
             
@@ -125,7 +124,7 @@ impl PulserState {
                     _ => {
                         let pos = (ix as f32) / bufrange;
                         let rpos = (pos - startpos) / width;
-                        spaceval = samplepulse(&pulse.spaceshape, rpos);
+                        spaceval = pulse.spaceshape.sample(rpos);
                     }
                 }
                 let val = spaceval * timeval;
