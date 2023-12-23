@@ -31,7 +31,7 @@ pub struct Pulse {
     duration: Param,
     pos: Param,
     width: Param,
-    velocity: f32,
+    //###velocity: f32,
     spaceshape: WaveShape,
     timeshape: WaveShape,
     dead: bool,
@@ -63,7 +63,7 @@ impl PulserState {
                 duration: durparam,
                 pos: posparam,
                 width: widthparam,
-                velocity: 0.5,
+                //###velocity: 0.5,
                 spaceshape: pulser.spaceshape,
                 timeshape: pulser.timeshape,
                 dead: false,
@@ -104,16 +104,22 @@ impl PulserState {
                     startpos = 0.0;
                 },
                 _ => {
-                    startpos = pulse.pos.eval(ctx, age) - width*0.5 + age * pulse.velocity;
-                    if pulse.velocity >= 0.0 && startpos > 1.0 {
-                        pulse.dead = true;
-                        continue;
+                    startpos = pulse.pos.eval(ctx, age) - width*0.5;
+                    if let Some(minpos) = pulse.pos.min(ctx, age) {
+                        if minpos - width*0.5 > 1.0 {
+                            pulse.dead = true;
+                        }
                     }
-                    if pulse.velocity <= 0.0 && startpos+width < 0.0 {
-                        pulse.dead = true;
-                        continue;
+                    if let Some(maxpos) = pulse.pos.max(ctx, age) {
+                        if maxpos + width*0.5 < 0.0 {
+                            pulse.dead = true;
+                        }
                     }
                 }
+            }
+
+            if pulse.dead {
+                continue;
             }
             
             for ix in 0..buf.len() {
