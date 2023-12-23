@@ -55,8 +55,6 @@ impl PulserState {
     pub fn tick(&mut self, ctx: &RunContext, pulser: &Pulser) {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
-            //let dur = eval(&Param::RandFlat(1.0, 5.0), ctx, age as f32);
-            //let pos = Param::RandNorm(0.5, 0.3).eval(ctx, age as f32);
             let posparam = pulser.pos.resolve(ctx, age as f32);
             let widthparam = pulser.width.resolve(ctx, age as f32);
             let durparam = pulser.duration.resolve(ctx, age as f32);

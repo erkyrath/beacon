@@ -30,9 +30,11 @@ pub fn build_script() -> Script {
     let mut script = Script::new();
 
     let mut pulserdef = Pulser::new();
-    pulserdef.pos = Param::Constant(0.0);
-    //pulserdef.width = Param::Constant(0.1);
-    pulserdef.timeshape = WaveShape::Triangle;
+    pulserdef.pos = Param::Constant(-0.2);
+    pulserdef.width = Param::Quote(Box::new(Param::Changing(0.2, 0.2)));
+    pulserdef.spaceshape = WaveShape::Sine;
+    pulserdef.timeshape = WaveShape::SawDecay;
+    pulserdef.duration = Param::Constant(3.0);
     
     let pulser = Op1Def::Pulser(pulserdef);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
