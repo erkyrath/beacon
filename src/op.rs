@@ -173,6 +173,26 @@ impl Op1Ctx {
                 }
             }
             
+            Op1Def::Sum(bufnums) => {
+                if bufnums.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = 0.0;
+                    }
+                }
+                else {
+                    let obuf1 = ctx.op1s[bufnums[0]].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                    for jx in 1..bufnums.len() {
+                        let obuf = ctx.op1s[bufnums[jx]].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix] += obuf[ix];
+                        }
+                    }
+                }
+            }
+            
             _ => {
                 panic!("unimplemented Op1");
             }
@@ -222,6 +242,28 @@ impl Op3Ctx {
                 }
             }
 
+            Op3Def::Sum(bufnums) => {
+                if bufnums.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = Pix::new(0.0, 0.0, 0.0);
+                    }
+                }
+                else {
+                    let obuf1 = ctx.op3s[bufnums[0]].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                    for jx in 1..bufnums.len() {
+                        let obuf = ctx.op3s[bufnums[jx]].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix].r += obuf[ix].r;
+                            buf[ix].g += obuf[ix].g;
+                            buf[ix].b += obuf[ix].b;
+                        }
+                    }
+                }
+            }
+            
             _ => {
                 panic!("unimplemented Op3");
             }

@@ -77,13 +77,21 @@ impl Script {
 pub fn build_script() -> Script {
     let mut script = Script::new();
 
-    let cmuls = Op3Def::CMulS(1, 0);
+    let csum = Op3Def::Sum(vec![3, 1]);
+    script.order.push(ScriptIndex::Op3(script.op3s.len()));
+    script.op3s.push(csum);
+
+    let cmuls = Op3Def::CMulS(2, 0);
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
     script.op3s.push(cmuls);
 
-    let cconst = Op3Def::Constant(Pix::new(0.5, 0.2, 0.5));
+    let cconst = Op3Def::Constant(Pix::new(0.7, 0.2, 0.9));
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
     script.op3s.push(cconst);
+
+    let bconst = Op3Def::Constant(Pix::new(0.0, 0.4, 0.0));
+    script.order.push(ScriptIndex::Op3(script.op3s.len()));
+    script.op3s.push(bconst);
 
     let mut pulserdef = Pulser::new();
     //pulserdef.pos = Param::Quote(Box::new(Param::Changing(1.2, -0.4)));
@@ -94,7 +102,7 @@ pub fn build_script() -> Script {
     pulserdef.timeshape = WaveShape::Flat;
     pulserdef.duration = Param::Constant(3.0);
     pulserdef.interval = Param::Constant(0.5);
-    pulserdef.countlimit = Some(4);
+    pulserdef.countlimit = Some(1);
     
     let pulser = Op1Def::Pulser(pulserdef);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
