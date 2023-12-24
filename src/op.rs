@@ -32,8 +32,13 @@ impl Op1Def {
             Op1Def::Invert(bufnum) => {
                 (format!("Invert(1/{bufnum})"), vec![ ScriptIndex::Op1(*bufnum) ])
             },
-            Op1Def::Pulser(_pulser) => {
-                (format!("Pulser(###)"), Vec::default())
+            Op1Def::Pulser(pulser) => {
+                let limitstr = if let Some(size) = pulser.countlimit {
+                    format!(", countlimit={}", size)
+                } else {
+                    String::default()
+                };
+                (format!("Pulser(interval={:?}{}, duration={:?}, pos={:?}, width={:?}, spaceshape={:?}, timeshape={:?})", pulser.interval, limitstr, pulser.duration, pulser.pos, pulser.width, pulser.spaceshape, pulser.timeshape), Vec::default())
             },
             Op1Def::Brightness(bufnum) => {
                 (format!("Brightness(3/{bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
