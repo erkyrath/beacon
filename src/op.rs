@@ -56,7 +56,7 @@ impl Op1Def {
                 (format!("Brightness(3/{bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
             },
             Op1Def::Sum(bufnums) => {
-                let str = bufnums.iter().map(|val| format!("1/{}", val)).collect::<Vec<String>>().join(",");
+                let str = bufnums.iter().map(|val| format!("1/{}", val)).collect::<Vec<String>>().join(", ");
                 let ls = bufnums.iter().map(|val| ScriptIndex::Op1(*val)).collect::<Vec<ScriptIndex>>();
                 (format!("Sum({str})"), ls)
             },
@@ -84,7 +84,7 @@ impl Op3Def {
                 (format!("CMulS(3/{bufnum1}, 1/{bufnum2})"), vec![ ScriptIndex::Op3(*bufnum1), ScriptIndex::Op1(*bufnum2) ])
             },
             Op3Def::Sum(bufnums) => {
-                let str = bufnums.iter().map(|val| format!("3/{}", val)).collect::<Vec<String>>().join(",");
+                let str = bufnums.iter().map(|val| format!("3/{}", val)).collect::<Vec<String>>().join(", ");
                 let ls = bufnums.iter().map(|val| ScriptIndex::Op3(*val)).collect::<Vec<ScriptIndex>>();
                 (format!("Sum({str})"), ls)
             },
