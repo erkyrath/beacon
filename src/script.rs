@@ -33,6 +33,7 @@ impl Script {
         }
 
         self.dumpop(self.order[0], 0);
+        //### and missing ops?
     }
     
     fn dumpop(&self, scix: ScriptIndex, indent: usize) {
@@ -43,11 +44,23 @@ impl Script {
         let scstr: String;
         match scix {
             ScriptIndex::Op1(bufnum) => {
-                (desc, bufs) = self.op1s[bufnum].describe(Some(subindentstr));
+                if bufnum < self.op1s.len() {
+                    (desc, bufs) = self.op1s[bufnum].describe(Some(subindentstr));
+                }
+                else {
+                    desc = "???".to_string();
+                    bufs = Vec::default();
+                }
                 scstr = format!("1/{}", bufnum);
             },
             ScriptIndex::Op3(bufnum) => {
-                (desc, bufs) = self.op3s[bufnum].describe(Some(subindentstr));
+                if bufnum < self.op3s.len() {
+                    (desc, bufs) = self.op3s[bufnum].describe(Some(subindentstr));
+                }
+                else {
+                    desc = "???".to_string();
+                    bufs = Vec::default();
+                }
                 scstr = format!("3/{}", bufnum);
             },
         }
