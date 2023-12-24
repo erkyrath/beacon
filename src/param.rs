@@ -31,7 +31,7 @@ impl fmt::Debug for Param {
             Param::Changing(start, velocity) => write!(f, "Changing(start={}, velocity={})", start, velocity),
             Param::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={}, max={}, duration={})", shape, min, max, duration),
             Param::WaveCycle(shape, min, max, period) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={})", shape, min, max, period),
-            Param::Quote(param) => write!(f, "'{:?}", *param)
+            Param::Quote(param) => write!(f, "\"{:?}\"", *param)
         }
     }
 }

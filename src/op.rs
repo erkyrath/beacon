@@ -24,7 +24,7 @@ pub enum Op3Def {
 }
 
 impl Op1Def {
-    pub fn describe(&self) -> (String, Vec<ScriptIndex>) {
+    pub fn describe(&self, indent: Option<String>) -> (String, Vec<ScriptIndex>) {
         match self {
             Op1Def::Constant(val) => {
                 (format!("Constant({})", val), Vec::default())
@@ -38,7 +38,19 @@ impl Op1Def {
                 } else {
                     String::default()
                 };
-                (format!("Pulser(interval={:?}{}, duration={:?}, pos={:?}, width={:?}, spaceshape={:?}, timeshape={:?})", pulser.interval, limitstr, pulser.duration, pulser.pos, pulser.width, pulser.spaceshape, pulser.timeshape), Vec::default())
+                let indentstr = if let Some(val) = indent {
+                    val
+                } else {
+                    " ".to_string()
+                };
+                let desc = format!(
+                    "Pulser(interval={:?}{},{}duration={:?},{}pos={:?},{}width={:?},{}spaceshape={:?}, timeshape={:?})",
+                    pulser.interval, limitstr,
+                    indentstr, pulser.duration,
+                    indentstr, pulser.pos,
+                    indentstr, pulser.width,
+                    indentstr, pulser.spaceshape, pulser.timeshape);
+                (desc, Vec::default())
             },
             Op1Def::Brightness(bufnum) => {
                 (format!("Brightness(3/{bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
@@ -54,7 +66,7 @@ impl Op1Def {
 }
 
 impl Op3Def {
-    pub fn describe(&self) -> (String, Vec<ScriptIndex>) {
+    pub fn describe(&self, _indent: Option<String>) -> (String, Vec<ScriptIndex>) {
         match self {
             Op3Def::Constant(pix) => {
                 (format!("Constant(r={}, g={}, b={})", pix.r, pix.g, pix.b), Vec::default())
@@ -83,14 +95,14 @@ impl Op3Def {
 
 impl fmt::Debug for Op1Def {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (desc, _bufs) = self.describe();
+        let (desc, _bufs) = self.describe(None);
         write!(f, "{}", desc)
     }
 }
 
 impl fmt::Debug for Op3Def {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (desc, _bufs) = self.describe();
+        let (desc, _bufs) = self.describe(None);
         write!(f, "{}", desc)
     }
 }

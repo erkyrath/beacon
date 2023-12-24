@@ -36,21 +36,22 @@ impl Script {
     }
     
     fn dumpop(&self, scix: ScriptIndex, indent: usize) {
+        let indentstr: String = vec!["  "; indent].join("");
+        let subindentstr = "\n         ".to_string() + &indentstr;
         let desc: String;
         let bufs: Vec<ScriptIndex>;
         let scstr: String;
         match scix {
             ScriptIndex::Op1(bufnum) => {
-                (desc, bufs) = self.op1s[bufnum].describe();
+                (desc, bufs) = self.op1s[bufnum].describe(Some(subindentstr));
                 scstr = format!("1/{}", bufnum);
             },
             ScriptIndex::Op3(bufnum) => {
-                (desc, bufs) = self.op3s[bufnum].describe();
+                (desc, bufs) = self.op3s[bufnum].describe(Some(subindentstr));
                 scstr = format!("3/{}", bufnum);
             },
         }
 
-        let indentstr: String = vec!["  "; indent].join("");
         println!("({}): {}{}", scstr, indentstr, desc);
         
         for val in bufs {
