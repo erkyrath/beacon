@@ -33,7 +33,7 @@ impl Script {
         }
 
         self.dumpop(self.order[0], 0);
-        //### and missing ops?
+        //### and unmentioned ops?
     }
     
     fn dumpop(&self, scix: ScriptIndex, indent: usize) {

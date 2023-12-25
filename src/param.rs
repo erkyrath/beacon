@@ -7,7 +7,7 @@ use crate::context::RunContext;
 // To think about:
 // Params containing params? RandFlat(0, Changing())
 // Params with state? (RandomWalk?) Currently not possible.
-
+// Params which depend on Ops?
 // (In an ideal universe, Params would be unified with Ops anyway.)
 
 #[derive(Clone)]
