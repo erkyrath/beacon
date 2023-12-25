@@ -25,7 +25,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
     let lineiter = BufReader::new(file).lines();
 
     for rline in lineiter {
-        let mut line = rline.map_err(|err| {
+        let line = rline.map_err(|err| {
             format!("{}: {}", filename, err.to_string())
         })?;
         let line = line.trim_end();

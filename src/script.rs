@@ -37,7 +37,7 @@ impl Script {
     }
     
     fn dumpop(&self, scix: ScriptIndex, indent: usize) {
-        let indentstr: String = vec!["  "; indent].join("");
+        let indentstr: String = "  ".repeat(indent);
         let subindentstr = "\n         ".to_string() + &indentstr;
         let desc: String;
         let bufs: Vec<ScriptIndex>;
