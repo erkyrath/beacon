@@ -24,12 +24,20 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         })?;
     let lineiter = BufReader::new(file).lines();
 
+    let mut _linenum = 0;
     for rline in lineiter {
         let line = rline.map_err(|err| {
             format!("{}: {}", filename, err.to_string())
         })?;
-        let line = line.trim_end();
-        println!("### '{line}'");
+        _linenum += 1;
+        let line = line.trim_end().replace("\t", "    ");
+        let origlen = line.len();
+        let line = line.trim_start();
+        let indent = origlen - line.len();
+        if line.len() == 0 || line.starts_with('#') {
+            continue;
+        }
+        println!("### {indent} '{line}'");
     }
     
     Ok(())
