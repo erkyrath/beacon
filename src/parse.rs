@@ -24,6 +24,12 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         })?;
     let lineiter = BufReader::new(file).lines();
 
+    /*###
+    let mut items = ParseItems {
+        items: Vec::default(),
+    };
+    ###*/
+
     let mut _linenum = 0;
     for rline in lineiter {
         let line = rline.map_err(|err| {
@@ -37,7 +43,21 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         if line.len() == 0 || line.starts_with('#') {
             continue;
         }
-        println!("### {indent} '{line}'");
+        //println!("### {indent} '{line}'");
+
+        let key: Option<&str>;
+        let rest: &str;
+        (key, rest) = line.split_once('=')
+            .map_or_else(
+                || (None, line),
+                |(keyv, restv)| (Some(keyv.trim()), restv.trim()));
+
+        if let Some(key) = key {
+            println!("### {indent} '{key}' = '{rest}'");
+        }
+        else {
+            println!("### {indent} '{rest}'");
+        }
     }
     
     Ok(())
