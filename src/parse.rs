@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 
+#[derive(Debug, Clone)]
 enum ParseTerm {
     Number(f32),
     Ident(String),
@@ -17,6 +18,39 @@ struct ParseNode {
     params: Box<ParseItems>,
 }
 
+impl ParseItems {
+    pub fn new() -> ParseItems {
+        ParseItems {
+            items: Vec::default(),
+        }
+    }
+
+    pub fn dump(&self, indent: usize) {
+        for item in &self.items {
+            item.dump(indent);
+        }
+    }
+}
+
+impl ParseNode {
+    pub fn new(key: Option<&str>, term: ParseTerm) -> ParseNode {
+        ParseNode {
+            key: key.map(|val| val.to_string()),
+            term: term,
+            params: Box::new(ParseItems::new()),
+        }
+    }
+
+    pub fn dump(&self, indent: usize) {
+        let indentstr: String = "  ".repeat(indent);
+        match &self.key {
+            None => println!("{}_={:?}", indentstr, self.term),
+            Some(key) => println!("{}{}={:?}", indentstr, key, self.term),
+        }
+        self.params.dump(indent+1);
+    }
+}
+
 pub fn parse_script(filename: &str) -> Result<(), String> {
     let file = File::open(filename)
         .map_err(|err| {
@@ -24,11 +58,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         })?;
     let lineiter = BufReader::new(file).lines();
 
-    /*###
-    let mut items = ParseItems {
-        items: Vec::default(),
-    };
-    ###*/
+    let mut scriptitems = ParseItems::new();
 
     let mut _linenum = 0;
     for rline in lineiter {
@@ -39,26 +69,52 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         let line = line.trim_end().replace("\t", "    ");
         let origlen = line.len();
         let line = line.trim_start();
-        let indent = origlen - line.len();
+        let _indent = origlen - line.len();
         if line.len() == 0 || line.starts_with('#') {
             continue;
         }
         //println!("### {indent} '{line}'");
 
-        let key: Option<&str>;
-        let rest: &str;
-        (key, rest) = line.split_once('=')
-            .map_or_else(
-                || (None, line),
-                |(keyv, restv)| (Some(keyv.trim()), restv.trim()));
-
-        if let Some(key) = key {
-            println!("### {indent} '{key}' = '{rest}'");
+        let mut lineterms = ParseItems::new();
+        let mut ltail: &str = line;
+        
+        while ltail.len() > 0 {
+            let mut term: &str;
+            match ltail.find([',', ':']) {
+                None => {
+                    term = ltail;
+                    ltail = "";
+                    let (termkey, termval) = labelterm(term);
+                    lineterms.items.push(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string())));
+                },
+                Some(pos) => {
+                    (term, ltail) = ltail.split_at(pos);
+                    term = term.trim();
+                    if ltail.starts_with(',') {
+                        ltail = ltail.get(1..).unwrap().trim();
+                        lineterms.items.push(ParseNode::new(None, ParseTerm::Ident(term.to_string())));
+                    }
+                    else {
+                        //### gotta be depthier
+                        ltail = ltail.get(1..).unwrap().trim();
+                        lineterms.items.push(ParseNode::new(None, ParseTerm::Ident(term.to_string())));
+                    }
+                }
+            }
         }
-        else {
-            println!("### {indent} '{rest}'");
-        }
+        
+        scriptitems.items.append(&mut lineterms.items);
     }
+
+    //###
+    scriptitems.dump(0);
     
     Ok(())
+}
+
+fn labelterm(val: &str) -> (Option<&str>, &str) {
+    val.split_once('=')
+        .map_or_else(
+            || (None, val.trim()),
+            |(keyv, restv)| (Some(keyv.trim()), restv.trim()))
 }
