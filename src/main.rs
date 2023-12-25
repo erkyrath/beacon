@@ -14,6 +14,7 @@ use sdl2::pixels::PixelFormatEnum;
 mod pixel;
 mod op;
 mod script;
+mod parse;
 mod param;
 mod context;
 mod waves;
