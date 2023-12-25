@@ -24,6 +24,9 @@ use script::{Script, ScriptIndex};
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
+    #[options(free)]
+    args: Vec<String>,
+    
     #[options(help = "print help message")]
     help: bool,
 
@@ -35,6 +38,16 @@ pub struct AppOptions {
 fn main() {
     let opts = AppOptions::parse_args_default_or_exit();
 
+    for filename in opts.args {
+        match parse::parse_script(&filename) {
+            Ok(_) => {},
+            Err(msg) => {
+                println!("{msg}");
+            },
+        }
+    }
+    
+    /*
     let script = script::build_script();
     
     if opts.dump {
@@ -46,6 +59,7 @@ fn main() {
             println!("{msg}");
         }
     }
+    */
 }
 
 fn sdlmain(script: Script) -> Result<(), String> {
