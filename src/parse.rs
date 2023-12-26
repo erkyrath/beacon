@@ -28,7 +28,6 @@ impl ParseItems {
     pub fn append_at(&mut self, node: ParseNode, depth: usize) {
         let mut its = self;
         for _ in 0..depth {
-            println!("### descend, items.len = {}", its.items.len());
             if let Some(subnod) = its.items.last_mut() {
                 its = subnod.params.as_mut();
             }
@@ -75,12 +74,12 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
 
     let mut scriptitems = ParseItems::new();
 
-    let mut _linenum = 0;
+    let mut linenum = 0;
     for rline in lineiter {
         let line = rline.map_err(|err| {
             format!("{}: {}", filename, err.to_string())
         })?;
-        _linenum += 1;
+        linenum += 1;
         let line = line.trim_end().replace("\t", "    ");
         let origlen = line.len();
         let line = line.trim_start();
@@ -106,6 +105,9 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                 Some(pos) => {
                     (term, ltail) = ltail.split_at(pos);
                     term = term.trim();
+                    if term.len() == 0 {
+                        return Err(format!("empty term at line {linenum}"));
+                    }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
                         lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string())), depth);
