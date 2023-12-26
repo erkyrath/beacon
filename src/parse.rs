@@ -16,6 +16,7 @@ struct ParseNode {
     key: Option<String>,
     term: ParseTerm,
     params: Box<ParseItems>,
+    linenum: usize,
 }
 
 impl ParseItems {
@@ -47,11 +48,12 @@ impl ParseItems {
 }
 
 impl ParseNode {
-    pub fn new(key: Option<&str>, term: ParseTerm) -> ParseNode {
+    pub fn new(key: Option<&str>, term: ParseTerm, linenum: usize) -> ParseNode {
         ParseNode {
             key: key.map(|val| val.to_string()),
             term: term,
             params: Box::new(ParseItems::new()),
+            linenum: linenum,
         }
     }
 
@@ -100,7 +102,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     term = ltail;
                     ltail = "";
                     let (termkey, termval) = labelterm(term);
-                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string())), depth);
+                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), linenum), depth);
                 },
                 Some(pos) => {
                     (term, ltail) = ltail.split_at(pos);
@@ -110,11 +112,11 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string())), depth);
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), linenum), depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string())), depth);
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), linenum), depth);
                         depth += 1;
                     }
                 }
