@@ -41,14 +41,17 @@ impl ParseItems {
         its.items.push(node);
     }
 
-    pub fn append_at_indent(&mut self, nodes: &mut Vec<ParseNode>, indent: usize) {
+    pub fn append_at_indent(&mut self, nodes: &mut Vec<ParseNode>, indent: usize) -> Result<(), String> {
         if let Some(subnod) = self.items.last_mut() {
             if indent > subnod.indent {
-                subnod.params.append_at_indent(nodes, indent);
-                return;
+                return subnod.params.append_at_indent(nodes, indent);
+            }
+            if indent != subnod.indent && subnod.indent != usize::MAX {
+                return Err("indentation mismatch".to_string());
             }
         }
         self.items.append(nodes);
+        return Ok(());
     }
     
     pub fn dump(&self, indent: usize) {
@@ -138,7 +141,8 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
             }
         }
         
-        scriptitems.append_at_indent(&mut lineterms.items, indent);
+        scriptitems.append_at_indent(&mut lineterms.items, indent)
+            .map_err(|msg| format!("{msg} at line {linenum}"))?;
     }
 
     //###
