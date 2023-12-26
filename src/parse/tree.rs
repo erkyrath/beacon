@@ -131,11 +131,13 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), vindent, linenum), depth);
+                        let (termkey, termval) = labelterm(term);
+                        lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum), depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), vindent, linenum), depth);
+                        let (termkey, termval) = labelterm(term);
+                        lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum), depth);
                         depth += 1;
                         vindent = None;
                     }
