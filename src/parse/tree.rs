@@ -2,9 +2,12 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 
+use crate::pixel::Pix;
+
 #[derive(Debug, Clone)]
 pub enum ParseTerm {
     Number(f32),
+    Color(Pix<f32>),
     Ident(String),
 }
 
@@ -85,11 +88,17 @@ impl ParseNode {
     }
 }
 
-fn labelterm(val: &str) -> (Option<&str>, &str) {
-    val.split_once('=')
+fn labelterm(val: &str) -> (Option<&str>, ParseTerm) {
+    let (label, term) = val.split_once('=')
         .map_or_else(
             || (None, val.trim()),
-            |(keyv, restv)| (Some(keyv.trim()), restv.trim()))
+            |(keyv, restv)| (Some(keyv.trim()), restv.trim()));
+
+    if let Ok(float) = term.parse::<f32>() {
+        return (label, ParseTerm::Number(float));
+    }
+    
+    return (label, ParseTerm::Ident(term.to_string()));
 }
 
 pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
@@ -128,7 +137,7 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     term = ltail;
                     ltail = "";
                     let (termkey, termval) = labelterm(term);
-                    let nod = ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum);
+                    let nod = ParseNode::new(termkey, termval, vindent, linenum);
                     lineterms.append_at(nod, depth);
                 },
                 Some(pos) => {
@@ -140,13 +149,13 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
                         let (termkey, termval) = labelterm(term);
-                        let nod = ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum);
+                        let nod = ParseNode::new(termkey, termval, vindent, linenum);
                         lineterms.append_at(nod, depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
                         let (termkey, termval) = labelterm(term);
-                        let nod = ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum);
+                        let nod = ParseNode::new(termkey, termval, vindent, linenum);
                         lineterms.append_at(nod, depth);
                         depth += 1;
                         vindent = None;
