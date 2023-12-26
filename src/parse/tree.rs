@@ -3,16 +3,16 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 #[derive(Debug, Clone)]
-enum ParseTerm {
+pub enum ParseTerm {
     Number(f32),
     Ident(String),
 }
 
-struct ParseItems {
+pub struct ParseItems {
     items: Vec<ParseNode>,
 }
 
-struct ParseNode {
+pub struct ParseNode {
     key: Option<String>,
     term: ParseTerm,
     params: Box<ParseItems>,
@@ -85,7 +85,7 @@ impl ParseNode {
     }
 }
 
-pub fn parse_tree(filename: &str) -> Result<(), String> {
+pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
     let file = File::open(filename)
         .map_err(|err| {
             format!("{}: {}", filename, err.to_string())
@@ -150,7 +150,7 @@ pub fn parse_tree(filename: &str) -> Result<(), String> {
     //###
     scriptitems.dump(0);
     
-    Ok(())
+    Ok(scriptitems)
 }
 
 fn labelterm(val: &str) -> (Option<&str>, &str) {
