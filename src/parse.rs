@@ -16,7 +16,7 @@ struct ParseNode {
     key: Option<String>,
     term: ParseTerm,
     params: Box<ParseItems>,
-    indent: usize,
+    indent: Option<usize>,
     linenum: usize,
 }
 
@@ -43,11 +43,13 @@ impl ParseItems {
 
     pub fn append_at_indent(&mut self, nodes: &mut Vec<ParseNode>, indent: usize) -> Result<(), String> {
         if let Some(subnod) = self.items.last_mut() {
-            if indent > subnod.indent {
-                return subnod.params.append_at_indent(nodes, indent);
-            }
-            if indent != subnod.indent && subnod.indent != usize::MAX {
-                return Err("indentation mismatch".to_string());
+            if let Some(subindent) = subnod.indent {
+                if indent > subindent {
+                    return subnod.params.append_at_indent(nodes, indent);
+                }
+                if indent != subindent {
+                    return Err("indentation mismatch".to_string());
+                }
             }
         }
         self.items.append(nodes);
@@ -62,7 +64,7 @@ impl ParseItems {
 }
 
 impl ParseNode {
-    pub fn new(key: Option<&str>, term: ParseTerm, indent: usize, linenum: usize) -> ParseNode {
+    pub fn new(key: Option<&str>, term: ParseTerm, indent: Option<usize>, linenum: usize) -> ParseNode {
         ParseNode {
             key: key.map(|val| val.to_string()),
             term: term,
@@ -109,7 +111,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
 
         let mut lineterms = ParseItems::new();
         let mut depth = 0;
-        let mut vindent = indent;
+        let mut vindent = Some(indent);
         let mut ltail: &str = line;
         
         while ltail.len() > 0 {
@@ -135,7 +137,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                         ltail = ltail.get(1..).unwrap().trim();
                         lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), vindent, linenum), depth);
                         depth += 1;
-                        vindent = usize::MAX;
+                        vindent = None;
                     }
                 }
             }
