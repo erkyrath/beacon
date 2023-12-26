@@ -106,6 +106,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
 
         let mut lineterms = ParseItems::new();
         let mut depth = 0;
+        let mut vindent = indent;
         let mut ltail: &str = line;
         
         while ltail.len() > 0 {
@@ -115,7 +116,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     term = ltail;
                     ltail = "";
                     let (termkey, termval) = labelterm(term);
-                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), indent, linenum), depth);
+                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum), depth);
                 },
                 Some(pos) => {
                     (term, ltail) = ltail.split_at(pos);
@@ -125,12 +126,13 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), indent, linenum), depth);
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), vindent, linenum), depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), indent, linenum), depth);
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), vindent, linenum), depth);
                         depth += 1;
+                        vindent = usize::MAX;
                     }
                 }
             }
