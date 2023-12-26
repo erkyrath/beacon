@@ -88,14 +88,14 @@ impl ParseNode {
     }
 }
 
-fn labelterm(val: &str) -> (Option<&str>, ParseTerm) {
+fn labelterm(val: &str) -> Result<(Option<&str>, ParseTerm), String> {
     let (label, term) = val.split_once('=')
         .map_or_else(
             || (None, val.trim()),
             |(keyv, restv)| (Some(keyv.trim()), restv.trim()));
 
     if let Ok(float) = term.parse::<f32>() {
-        return (label, ParseTerm::Number(float));
+        return Ok((label, ParseTerm::Number(float)));
     }
 
     if term.starts_with('$') && term.len() == 4 {
@@ -104,7 +104,7 @@ fn labelterm(val: &str) -> (Option<&str>, ParseTerm) {
             u32::from_str_radix(&term[2..3], 16),
             u32::from_str_radix(&term[3..4], 16)
         ) {
-            return (label, ParseTerm::Color(Pix::new((rval as f32)/15.0, (gval as f32)/15.0, (bval as f32)/15.0)));
+            return Ok((label, ParseTerm::Color(Pix::new((rval as f32)/15.0, (gval as f32)/15.0, (bval as f32)/15.0))));
         }
     }
     
@@ -114,11 +114,11 @@ fn labelterm(val: &str) -> (Option<&str>, ParseTerm) {
             u32::from_str_radix(&term[3..5], 16),
             u32::from_str_radix(&term[5..7], 16)
         ) {
-            return (label, ParseTerm::Color(Pix::new((rval as f32)/255.0, (gval as f32)/255.0, (bval as f32)/255.0)));
+            return Ok((label, ParseTerm::Color(Pix::new((rval as f32)/255.0, (gval as f32)/255.0, (bval as f32)/255.0))));
         }
     }
     
-    return (label, ParseTerm::Ident(term.to_string()));
+    return Ok((label, ParseTerm::Ident(term.to_string())));
 }
 
 pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
@@ -156,7 +156,7 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                 None => {
                     term = ltail;
                     ltail = "";
-                    let (termkey, termval) = labelterm(term);
+                    let (termkey, termval) = labelterm(term)?;
                     let nod = ParseNode::new(termkey, termval, vindent, linenum);
                     lineterms.append_at(nod, depth);
                 },
@@ -168,13 +168,13 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        let (termkey, termval) = labelterm(term);
+                        let (termkey, termval) = labelterm(term)?;
                         let nod = ParseNode::new(termkey, termval, vindent, linenum);
                         lineterms.append_at(nod, depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        let (termkey, termval) = labelterm(term);
+                        let (termkey, termval) = labelterm(term)?;
                         let nod = ParseNode::new(termkey, termval, vindent, linenum);
                         lineterms.append_at(nod, depth);
                         depth += 1;
