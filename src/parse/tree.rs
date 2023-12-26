@@ -85,6 +85,13 @@ impl ParseNode {
     }
 }
 
+fn labelterm(val: &str) -> (Option<&str>, &str) {
+    val.split_once('=')
+        .map_or_else(
+            || (None, val.trim()),
+            |(keyv, restv)| (Some(keyv.trim()), restv.trim()))
+}
+
 pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
     let file = File::open(filename)
         .map_err(|err| {
@@ -152,15 +159,9 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
             .map_err(|msg| format!("{msg} at line {linenum}"))?;
     }
 
-    //###
-    scriptitems.dump(0);
+    println!("### tree:");
+    scriptitems.dump(0); //###
     
     Ok(scriptitems)
 }
 
-fn labelterm(val: &str) -> (Option<&str>, &str) {
-    val.split_once('=')
-        .map_or_else(
-            || (None, val.trim()),
-            |(keyv, restv)| (Some(keyv.trim()), restv.trim()))
-}
