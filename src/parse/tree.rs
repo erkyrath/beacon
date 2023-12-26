@@ -98,24 +98,28 @@ fn labelterm(val: &str) -> Result<(Option<&str>, ParseTerm), String> {
         return Ok((label, ParseTerm::Number(float)));
     }
 
-    if term.starts_with('$') && term.len() == 4 {
-        if let (Ok(rval), Ok(gval), Ok(bval)) = (
-            u32::from_str_radix(&term[1..2], 16),
-            u32::from_str_radix(&term[2..3], 16),
-            u32::from_str_radix(&term[3..4], 16)
-        ) {
-            return Ok((label, ParseTerm::Color(Pix::new((rval as f32)/15.0, (gval as f32)/15.0, (bval as f32)/15.0))));
+    if term.starts_with('$') {
+        if term.len() == 4 {
+            if let (Ok(rval), Ok(gval), Ok(bval)) = (
+                u32::from_str_radix(&term[1..2], 16),
+                u32::from_str_radix(&term[2..3], 16),
+                u32::from_str_radix(&term[3..4], 16)
+            ) {
+                return Ok((label, ParseTerm::Color(Pix::new((rval as f32)/15.0, (gval as f32)/15.0, (bval as f32)/15.0))));
+            }
         }
-    }
-    
-    if term.starts_with('$') && term.len() == 7 {
-        if let (Ok(rval), Ok(gval), Ok(bval)) = (
-            u32::from_str_radix(&term[1..3], 16),
-            u32::from_str_radix(&term[3..5], 16),
-            u32::from_str_radix(&term[5..7], 16)
-        ) {
-            return Ok((label, ParseTerm::Color(Pix::new((rval as f32)/255.0, (gval as f32)/255.0, (bval as f32)/255.0))));
+        
+        if term.len() == 7 {
+            if let (Ok(rval), Ok(gval), Ok(bval)) = (
+                u32::from_str_radix(&term[1..3], 16),
+                u32::from_str_radix(&term[3..5], 16),
+                u32::from_str_radix(&term[5..7], 16)
+            ) {
+                return Ok((label, ParseTerm::Color(Pix::new((rval as f32)/255.0, (gval as f32)/255.0, (bval as f32)/255.0))));
+            }
         }
+
+        return Err(format!("bad $color constant: {}", term));
     }
     
     return Ok((label, ParseTerm::Ident(term.to_string())));
@@ -129,8 +133,8 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
     let lineiter = BufReader::new(file).lines();
 
     let mut scriptitems = ParseItems::new();
-
     let mut linenum = 0;
+    
     for rline in lineiter {
         let line = rline.map_err(|err| {
             format!("{}: {}", filename, err.to_string())
