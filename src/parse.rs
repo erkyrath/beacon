@@ -16,6 +16,7 @@ struct ParseNode {
     key: Option<String>,
     term: ParseTerm,
     params: Box<ParseItems>,
+    indent: usize,
     linenum: usize,
 }
 
@@ -48,17 +49,19 @@ impl ParseItems {
 }
 
 impl ParseNode {
-    pub fn new(key: Option<&str>, term: ParseTerm, linenum: usize) -> ParseNode {
+    pub fn new(key: Option<&str>, term: ParseTerm, indent: usize, linenum: usize) -> ParseNode {
         ParseNode {
             key: key.map(|val| val.to_string()),
             term: term,
             params: Box::new(ParseItems::new()),
+            indent: indent,
             linenum: linenum,
         }
     }
 
     pub fn dump(&self, indent: usize) {
         let indentstr: String = "  ".repeat(indent);
+        println!("{}### linenum {}, indent {}", indentstr, self.linenum, self.indent); //###
         match &self.key {
             None => println!("{}_={:?}", indentstr, self.term),
             Some(key) => println!("{}{}={:?}", indentstr, key, self.term),
@@ -85,11 +88,11 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         let line = line.trim_end().replace("\t", "    ");
         let origlen = line.len();
         let line = line.trim_start();
-        let _indent = origlen - line.len();
+        let indent = origlen - line.len();
         if line.len() == 0 || line.starts_with('#') {
             continue;
         }
-        //println!("### line: {_indent} '{line}'");
+        //println!("### line: {indent} '{line}'");
 
         let mut lineterms = ParseItems::new();
         let mut depth = 0;
@@ -102,7 +105,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     term = ltail;
                     ltail = "";
                     let (termkey, termval) = labelterm(term);
-                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), linenum), depth);
+                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), indent, linenum), depth);
                 },
                 Some(pos) => {
                     (term, ltail) = ltail.split_at(pos);
@@ -112,11 +115,11 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), linenum), depth);
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), indent, linenum), depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), linenum), depth);
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string()), indent, linenum), depth);
                         depth += 1;
                     }
                 }
