@@ -26,17 +26,18 @@ impl ParseItems {
     }
 
     pub fn append_at(&mut self, node: ParseNode, depth: usize) {
-        if depth == 0 {
-            self.items.push(node);
-        }
-        else {
-            if let Some(subnod) = self.items.last_mut() {
-                subnod.params.append_at(node, depth-1);
+        let mut its = self;
+        for _ in 0..depth {
+            println!("### descend, items.len = {}", its.items.len());
+            if let Some(subnod) = its.items.last_mut() {
+                its = subnod.params.as_mut();
             }
             else {
-                panic!("no child at depth");
+                panic!("no child at depth {depth}");
             }
         }
+        
+        its.items.push(node);
     }
 
     pub fn dump(&self, indent: usize) {
@@ -87,7 +88,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         if line.len() == 0 || line.starts_with('#') {
             continue;
         }
-        //println!("### {indent} '{line}'");
+        //println!("### line: {_indent} '{line}'");
 
         let mut lineterms = ParseItems::new();
         let mut depth = 0;
@@ -111,8 +112,8 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        depth += 1;
                         lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string())), depth);
+                        depth += 1;
                     }
                 }
             }
