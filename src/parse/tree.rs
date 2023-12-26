@@ -94,8 +94,12 @@ fn labelterm(val: &str) -> Result<(Option<&str>, ParseTerm), String> {
             || (None, val.trim()),
             |(keyv, restv)| (Some(keyv.trim()), restv.trim()));
 
-    if let Ok(float) = term.parse::<f32>() {
-        return Ok((label, ParseTerm::Number(float)));
+    if term.starts_with(['-', '+', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {    
+        if let Ok(float) = term.parse::<f32>() {
+            return Ok((label, ParseTerm::Number(float)));
+        }
+
+        return Err(format!("bad numeric constant: {}", term));
     }
 
     if term.starts_with('$') {
@@ -160,7 +164,8 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                 None => {
                     term = ltail;
                     ltail = "";
-                    let (termkey, termval) = labelterm(term)?;
+                    let (termkey, termval) = labelterm(term)
+                        .map_err(|msg| format!("{msg} at line {linenum}"))?;
                     let nod = ParseNode::new(termkey, termval, vindent, linenum);
                     lineterms.append_at(nod, depth);
                 },
@@ -172,13 +177,15 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     }
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        let (termkey, termval) = labelterm(term)?;
+                        let (termkey, termval) = labelterm(term)
+                            .map_err(|msg| format!("{msg} at line {linenum}"))?;
                         let nod = ParseNode::new(termkey, termval, vindent, linenum);
                         lineterms.append_at(nod, depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
-                        let (termkey, termval) = labelterm(term)?;
+                        let (termkey, termval) = labelterm(term)
+                            .map_err(|msg| format!("{msg} at line {linenum}"))?;
                         let nod = ParseNode::new(termkey, termval, vindent, linenum);
                         lineterms.append_at(nod, depth);
                         depth += 1;
