@@ -25,6 +25,20 @@ impl ParseItems {
         }
     }
 
+    pub fn append_at(&mut self, node: ParseNode, depth: usize) {
+        if depth == 0 {
+            self.items.push(node);
+        }
+        else {
+            if let Some(subnod) = self.items.last_mut() {
+                subnod.params.append_at(node, depth-1);
+            }
+            else {
+                panic!("no child at depth");
+            }
+        }
+    }
+
     pub fn dump(&self, indent: usize) {
         for item in &self.items {
             item.dump(indent);
@@ -76,6 +90,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         //println!("### {indent} '{line}'");
 
         let mut lineterms = ParseItems::new();
+        let mut depth = 0;
         let mut ltail: &str = line;
         
         while ltail.len() > 0 {
@@ -85,19 +100,19 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
                     term = ltail;
                     ltail = "";
                     let (termkey, termval) = labelterm(term);
-                    lineterms.items.push(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string())));
+                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string())), depth);
                 },
                 Some(pos) => {
                     (term, ltail) = ltail.split_at(pos);
                     term = term.trim();
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.items.push(ParseNode::new(None, ParseTerm::Ident(term.to_string())));
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string())), depth);
                     }
                     else {
-                        //### gotta be depthier
                         ltail = ltail.get(1..).unwrap().trim();
-                        lineterms.items.push(ParseNode::new(None, ParseTerm::Ident(term.to_string())));
+                        depth += 1;
+                        lineterms.append_at(ParseNode::new(None, ParseTerm::Ident(term.to_string())), depth);
                     }
                 }
             }
