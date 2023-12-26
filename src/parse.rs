@@ -41,6 +41,16 @@ impl ParseItems {
         its.items.push(node);
     }
 
+    pub fn append_at_indent(&mut self, nodes: &mut Vec<ParseNode>, indent: usize) {
+        if let Some(subnod) = self.items.last_mut() {
+            if indent > subnod.indent {
+                subnod.params.append_at_indent(nodes, indent);
+                return;
+            }
+        }
+        self.items.append(nodes);
+    }
+    
     pub fn dump(&self, indent: usize) {
         for item in &self.items {
             item.dump(indent);
@@ -61,7 +71,7 @@ impl ParseNode {
 
     pub fn dump(&self, indent: usize) {
         let indentstr: String = "  ".repeat(indent);
-        println!("{}### linenum {}, indent {}", indentstr, self.linenum, self.indent); //###
+        //println!("{}### linenum {}, indent {}", indentstr, self.linenum, self.indent); //###
         match &self.key {
             None => println!("{}_={:?}", indentstr, self.term),
             Some(key) => println!("{}{}={:?}", indentstr, key, self.term),
@@ -126,7 +136,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
             }
         }
         
-        scriptitems.items.append(&mut lineterms.items);
+        scriptitems.append_at_indent(&mut lineterms.items, indent);
     }
 
     //###
