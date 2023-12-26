@@ -121,7 +121,8 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     term = ltail;
                     ltail = "";
                     let (termkey, termval) = labelterm(term);
-                    lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum), depth);
+                    let nod = ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum);
+                    lineterms.append_at(nod, depth);
                 },
                 Some(pos) => {
                     (term, ltail) = ltail.split_at(pos);
@@ -132,12 +133,14 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
                     if ltail.starts_with(',') {
                         ltail = ltail.get(1..).unwrap().trim();
                         let (termkey, termval) = labelterm(term);
-                        lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum), depth);
+                        let nod = ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum);
+                        lineterms.append_at(nod, depth);
                     }
                     else {
                         ltail = ltail.get(1..).unwrap().trim();
                         let (termkey, termval) = labelterm(term);
-                        lineterms.append_at(ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum), depth);
+                        let nod = ParseNode::new(termkey, ParseTerm::Ident(termval.to_string()), vindent, linenum);
+                        lineterms.append_at(nod, depth);
                         depth += 1;
                         vindent = None;
                     }
