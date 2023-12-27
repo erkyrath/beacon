@@ -12,15 +12,15 @@ pub enum ParseTerm {
 }
 
 pub struct ParseItems {
-    items: Vec<ParseNode>,
+    pub items: Vec<ParseNode>,
 }
 
 pub struct ParseNode {
-    key: Option<String>,
-    term: ParseTerm,
-    params: Box<ParseItems>,
-    indent: Option<usize>,
-    linenum: usize,
+    pub key: Option<String>,
+    pub term: ParseTerm,
+    pub params: Box<ParseItems>,
+    pub indent: Option<usize>,
+    pub linenum: usize,
 }
 
 impl ParseItems {
