@@ -1,5 +1,6 @@
 use std::fmt;
 use std::collections::HashMap;
+use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
@@ -22,7 +23,18 @@ struct OpLayoutParam {
     optional: bool,
 }
 
-static OP3LAYOUT: Option<HashMap<&str, Vec<OpLayoutParam>>> = None;
+lazy_static! {
+    static ref OP3LAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
+        let mut map = HashMap::new();
+        map.insert("invert", vec![
+            OpLayoutParam { name: None, ptype: OpLayoutType::Op3, optional: false },
+        ]);
+        map.insert("grey", vec![
+            OpLayoutParam { name: None, ptype: OpLayoutType::Op1, optional: false },
+        ]);
+        map
+    };
+}
 
 struct BuildOp1 {
     op1: Option<Box<Op1Def>>,
@@ -151,6 +163,8 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(subop))
         },
         ParseTerm::Ident(val) => {
+            //###let params = OP3LAYOUT.get(val.to_lowercase().as_str());
+
             match val.to_lowercase().as_str() {
                 "grey" => {
                     let subop = Op1Def::Constant(0.123); //###
