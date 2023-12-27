@@ -79,6 +79,12 @@ impl fmt::Debug for BuildOp1 {
             subop.fmt(f)?;
             gotany = true;
         }
+        for subop in &self.child3 {
+            if !gotany { write!(f, "[")?; }
+            else { write!(f, ", ")?; }
+            subop.fmt(f)?;
+            gotany = true;
+        }
         if gotany { write!(f, "]")?; }
 
         Ok(())
@@ -94,6 +100,12 @@ impl fmt::Debug for BuildOp3 {
         
         let mut gotany = false;
         for subop in &self.child1 {
+            if !gotany { write!(f, "[")?; }
+            else { write!(f, ", ")?; }
+            subop.fmt(f)?;
+            gotany = true;
+        }
+        for subop in &self.child3 {
             if !gotany { write!(f, "[")?; }
             else { write!(f, ", ")?; }
             subop.fmt(f)?;
@@ -129,7 +141,24 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             let op = Op3Def::Grey(0);
             Ok(BuildOp3::new(op).addchild1(subop))
         },
-        _ => Err(format!("unimplemented at line {}", nod.linenum)),
+        ParseTerm::Ident(val) => {
+            match val.to_lowercase().as_str() {
+                "grey" => {
+                    let subop = Op1Def::Constant(0.123); //###
+                    let op = Op3Def::Grey(0);
+                    Ok(BuildOp3::new(op).addchild1(subop))
+                },
+                "invert" => {
+                    let subop = Op3Def::Constant(Pix::new(0.123, 0.123, 0.123)); //###
+                    let op = Op3Def::Invert(0);
+                    Ok(BuildOp3::new(op).addchild3(subop))
+                },
+                _ => {
+                    Err(format!("line {}: op3 not recognized: {}", nod.linenum, val))
+                },
+            }
+        },
+        //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
 }
 
