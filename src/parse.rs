@@ -1,4 +1,5 @@
 use std::fmt;
+use std::collections::HashMap;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
@@ -7,13 +8,21 @@ use crate::parse::tree::{ParseTerm, ParseNode};
 pub mod tree;
 
 //###?
-enum TreeCtx {
+enum OpLayoutType {
     Op1,
     Op3,
     Number,
     Color,
     Param,
 }
+
+struct OpLayoutParam {
+    name: Option<String>,
+    ptype: OpLayoutType,
+    optional: bool,
+}
+
+static OP3LAYOUT: Option<HashMap<&str, Vec<OpLayoutParam>>> = None;
 
 struct BuildOp1 {
     op1: Option<Box<Op1Def>>,
