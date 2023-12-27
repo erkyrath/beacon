@@ -119,17 +119,24 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
 fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
-            //### verify no children
+            verify_childless(nod)?;
             let op = Op3Def::Constant(pix.clone());
             Ok(BuildOp3::new(op))
         },
         ParseTerm::Number(val) => {
-            //### verify no children
+            verify_childless(nod)?;
             let subop = Op1Def::Constant(*val);
             let op = Op3Def::Grey(0);
             Ok(BuildOp3::new(op).addchild1(subop))
         },
         _ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
+}
+
+fn verify_childless(nod: &ParseNode) -> Result<(), String> {
+    if nod.params.items.len() > 0 {
+        return Err(format!("line {}: node cannot have params: {:?}", nod.linenum, nod.term));
+    }
+    Ok(())
 }
 
