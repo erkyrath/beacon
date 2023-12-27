@@ -196,15 +196,12 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(subop))
         },
         ParseTerm::Ident(val) => {
-            if let Some(params) = OP3LAYOUT.get(val.to_lowercase().as_str()) {
-                let pmap = match_children(nod, params)?;
-                println!("### pmap = {:?}", pmap);
-                Err("### TODO".to_string())
-            }
-            else {
-                Err(format!("line {}: op3 not recognized: {}", nod.linenum, val))
-            }
-
+            let params = OP3LAYOUT.get(val.to_lowercase().as_str())
+                .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
+            let pmap = match_children(nod, params)?;
+            println!("### pmap = {:?}", pmap);
+            return Err("### TODO".to_string()); //###
+            
             /*###
             match val.to_lowercase().as_str() {
                 "grey" => {
