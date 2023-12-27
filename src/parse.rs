@@ -19,7 +19,7 @@ enum OpLayoutType {
 }
 
 struct OpLayoutParam {
-    name: Option<String>,
+    name: String,
     ptype: OpLayoutType,
     optional: bool,
 }
@@ -28,31 +28,31 @@ lazy_static! {
     static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
         let mut map = HashMap::new();
         map.insert("constant", vec![
-            OpLayoutParam { name: None, ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Number, optional: false },
         ]);
         map.insert("randflat", vec![
-            OpLayoutParam { name: Some("min".to_string()), ptype: OpLayoutType::Number, optional: false },
-            OpLayoutParam { name: Some("max".to_string()), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: "min".to_string(), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: "max".to_string(), ptype: OpLayoutType::Number, optional: false },
         ]);
         map.insert("randnorm", vec![
-            OpLayoutParam { name: Some("mean".to_string()), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: Some("stdev".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "mean".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "stdev".to_string(), ptype: OpLayoutType::Number, optional: true },
         ]);
         map.insert("changing", vec![
-            OpLayoutParam { name: Some("start".to_string()), ptype: OpLayoutType::Number, optional: false },
-            OpLayoutParam { name: Some("velocity".to_string()), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: "start".to_string(), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: "velocity".to_string(), ptype: OpLayoutType::Number, optional: false },
         ]);
         map.insert("wave", vec![
-            OpLayoutParam { name: Some("shape".to_string()), ptype: OpLayoutType::Wave, optional: false },
-            OpLayoutParam { name: Some("min".to_string()), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: Some("max".to_string()), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: Some("duration".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "shape".to_string(), ptype: OpLayoutType::Wave, optional: false },
+            OpLayoutParam { name: "min".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "max".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "duration".to_string(), ptype: OpLayoutType::Number, optional: true },
         ]);
         map.insert("wavecycle", vec![
-            OpLayoutParam { name: Some("shape".to_string()), ptype: OpLayoutType::Wave, optional: false },
-            OpLayoutParam { name: Some("min".to_string()), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: Some("max".to_string()), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: Some("period".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "shape".to_string(), ptype: OpLayoutType::Wave, optional: false },
+            OpLayoutParam { name: "min".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "max".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: "period".to_string(), ptype: OpLayoutType::Number, optional: true },
         ]);
         map
     };
@@ -60,10 +60,10 @@ lazy_static! {
     static ref OP3LAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
         let mut map = HashMap::new();
         map.insert("invert", vec![
-            OpLayoutParam { name: None, ptype: OpLayoutType::Op3, optional: false },
+            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
         ]);
         map.insert("grey", vec![
-            OpLayoutParam { name: None, ptype: OpLayoutType::Op1, optional: false },
+            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
         ]);
         map
     };
@@ -196,8 +196,16 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(subop))
         },
         ParseTerm::Ident(val) => {
-            //###let params = OP3LAYOUT.get(val.to_lowercase().as_str());
+            if let Some(params) = OP3LAYOUT.get(val.to_lowercase().as_str()) {
+                let pmap = match_children(nod, params)?;
+                println!("### pmap = {:?}", pmap);
+                Err("### TODO".to_string())
+            }
+            else {
+                Err(format!("line {}: op3 not recognized: {}", nod.linenum, val))
+            }
 
+            /*###
             match val.to_lowercase().as_str() {
                 "grey" => {
                     let subop = Op1Def::Constant(0.123); //###
@@ -213,6 +221,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
                     Err(format!("line {}: op3 not recognized: {}", nod.linenum, val))
                 },
             }
+            ###*/
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
@@ -225,3 +234,37 @@ fn verify_childless(nod: &ParseNode) -> Result<(), String> {
     Ok(())
 }
 
+fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMap<String, usize>, String> {
+    let mut res: HashMap<String, usize> = HashMap::new();
+    let mut used = vec![false; layout.len()];
+
+    for item in &nod.params.items {
+        match &item.key {
+            None => {
+                if let Some(pos) = used.iter().position(|val|!val) {
+                    used[pos] = true;
+                    res.insert(layout[pos].name.clone(), pos);
+                }
+                else {
+                    return Err(format!("line {}: too many params", nod.linenum));
+                }
+            },
+            Some(name) => {
+                if let Some(pos) = layout.iter().position(|val| &val.name == name) {
+                    if used[pos] {
+                        return Err(format!("line {}: param appears twice: {}", nod.linenum, name));
+                    }
+                    else {
+                        used[pos] = true;
+                        res.insert(layout[pos].name.clone(), pos);
+                    }
+                }
+                else {
+                    return Err(format!("line {}: param not known: {}", nod.linenum, name));
+                }
+            },
+        }
+    }
+    
+    Ok(res)
+}
