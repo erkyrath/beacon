@@ -35,6 +35,14 @@ impl BuildOp1 {
             child3: Vec::default(),
         }
     }
+
+    fn addchild1(&mut self, op: Op1Def) {
+        self.child1.push(Box::new(BuildOp1::new(op)));
+    }
+
+    fn addchild3(&mut self, op: Op3Def) {
+        self.child3.push(Box::new(BuildOp3::new(op)));
+    }
 }
 
 impl BuildOp3 {
@@ -45,23 +53,53 @@ impl BuildOp3 {
             child3: Vec::default(),
         }
     }
+
+    fn addchild1(&mut self, op: Op1Def) {
+        self.child1.push(Box::new(BuildOp1::new(op)));
+    }
+
+    fn addchild3(&mut self, op: Op3Def) {
+        self.child3.push(Box::new(BuildOp3::new(op)));
+    }
 }
 
 impl fmt::Debug for BuildOp1 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.op1 {
-            None => write!(f, "(none)"),
-            Some(opdef) => opdef.fmt(f),
+            None => write!(f, "(none)")?,
+            Some(opdef) => opdef.fmt(f)?,
         }
+        
+        let mut gotany = false;
+        for subop in &self.child1 {
+            if !gotany { write!(f, "[")?; }
+            else { write!(f, ", ")?; }
+            subop.fmt(f)?;
+            gotany = true;
+        }
+        if gotany { write!(f, "]")?; }
+
+        Ok(())
     }
 }
 
 impl fmt::Debug for BuildOp3 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.op3 {
-            None => write!(f, "(none)"),
-            Some(opdef) => opdef.fmt(f),
+            None => write!(f, "(none)")?,
+            Some(opdef) => opdef.fmt(f)?,
         }
+        
+        let mut gotany = false;
+        for subop in &self.child1 {
+            if !gotany { write!(f, "[")?; }
+            else { write!(f, ", ")?; }
+            subop.fmt(f)?;
+            gotany = true;
+        }
+        if gotany { write!(f, "]")?; }
+        
+        Ok(())
     }
 }
 
@@ -85,9 +123,11 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
         },
         ParseTerm::Number(val) => {
             //### verify no children
-            //### Grey(Constant(val)) would be better
-            let op = Op3Def::Constant(Pix::new(*val, *val, *val));
-            Ok(BuildOp3::new(op))
+            let subop = Op1Def::Constant(*val);
+            let op = Op3Def::Grey(0);
+            let mut bop = BuildOp3::new(op);
+            bop.addchild1(subop);
+            Ok(bop)
         },
         _ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
