@@ -54,12 +54,14 @@ impl BuildOp3 {
         }
     }
 
-    fn addchild1(&mut self, op: Op1Def) {
+    fn addchild1(mut self, op: Op1Def) -> BuildOp3 {
         self.child1.push(Box::new(BuildOp1::new(op)));
+        return self;
     }
 
-    fn addchild3(&mut self, op: Op3Def) {
+    fn addchild3(mut self, op: Op3Def) -> BuildOp3 {
         self.child3.push(Box::new(BuildOp3::new(op)));
+        return self;
     }
 }
 
@@ -125,9 +127,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             //### verify no children
             let subop = Op1Def::Constant(*val);
             let op = Op3Def::Grey(0);
-            let mut bop = BuildOp3::new(op);
-            bop.addchild1(subop);
-            Ok(bop)
+            Ok(BuildOp3::new(op).addchild1(subop))
         },
         _ => Err(format!("unimplemented at line {}", nod.linenum)),
     }

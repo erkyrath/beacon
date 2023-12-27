@@ -200,7 +200,7 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
     }
 
     println!("### tree:");
-    scriptitems.dump(0); //###
+    scriptitems.dump(1); //###
     
     Ok(scriptitems)
 }
