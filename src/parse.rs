@@ -262,6 +262,12 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
             },
         }
     }
+
+    for pos in 0..layout.len() {
+        if !used[pos] && !layout[pos].optional {
+            return Err(format!("line {}: required parameter: {}", nod.linenum, layout[pos].name));
+        }
+    }
     
     Ok(res)
 }
