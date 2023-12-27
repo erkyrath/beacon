@@ -15,6 +15,7 @@ enum OpLayoutType {
     Number,
     Color,
     Param,
+    Wave,
 }
 
 struct OpLayoutParam {
@@ -24,6 +25,38 @@ struct OpLayoutParam {
 }
 
 lazy_static! {
+    static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
+        let mut map = HashMap::new();
+        map.insert("constant", vec![
+            OpLayoutParam { name: None, ptype: OpLayoutType::Number, optional: false },
+        ]);
+        map.insert("randflat", vec![
+            OpLayoutParam { name: Some("min".to_string()), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: Some("max".to_string()), ptype: OpLayoutType::Number, optional: false },
+        ]);
+        map.insert("randnorm", vec![
+            OpLayoutParam { name: Some("mean".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: Some("stdev".to_string()), ptype: OpLayoutType::Number, optional: true },
+        ]);
+        map.insert("changing", vec![
+            OpLayoutParam { name: Some("start".to_string()), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam { name: Some("velocity".to_string()), ptype: OpLayoutType::Number, optional: false },
+        ]);
+        map.insert("wave", vec![
+            OpLayoutParam { name: Some("shape".to_string()), ptype: OpLayoutType::Wave, optional: false },
+            OpLayoutParam { name: Some("min".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: Some("max".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: Some("duration".to_string()), ptype: OpLayoutType::Number, optional: true },
+        ]);
+        map.insert("wavecycle", vec![
+            OpLayoutParam { name: Some("shape".to_string()), ptype: OpLayoutType::Wave, optional: false },
+            OpLayoutParam { name: Some("min".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: Some("max".to_string()), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam { name: Some("period".to_string()), ptype: OpLayoutType::Number, optional: true },
+        ]);
+        map
+    };
+    
     static ref OP3LAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
         let mut map = HashMap::new();
         map.insert("invert", vec![
