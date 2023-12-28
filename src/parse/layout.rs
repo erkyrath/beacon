@@ -43,11 +43,15 @@ impl OpLayoutParam {
 }
 
 type BuildFuncParam = fn(&ParseNode, &HashMap<String, usize>)->Result<Param, String>;
-
+type BuildFuncOp1 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp1, String>;
 type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
 pub fn get_param_layout(val: &str) -> Option<&Vec<OpLayoutParam>> {
     return PARAMLAYOUT.get(val.to_lowercase().as_str());
+}
+
+pub fn get_op1_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncOp1)> {
+    return OP1LAYOUT.get(val.to_lowercase().as_str());
 }
 
 pub fn get_op3_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncOp3)> {
@@ -84,6 +88,24 @@ lazy_static! {
             OpLayoutParam::param_optional("max", OpLayoutType::Number),
             OpLayoutParam::param_optional("period", OpLayoutType::Number),
         ]);
+        map
+    };
+
+    static ref OP1LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncOp1)> = {
+        let mut map = HashMap::new();
+        
+        map.insert(
+            "constant",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let val = parse_for_number(&nod.params.items[pmap["_1"]])?;
+                 let op = Op1Def::Constant(val);
+                 Ok(BuildOp1::new(op))
+             } as BuildFuncOp1)
+        );
+        
         map
     };
     

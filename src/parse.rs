@@ -9,7 +9,7 @@ use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
-use crate::parse::layout::{get_param_layout, get_op3_layout};
+use crate::parse::layout::{get_param_layout, get_op1_layout, get_op3_layout};
 
 pub struct BuildOp1 {
     op1: Option<Box<Op1Def>>,
@@ -149,15 +149,21 @@ fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
 fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
-            Err(format!("line {}: expected number, found color", nod.linenum))
+            Err(format!("line {}: unexpected color", nod.linenum))
         },
         ParseTerm::Number(val) => {
             verify_childless(nod)?;
             let op = Op1Def::Constant(*val);
             Ok(BuildOp1::new(op))
         },
-        //### Ident
-        _ => Err(format!("unimplemented at line {}", nod.linenum)),
+        ParseTerm::Ident(val) => {
+            let (params, buildfunc) = get_op1_layout(val)
+                .ok_or_else(|| format!("line {}: op1 not recognized: {}", nod.linenum, val))?;
+            let pmap = match_children(nod, params)?;
+            println!("### pmap = {:?}", pmap);
+            return buildfunc(nod, &pmap);
+        },
+        //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
 }
 
