@@ -144,7 +144,7 @@ impl Op3State {
 impl Op1Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
         let opdef = &ctx.script.op1s[bufnum].op;
-        let _opbuf = &ctx.script.op1s[bufnum].bufs; //###use
+        let opbuf = &ctx.script.op1s[bufnum].bufs;
         let mut buf = ctx.op1s[bufnum].buf.borrow_mut();
         match &opdef {
             Op1Def::Constant(val) => {
@@ -153,8 +153,12 @@ impl Op1Ctx {
                 }
             }
 
-            Op1Def::Invert(obufnum) => {
-                let obuf = ctx.op1s[*obufnum].buf.borrow();
+            Op1Def::Invert(_) => {
+                let obufnum = match opbuf[0] {
+                    ScriptIndex::Op1(val) => val,
+                    _ => panic!("###"),
+                };
+                let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
                     buf[ix] = 1.0 - obuf[ix];
@@ -172,19 +176,27 @@ impl Op1Ctx {
                 }
             }
             
-            Op1Def::Sum(bufnums) => {
-                if bufnums.len() == 0 {
+            Op1Def::Sum(_) => {
+                if opbuf.len() == 0 {
                     for ix in 0..buf.len() {
                         buf[ix] = 0.0;
                     }
                 }
                 else {
-                    let obuf1 = ctx.op1s[bufnums[0]].buf.borrow();
+                    let obufnum = match opbuf[0] {
+                        ScriptIndex::Op1(val) => val,
+                        _ => panic!("###"),
+                    };
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
                     for ix in 0..buf.len() {
                         buf[ix] = obuf1[ix];
                     }
-                    for jx in 1..bufnums.len() {
-                        let obuf = ctx.op1s[bufnums[jx]].buf.borrow();
+                    for jx in 1..opbuf.len() {
+                        let obufnum = match opbuf[jx] {
+                            ScriptIndex::Op1(val) => val,
+                            _ => panic!("###"),
+                        };
+                        let obuf = ctx.op1s[obufnum].buf.borrow();
                         for ix in 0..buf.len() {
                             buf[ix] += obuf[ix];
                         }
