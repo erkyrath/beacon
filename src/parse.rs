@@ -7,6 +7,7 @@ use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
+use crate::script::Script;
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
 use crate::parse::layout::{get_param_layout, get_op1_layout, get_op3_layout};
@@ -118,15 +119,17 @@ impl fmt::Debug for BuildOp3 {
 pub fn parse_script(filename: &str) -> Result<(), String> {
     let itemls = tree::parse_tree(filename)?;
 
+    let mut script = Script::new();
+
     for item in &itemls.items {
         match parse_for_op3(item) {
             Ok(op3) => {
-                println!("### got op3 {:?}", op3);
+                println!("### got op3 (name {:?}) {:?}", item.key, op3);
             },
             Err(err3) => {
                 match parse_for_op1(item) {
                     Ok(op1) => {
-                        println!("### got op1 {:?}", op1);
+                        println!("### got op1 (name {:?}) {:?}", item.key, op1);
                     },
                     Err(_err1) => {
                         return Err(err3);
