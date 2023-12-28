@@ -48,7 +48,8 @@ fn main() {
             },
         }
     }
-    
+
+    /*###
     let script = script::build_script(); //### temp
     if opts.dump {
         script.dump();
@@ -58,7 +59,8 @@ fn main() {
         if let Err(msg) = res {
             println!("{msg}");
         }
-    }
+}
+    ###*/
 }
 
 fn sdlmain(script: Script) -> Result<(), String> {
