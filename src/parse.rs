@@ -196,12 +196,12 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
     let mut res: HashMap<String, usize> = HashMap::new();
     let mut used = vec![false; layout.len()];
 
-    for item in &nod.params.items {
+    for (itemix, item) in nod.params.items.iter().enumerate() {
         match &item.key {
             None => {
                 if let Some(pos) = used.iter().position(|val|!val) {
                     used[pos] = true;
-                    res.insert(layout[pos].name.clone(), pos);
+                    res.insert(layout[pos].name.clone(), itemix);
                 }
                 else {
                     return Err(format!("line {}: too many params", nod.linenum));
@@ -214,7 +214,7 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
                     }
                     else {
                         used[pos] = true;
-                        res.insert(layout[pos].name.clone(), pos);
+                        res.insert(layout[pos].name.clone(), itemix);
                     }
                 }
                 else {
