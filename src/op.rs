@@ -8,7 +8,7 @@ use crate::script::ScriptIndex;
 
 pub enum Op1Def {
     Constant(f32),
-    Invert(usize), // op1
+    Invert(), // op1
     Pulser(Pulser),
     Brightness(usize), // op3
     Sum(), // op1...
@@ -16,7 +16,7 @@ pub enum Op1Def {
 
 pub enum Op3Def {
     Constant(Pix<f32>),
-    Invert(usize), // op3
+    Invert(), // op3
     Grey(), // op1
     RGB(), // op1, op1, op1
     MulS(), // op3, op1
@@ -30,8 +30,8 @@ impl Op1Def {
             Op1Def::Constant(val) => {
                 format!("Constant({})", val)
             },
-            Op1Def::Invert(bufnum) => {
-                format!("Invert(1/{bufnum})")
+            Op1Def::Invert() => {
+                format!("Invert()")
             },
             Op1Def::Pulser(pulser) => {
                 let limitstr = if let Some(size) = pulser.countlimit {
@@ -71,8 +71,8 @@ impl Op3Def {
             Op3Def::Constant(pix) => {
                 format!("Constant(r={}, g={}, b={})", pix.r, pix.g, pix.b)
             },
-            Op3Def::Invert(bufnum) => {
-                format!("Invert(3/{bufnum})")
+            Op3Def::Invert() => {
+                format!("Invert()")
             },
             Op3Def::Grey() => {
                 format!("Grey()")
@@ -151,7 +151,7 @@ impl Op1Ctx {
                 }
             }
 
-            Op1Def::Invert(_) => {
+            Op1Def::Invert() => {
                 let obufnum = match opbuf[0] {
                     ScriptIndex::Op1(val) => val,
                     _ => panic!("###"),
@@ -222,7 +222,7 @@ impl Op3Ctx {
                 }
             }
             
-            Op3Def::Invert(_) => {
+            Op3Def::Invert() => {
                 let obufnum = match opbuf[0] {
                     ScriptIndex::Op3(val) => val,
                     _ => panic!("###"),

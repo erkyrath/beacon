@@ -113,7 +113,7 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
                  let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
-                 let op = Op1Def::Invert(0);
+                 let op = Op1Def::Invert();
                  Ok(BuildOp1::new(op).addchild1(subop))
              } as BuildFuncOp1)
         );
@@ -155,7 +155,7 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
                  let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
-                 let op = Op3Def::Invert(0);
+                 let op = Op3Def::Invert();
                  Ok(BuildOp3::new(op).addchild3(subop))
              } as BuildFuncOp3)
         );
