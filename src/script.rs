@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::param::Param;
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
@@ -17,6 +19,11 @@ pub struct Script {
     pub op3s: Vec<Op3Def>,
 }
 
+struct BufTrackPair {
+    op1s: HashSet<usize>,
+    op3s: HashSet<usize>,
+}
+
 impl Script {
     pub fn new() -> Script {
         Script {
@@ -27,16 +34,32 @@ impl Script {
     }
 
     pub fn dump(&self) {
+        let mut track = BufTrackPair {
+            op1s: HashSet::new(),
+            op3s: HashSet::new(),
+        };
+        
         if self.order.len() == 0 {
-            println!("script is empty");
-            return;
+            println!("script has no root");
+        }
+        else {
+            self.dumpop(&mut track, self.order[0], 0);
         }
 
-        self.dumpop(self.order[0], 0);
-        //### and unmentioned ops?
+        // Now any unmentioned ops
+        for bufnum in 0..self.op3s.len() {
+            if !track.op3s.contains(&bufnum) {
+                self.dumpop(&mut track, ScriptIndex::Op3(bufnum), 0);
+            }
+        }
+        for bufnum in 0..self.op1s.len() {
+            if !track.op1s.contains(&bufnum) {
+                self.dumpop(&mut track, ScriptIndex::Op1(bufnum), 0);
+            }
+        }
     }
     
-    fn dumpop(&self, scix: ScriptIndex, indent: usize) {
+    fn dumpop(&self, track: &mut BufTrackPair, scix: ScriptIndex, indent: usize) {
         let indentstr: String = "  ".repeat(indent);
         let subindentstr = "\n         ".to_string() + &indentstr;
         let desc: String;
@@ -45,6 +68,7 @@ impl Script {
         match scix {
             ScriptIndex::Op1(bufnum) => {
                 if bufnum < self.op1s.len() {
+                    track.op1s.insert(bufnum);
                     (desc, bufs) = self.op1s[bufnum].describe(Some(subindentstr));
                 }
                 else {
@@ -55,6 +79,7 @@ impl Script {
             },
             ScriptIndex::Op3(bufnum) => {
                 if bufnum < self.op3s.len() {
+                    track.op3s.insert(bufnum);
                     (desc, bufs) = self.op3s[bufnum].describe(Some(subindentstr));
                 }
                 else {
@@ -68,7 +93,7 @@ impl Script {
         println!("({}): {}{}", scstr, indentstr, desc);
         
         for val in bufs {
-            self.dumpop(val, indent+1);
+            self.dumpop(track, val, indent+1);
         }
     }
     
