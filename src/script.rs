@@ -92,7 +92,7 @@ impl Script {
                 if bufnum < self.op1s.len() {
                     track.op1s.insert(bufnum);
                     bufs = Vec::default(); //### from opex
-                    (desc, _) = self.op1s[bufnum].op.describe(Some(subindentstr));
+                    desc = self.op1s[bufnum].op.describe(Some(subindentstr));
                 }
                 else {
                     desc = "???".to_string();
@@ -104,7 +104,7 @@ impl Script {
                 if bufnum < self.op3s.len() {
                     track.op3s.insert(bufnum);
                     bufs = Vec::default(); //### from opex
-                    (desc, _) = self.op3s[bufnum].op.describe(Some(subindentstr));
+                    desc = self.op3s[bufnum].op.describe(Some(subindentstr));
                 }
                 else {
                     desc = "???".to_string();

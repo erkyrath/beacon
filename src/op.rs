@@ -25,13 +25,13 @@ pub enum Op3Def {
 
 impl Op1Def {
     //### drop bufs from return val (just make debug?)
-    pub fn describe(&self, indent: Option<String>) -> (String, Vec<ScriptIndex>) {
+    pub fn describe(&self, indent: Option<String>) -> String {
         match self {
             Op1Def::Constant(val) => {
-                (format!("Constant({})", val), Vec::default())
+                format!("Constant({})", val)
             },
             Op1Def::Invert(bufnum) => {
-                (format!("Invert(1/{bufnum})"), vec![ ScriptIndex::Op1(*bufnum) ])
+                format!("Invert(1/{bufnum})")
             },
             Op1Def::Pulser(pulser) => {
                 let limitstr = if let Some(size) = pulser.countlimit {
@@ -51,61 +51,57 @@ impl Op1Def {
                     indentstr, pulser.pos,
                     indentstr, pulser.width,
                     indentstr, pulser.spaceshape, pulser.timeshape);
-                (desc, Vec::default())
+                desc
             },
             Op1Def::Brightness(bufnum) => {
-                (format!("Brightness(3/{bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
+                format!("Brightness(3/{bufnum})")
             },
             Op1Def::Sum(bufnums) => {
                 let str = bufnums.iter().map(|val| format!("1/{}", val)).collect::<Vec<String>>().join(", ");
-                let ls = bufnums.iter().map(|val| ScriptIndex::Op1(*val)).collect::<Vec<ScriptIndex>>();
-                (format!("Sum({str})"), ls)
+                format!("Sum({str})")
             },
-            //_ => ("?Op1Def".to_string(), Vec::default()),
+            //_ => "?Op1Def".to_string(),
         }
     }
 }
 
 impl Op3Def {
     //### drop bufs from return val
-    pub fn describe(&self, _indent: Option<String>) -> (String, Vec<ScriptIndex>) {
+    pub fn describe(&self, _indent: Option<String>) -> String {
         match self {
             Op3Def::Constant(pix) => {
-                (format!("Constant(r={}, g={}, b={})", pix.r, pix.g, pix.b), Vec::default())
+                format!("Constant(r={}, g={}, b={})", pix.r, pix.g, pix.b)
             },
             Op3Def::Invert(bufnum) => {
-                (format!("Invert(3/{bufnum})"), vec![ ScriptIndex::Op3(*bufnum) ])
+                format!("Invert(3/{bufnum})")
             },
             Op3Def::Grey(bufnum) => {
-                (format!("Grey(1/{bufnum})"), vec![ ScriptIndex::Op1(*bufnum) ])
+                format!("Grey(1/{bufnum})")
             },
             Op3Def::RGB(bufnum1, bufnum2, bufnum3) => {
-                (format!("RGB(1/{bufnum1}, 1/{bufnum2}, 1/{bufnum3})"), vec![ ScriptIndex::Op1(*bufnum1), ScriptIndex::Op1(*bufnum2), ScriptIndex::Op1(*bufnum3) ])
+                format!("RGB(1/{bufnum1}, 1/{bufnum2}, 1/{bufnum3})")
             },
             Op3Def::MulS(bufnum1, bufnum2) => {
-                (format!("MulS(3/{bufnum1}, 1/{bufnum2})"), vec![ ScriptIndex::Op3(*bufnum1), ScriptIndex::Op1(*bufnum2) ])
+                format!("MulS(3/{bufnum1}, 1/{bufnum2})")
             },
             Op3Def::Sum(bufnums) => {
                 let str = bufnums.iter().map(|val| format!("3/{}", val)).collect::<Vec<String>>().join(", ");
-                let ls = bufnums.iter().map(|val| ScriptIndex::Op3(*val)).collect::<Vec<ScriptIndex>>();
-                (format!("Sum({str})"), ls)
+                format!("Sum({str})")
             },
-            //_ => ("?Op1Def".to_string(), Vec::default()),
+            //_ => "?Op1Def".to_string(),
         }
     }
 }
 
 impl fmt::Debug for Op1Def {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (desc, _bufs) = self.describe(None);
-        write!(f, "{}", desc)
+        write!(f, "{}", self.describe(None))
     }
 }
 
 impl fmt::Debug for Op3Def {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (desc, _bufs) = self.describe(None);
-        write!(f, "{}", desc)
+        write!(f, "{}", self.describe(None))
     }
 }
 
