@@ -24,7 +24,7 @@ struct OpLayoutParam {
     optional: bool,
 }
 
-type BuildFunc = fn ()->BuildOp3;
+type BuildFunc = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
 lazy_static! {
     static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
@@ -62,15 +62,19 @@ lazy_static! {
     static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFunc)> = {
         let mut map = HashMap::new();
         
-        fn build_invert() -> BuildOp3 {
-            BuildOp3::new(Op3Def::Grey(0))
+        fn build_invert(nod: &ParseNode, pmap: &HashMap<String, usize>) -> Result<BuildOp3, String> {
+            let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
+            let op = Op3Def::Invert(0);
+            Ok(BuildOp3::new(op).addchild3x(subop))
         }
         map.insert("invert", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
         ], build_invert as BuildFunc));
         
-        fn build_grey() -> BuildOp3 {
-            BuildOp3::new(Op3Def::Grey(0))
+        fn build_grey(nod: &ParseNode, pmap: &HashMap<String, usize>) -> Result<BuildOp3, String> {
+            let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+            let op = Op3Def::Grey(0);
+            Ok(BuildOp3::new(op).addchild1x(subop))
         }
         map.insert("grey", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
@@ -101,12 +105,14 @@ impl BuildOp1 {
         }
     }
 
-    fn addchild1(&mut self, op: Op1Def) {
+    fn addchild1(mut self, op: Op1Def) -> BuildOp1 {
         self.child1.push(Box::new(BuildOp1::new(op)));
+        return self;
     }
 
-    fn addchild3(&mut self, op: Op3Def) {
+    fn addchild3(mut self, op: Op3Def) -> BuildOp1 {
         self.child3.push(Box::new(BuildOp3::new(op)));
+        return self;
     }
 }
 
@@ -124,8 +130,18 @@ impl BuildOp3 {
         return self;
     }
 
+    fn addchild1x(mut self, op: BuildOp1) -> BuildOp3 {
+        self.child1.push(Box::new(op));
+        return self;
+    }
+
     fn addchild3(mut self, op: Op3Def) -> BuildOp3 {
         self.child3.push(Box::new(BuildOp3::new(op)));
+        return self;
+    }
+
+    fn addchild3x(mut self, op: BuildOp3) -> BuildOp3 {
+        self.child3.push(Box::new(op));
         return self;
     }
 }
@@ -193,6 +209,10 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
     return Ok(());
 }
 
+fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
+    Err("### parse_for_op1 not implemented".to_string())
+}
+
 fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
@@ -207,11 +227,11 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(subop))
         },
         ParseTerm::Ident(val) => {
-            let (params, _buildfunc) = OP3LAYOUT.get(val.to_lowercase().as_str())
+            let (params, buildfunc) = OP3LAYOUT.get(val.to_lowercase().as_str())
                 .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
             println!("### pmap = {:?}", pmap);
-            return Err("### TODO".to_string()); //###
+            return buildfunc(nod, &pmap);
             
             /*###
             match val.to_lowercase().as_str() {
