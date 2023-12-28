@@ -1,3 +1,6 @@
+pub mod tree;
+pub mod layout;
+
 use std::fmt;
 use std::collections::HashMap;
 use lazy_static::lazy_static;
@@ -5,126 +8,16 @@ use lazy_static::lazy_static;
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
 use crate::parse::tree::{ParseTerm, ParseNode};
+use crate::parse::layout::{OpLayoutParam};
+use crate::parse::layout::{get_param_layout, get_op3_layout};
 
-pub mod tree;
-
-enum OpLayoutType {
-    Op1,
-    Op3,
-    Number,
-    Color,
-    Param,
-    Wave,
-}
-
-struct OpLayoutParam {
-    name: String,
-    ptype: OpLayoutType,
-    optional: bool,
-}
-
-impl OpLayoutParam {
-    fn param(name: &str, ptype: OpLayoutType) -> OpLayoutParam {
-        OpLayoutParam {
-            name: name.to_string(),
-            ptype: ptype,
-            optional: false,
-        }
-    }
-
-    fn param_optional(name: &str, ptype: OpLayoutType) -> OpLayoutParam {
-        OpLayoutParam {
-            name: name.to_string(),
-            ptype: ptype,
-            optional: true,
-        }
-    }
-}
-
-type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
-
-lazy_static! {
-    static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
-        let mut map = HashMap::new();
-        map.insert("constant", vec![
-            OpLayoutParam::param("_1", OpLayoutType::Number),
-        ]);
-        map.insert("randflat", vec![
-            OpLayoutParam::param("min", OpLayoutType::Number),
-            OpLayoutParam::param("max", OpLayoutType::Number),
-        ]);
-        map.insert("randnorm", vec![
-            OpLayoutParam::param_optional("mean", OpLayoutType::Number),
-            OpLayoutParam::param_optional("stdev", OpLayoutType::Number),
-        ]);
-        map.insert("changing", vec![
-            OpLayoutParam::param("start", OpLayoutType::Number),
-            OpLayoutParam::param("velocity", OpLayoutType::Number),
-        ]);
-        map.insert("wave", vec![
-            OpLayoutParam::param("shape", OpLayoutType::Wave),
-            OpLayoutParam::param_optional("min", OpLayoutType::Number),
-            OpLayoutParam::param_optional("max", OpLayoutType::Number),
-            OpLayoutParam::param_optional("duration", OpLayoutType::Number),
-        ]);
-        map.insert("wavecycle", vec![
-            OpLayoutParam::param("shape", OpLayoutType::Wave),
-            OpLayoutParam::param_optional("min", OpLayoutType::Number),
-            OpLayoutParam::param_optional("max", OpLayoutType::Number),
-            OpLayoutParam::param_optional("period", OpLayoutType::Number),
-        ]);
-        map
-    };
-    
-    static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncOp3)> = {
-        let mut map = HashMap::new();
-        
-        map.insert(
-            "constant",
-            (vec![
-                OpLayoutParam::param("_1", OpLayoutType::Color),
-            ],
-             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
-                 let pix = parse_for_color(&nod.params.items[pmap["_1"]])?;
-                 let op = Op3Def::Constant(pix);
-                 Ok(BuildOp3::new(op))
-             } as BuildFuncOp3)
-        );
-        
-        map.insert(
-            "invert",
-            (vec![
-                OpLayoutParam::param("_1", OpLayoutType::Op3),
-            ],
-             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
-                 let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
-                 let op = Op3Def::Invert(0);
-                 Ok(BuildOp3::new(op).addchild3(subop))
-             } as BuildFuncOp3)
-        );
-        
-        map.insert(
-            "grey",
-            (vec![
-                OpLayoutParam::param("_1", OpLayoutType::Op1),
-            ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
-                let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
-                let op = Op3Def::Grey(0);
-                Ok(BuildOp3::new(op).addchild1(subop))
-            } as BuildFuncOp3)
-        );
-        
-        map
-    };
-}
-
-struct BuildOp1 {
+pub struct BuildOp1 {
     op1: Option<Box<Op1Def>>,
     child1: Vec<Box<BuildOp1>>,
     child3: Vec<Box<BuildOp3>>,
 }
 
-struct BuildOp3 {
+pub struct BuildOp3 {
     op3: Option<Box<Op3Def>>,
     child1: Vec<Box<BuildOp1>>,
     child3: Vec<Box<BuildOp3>>,
@@ -282,7 +175,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(BuildOp1::new(subop)))
         },
         ParseTerm::Ident(val) => {
-            let (params, buildfunc) = OP3LAYOUT.get(val.to_lowercase().as_str())
+            let (params, buildfunc) = get_op3_layout().get(val.to_lowercase().as_str())
                 .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
             println!("### pmap = {:?}", pmap);
