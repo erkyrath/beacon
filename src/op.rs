@@ -24,6 +24,7 @@ pub enum Op3Def {
 }
 
 impl Op1Def {
+    //### drop bufs from return val (just make debug?)
     pub fn describe(&self, indent: Option<String>) -> (String, Vec<ScriptIndex>) {
         match self {
             Op1Def::Constant(val) => {
@@ -66,6 +67,7 @@ impl Op1Def {
 }
 
 impl Op3Def {
+    //### drop bufs from return val
     pub fn describe(&self, _indent: Option<String>) -> (String, Vec<ScriptIndex>) {
         match self {
             Op3Def::Constant(pix) => {
@@ -145,7 +147,8 @@ impl Op3State {
 
 impl Op1Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
-        let opdef = &ctx.script.op1s[bufnum];
+        let opdef = &ctx.script.op1s[bufnum].op;
+        let _opbuf = &ctx.script.op1s[bufnum].bufs; //###use
         let mut buf = ctx.op1s[bufnum].buf.borrow_mut();
         match &opdef {
             Op1Def::Constant(val) => {
@@ -202,7 +205,8 @@ impl Op1Ctx {
 
 impl Op3Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
-        let opdef = &ctx.script.op3s[bufnum];
+        let opdef = &ctx.script.op3s[bufnum].op;
+        let _opbuf = &ctx.script.op3s[bufnum].bufs; //###use
         //let mut _state = ctx.op3s[bufnum].state.borrow_mut();
         let mut buf = ctx.op3s[bufnum].buf.borrow_mut();
         match &opdef {

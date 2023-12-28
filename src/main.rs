@@ -49,9 +49,7 @@ fn main() {
         }
     }
     
-    /*
-    let script = script::build_script();
-    
+    let script = script::build_script(); //### temp
     if opts.dump {
         script.dump();
     }
@@ -61,7 +59,6 @@ fn main() {
             println!("{msg}");
         }
     }
-    */
 }
 
 fn sdlmain(script: Script) -> Result<(), String> {

@@ -13,10 +13,32 @@ pub enum ScriptIndex {
     Op3(usize),
 }
 
+pub struct Op1DefRef {
+    pub op: Op1Def,
+    pub bufs: Vec<ScriptIndex>,
+}
+
+pub struct Op3DefRef {
+    pub op: Op3Def,
+    pub bufs: Vec<ScriptIndex>,
+}
+
+impl Op1DefRef {
+    fn new(op: Op1Def, bufs: Vec<ScriptIndex>) -> Op1DefRef {
+        Op1DefRef { op:op, bufs:bufs }
+    }
+}
+
+impl Op3DefRef {
+    fn new(op: Op3Def, bufs: Vec<ScriptIndex>) -> Op3DefRef {
+        Op3DefRef { op:op, bufs:bufs }
+    }
+}
+
 pub struct Script {
     pub order: Vec<ScriptIndex>, // 0 is root
-    pub op1s: Vec<Op1Def>,
-    pub op3s: Vec<Op3Def>,
+    pub op1s: Vec<Op1DefRef>,
+    pub op3s: Vec<Op3DefRef>,
 }
 
 struct BufTrackPair {
@@ -69,7 +91,8 @@ impl Script {
             ScriptIndex::Op1(bufnum) => {
                 if bufnum < self.op1s.len() {
                     track.op1s.insert(bufnum);
-                    (desc, bufs) = self.op1s[bufnum].describe(Some(subindentstr));
+                    bufs = Vec::default(); //### from opex
+                    (desc, _) = self.op1s[bufnum].op.describe(Some(subindentstr));
                 }
                 else {
                     desc = "???".to_string();
@@ -80,7 +103,8 @@ impl Script {
             ScriptIndex::Op3(bufnum) => {
                 if bufnum < self.op3s.len() {
                     track.op3s.insert(bufnum);
-                    (desc, bufs) = self.op3s[bufnum].describe(Some(subindentstr));
+                    bufs = Vec::default(); //### from opex
+                    (desc, _) = self.op3s[bufnum].op.describe(Some(subindentstr));
                 }
                 else {
                     desc = "???".to_string();
@@ -103,20 +127,22 @@ pub fn build_script() -> Script {
     let mut script = Script::new();
 
     let csum = Op3Def::Sum(vec![3, 1]);
+    let csumbufs: Vec<ScriptIndex> = vec![ ScriptIndex::Op3(3), ScriptIndex::Op3(1) ];
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
-    script.op3s.push(csum);
+    script.op3s.push(Op3DefRef::new(csum, csumbufs));
 
     let cmuls = Op3Def::MulS(2, 0);
+    let cmulsbufs: Vec<ScriptIndex> = vec![ ScriptIndex::Op3(2), ScriptIndex::Op1(0) ];
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
-    script.op3s.push(cmuls);
+    script.op3s.push(Op3DefRef::new(cmuls, cmulsbufs));
 
     let cconst = Op3Def::Constant(Pix::new(0.7, 0.2, 0.9));
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
-    script.op3s.push(cconst);
+    script.op3s.push(Op3DefRef::new(cconst, Vec::default()));
 
     let bconst = Op3Def::Constant(Pix::new(0.0, 0.4, 0.0));
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
-    script.op3s.push(bconst);
+    script.op3s.push(Op3DefRef::new(bconst, Vec::default()));
 
     let mut pulserdef = Pulser::new();
     //pulserdef.pos = Param::Quote(Box::new(Param::Changing(1.2, -0.4)));
@@ -131,7 +157,7 @@ pub fn build_script() -> Script {
     
     let pulser = Op1Def::Pulser(pulserdef);
     script.order.push(ScriptIndex::Op1(script.op1s.len()));
-    script.op1s.push(pulser);
+    script.op1s.push(Op1DefRef::new(pulser, Vec::default()));
 
     return script;
 }
