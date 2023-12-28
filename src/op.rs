@@ -142,7 +142,6 @@ impl Op3State {
 impl Op1Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
         let opref = &ctx.script.op1s[bufnum];
-        let opbuf = &ctx.script.op1s[bufnum].bufs;
         let mut buf = ctx.op1s[bufnum].buf.borrow_mut();
         match &opref.op {
             Op1Def::Constant(val) => {
@@ -152,7 +151,7 @@ impl Op1Ctx {
             }
 
             Op1Def::Invert() => {
-                let obufnum = ctx.script.op1s[bufnum].get_type_ref(1, 0);
+                let obufnum = opref.get_type_ref(1, 0);
                 let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
@@ -172,19 +171,19 @@ impl Op1Ctx {
             }
             
             Op1Def::Sum() => {
-                if opbuf.len() == 0 {
+                if opref.bufs.len() == 0 {
                     for ix in 0..buf.len() {
                         buf[ix] = 0.0;
                     }
                 }
                 else {
-                    let obufnum = ctx.script.op1s[bufnum].get_type_ref(1, 0);
+                    let obufnum = opref.get_type_ref(1, 0);
                     let obuf1 = ctx.op1s[obufnum].buf.borrow();
                     for ix in 0..buf.len() {
                         buf[ix] = obuf1[ix];
                     }
-                    for jx in 1..opbuf.len() {
-                        let obufnum = ctx.script.op1s[bufnum].get_type_ref(1, jx);
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(1, jx);
                         let obuf = ctx.op1s[obufnum].buf.borrow();
                         for ix in 0..buf.len() {
                             buf[ix] += obuf[ix];
@@ -203,7 +202,6 @@ impl Op1Ctx {
 impl Op3Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
         let opref = &ctx.script.op3s[bufnum];
-        let opbuf = &ctx.script.op3s[bufnum].bufs;
         //let mut _state = ctx.op3s[bufnum].state.borrow_mut();
         let mut buf = ctx.op3s[bufnum].buf.borrow_mut();
         match &opref.op {
@@ -214,7 +212,7 @@ impl Op3Ctx {
             }
             
             Op3Def::Invert() => {
-                let obufnum = ctx.script.op3s[bufnum].get_type_ref(3, 0);
+                let obufnum = opref.get_type_ref(3, 0);
                 let obuf = ctx.op3s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
@@ -223,9 +221,9 @@ impl Op3Ctx {
             }
 
             Op3Def::RGB() => {
-                let obufnum1 = ctx.script.op3s[bufnum].get_type_ref(3, 0);
-                let obufnum2 = ctx.script.op3s[bufnum].get_type_ref(3, 1);
-                let obufnum3 = ctx.script.op3s[bufnum].get_type_ref(3, 2);
+                let obufnum1 = opref.get_type_ref(3, 0);
+                let obufnum2 = opref.get_type_ref(3, 1);
+                let obufnum3 = opref.get_type_ref(3, 2);
                 let obuf1 = ctx.op1s[obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[obufnum2].buf.borrow();
                 let obuf3 = ctx.op1s[obufnum3].buf.borrow();
@@ -238,8 +236,8 @@ impl Op3Ctx {
             }
 
             Op3Def::MulS() => {
-                let obufnum1 = ctx.script.op3s[bufnum].get_type_ref(3, 0);
-                let obufnum2 = ctx.script.op3s[bufnum].get_type_ref(1, 1);
+                let obufnum1 = opref.get_type_ref(3, 0);
+                let obufnum2 = opref.get_type_ref(1, 1);
                 let obuf1 = ctx.op3s[obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[obufnum2].buf.borrow();
                 assert!(buf.len() == obuf1.len());
@@ -250,19 +248,19 @@ impl Op3Ctx {
             }
 
             Op3Def::Sum() => {
-                if opbuf.len() == 0 {
+                if opref.bufs.len() == 0 {
                     for ix in 0..buf.len() {
                         buf[ix] = Pix::new(0.0, 0.0, 0.0);
                     }
                 }
                 else {
-                    let obufnum = ctx.script.op3s[bufnum].get_type_ref(3, 0);
+                    let obufnum = opref.get_type_ref(3, 0);
                     let obuf1 = ctx.op3s[obufnum].buf.borrow();
                     for ix in 0..buf.len() {
                         buf[ix] = obuf1[ix].clone();
                     }
-                    for jx in 1..opbuf.len() {
-                        let obufnum = ctx.script.op3s[bufnum].get_type_ref(3, jx);
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(3, jx);
                         let obuf = ctx.op3s[obufnum].buf.borrow();
                         for ix in 0..buf.len() {
                             buf[ix].r += obuf[ix].r;
