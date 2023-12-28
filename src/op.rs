@@ -214,10 +214,7 @@ impl Op3Ctx {
             }
             
             Op3Def::Invert() => {
-                let obufnum = match opbuf[0] {
-                    ScriptIndex::Op3(val) => val,
-                    _ => panic!("###"),
-                };
+                let obufnum = ctx.script.op3s[bufnum].get_type_ref(3, 0);
                 let obuf = ctx.op3s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
@@ -226,18 +223,9 @@ impl Op3Ctx {
             }
 
             Op3Def::RGB() => {
-                let obufnum1 = match opbuf[0] {
-                    ScriptIndex::Op3(val) => val,
-                    _ => panic!("###"),
-                };
-                let obufnum2 = match opbuf[1] {
-                    ScriptIndex::Op3(val) => val,
-                    _ => panic!("###"),
-                };
-                let obufnum3 = match opbuf[2] {
-                    ScriptIndex::Op3(val) => val,
-                    _ => panic!("###"),
-                };
+                let obufnum1 = ctx.script.op3s[bufnum].get_type_ref(3, 0);
+                let obufnum2 = ctx.script.op3s[bufnum].get_type_ref(3, 1);
+                let obufnum3 = ctx.script.op3s[bufnum].get_type_ref(3, 2);
                 let obuf1 = ctx.op1s[obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[obufnum2].buf.borrow();
                 let obuf3 = ctx.op1s[obufnum3].buf.borrow();
@@ -250,14 +238,8 @@ impl Op3Ctx {
             }
 
             Op3Def::MulS() => {
-                let obufnum1 = match opbuf[0] {
-                    ScriptIndex::Op3(val) => val,
-                    _ => panic!("###"),
-                };
-                let obufnum2 = match opbuf[1] {
-                    ScriptIndex::Op1(val) => val,
-                    _ => panic!("###"),
-                };
+                let obufnum1 = ctx.script.op3s[bufnum].get_type_ref(3, 0);
+                let obufnum2 = ctx.script.op3s[bufnum].get_type_ref(1, 1);
                 let obuf1 = ctx.op3s[obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[obufnum2].buf.borrow();
                 assert!(buf.len() == obuf1.len());
@@ -274,19 +256,13 @@ impl Op3Ctx {
                     }
                 }
                 else {
-                    let obufnum = match opbuf[0] {
-                        ScriptIndex::Op3(val) => val,
-                        _ => panic!("###"),
-                    };
+                    let obufnum = ctx.script.op3s[bufnum].get_type_ref(3, 0);
                     let obuf1 = ctx.op3s[obufnum].buf.borrow();
                     for ix in 0..buf.len() {
                         buf[ix] = obuf1[ix].clone();
                     }
                     for jx in 1..opbuf.len() {
-                        let obufnum = match opbuf[jx] {
-                            ScriptIndex::Op3(val) => val,
-                            _ => panic!("###"),
-                        };
+                        let obufnum = ctx.script.op3s[bufnum].get_type_ref(3, jx);
                         let obuf = ctx.op3s[obufnum].buf.borrow();
                         for ix in 0..buf.len() {
                             buf[ix].r += obuf[ix].r;
