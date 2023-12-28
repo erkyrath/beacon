@@ -23,6 +23,24 @@ struct OpLayoutParam {
     optional: bool,
 }
 
+impl OpLayoutParam {
+    fn param(name: &str, ptype: OpLayoutType) -> OpLayoutParam {
+        OpLayoutParam {
+            name: name.to_string(),
+            ptype: ptype,
+            optional: false,
+        }
+    }
+
+    fn param_optional(name: &str, ptype: OpLayoutType) -> OpLayoutParam {
+        OpLayoutParam {
+            name: name.to_string(),
+            ptype: ptype,
+            optional: true,
+        }
+    }
+}
+
 type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
 lazy_static! {
@@ -62,7 +80,7 @@ lazy_static! {
         let mut map = HashMap::new();
         
         map.insert("constant", (vec![
-            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Color, optional: false },
+            OpLayoutParam::param("_1", OpLayoutType::Color),
         ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
             let pix = parse_for_color(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Constant(pix);
@@ -70,7 +88,7 @@ lazy_static! {
         } as BuildFuncOp3));
         
         map.insert("invert", (vec![
-            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
+            OpLayoutParam::param("_1", OpLayoutType::Op3),
         ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
             let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Invert(0);
@@ -78,7 +96,7 @@ lazy_static! {
         } as BuildFuncOp3));
         
         map.insert("grey", (vec![
-            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
+            OpLayoutParam::param("_1", OpLayoutType::Op1),
         ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
             let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Grey(0);
