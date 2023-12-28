@@ -79,29 +79,40 @@ lazy_static! {
     static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncOp3)> = {
         let mut map = HashMap::new();
         
-        map.insert("constant", (vec![
-            OpLayoutParam::param("_1", OpLayoutType::Color),
-        ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
-            let pix = parse_for_color(&nod.params.items[pmap["_1"]])?;
-            let op = Op3Def::Constant(pix);
-            Ok(BuildOp3::new(op))
-        } as BuildFuncOp3));
+        map.insert(
+            "constant",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Color),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let pix = parse_for_color(&nod.params.items[pmap["_1"]])?;
+                 let op = Op3Def::Constant(pix);
+                 Ok(BuildOp3::new(op))
+             } as BuildFuncOp3)
+        );
         
-        map.insert("invert", (vec![
-            OpLayoutParam::param("_1", OpLayoutType::Op3),
-        ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
-            let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
-            let op = Op3Def::Invert(0);
-            Ok(BuildOp3::new(op).addchild3(subop))
-        } as BuildFuncOp3));
+        map.insert(
+            "invert",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
+                 let op = Op3Def::Invert(0);
+                 Ok(BuildOp3::new(op).addchild3(subop))
+             } as BuildFuncOp3)
+        );
         
-        map.insert("grey", (vec![
-            OpLayoutParam::param("_1", OpLayoutType::Op1),
-        ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
-            let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
-            let op = Op3Def::Grey(0);
-            Ok(BuildOp3::new(op).addchild1(subop))
-        } as BuildFuncOp3));
+        map.insert(
+            "grey",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+            ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                let op = Op3Def::Grey(0);
+                Ok(BuildOp3::new(op).addchild1(subop))
+            } as BuildFuncOp3)
+        );
         
         map
     };
