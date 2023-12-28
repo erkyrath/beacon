@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
+use crate::param::Param;
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::{BuildOp1, BuildOp3};
 use crate::parse::{parse_for_op1, parse_for_op3, parse_for_number, parse_for_color};
@@ -40,6 +41,8 @@ impl OpLayoutParam {
         }
     }
 }
+
+type BuildFuncParam = fn(&ParseNode, &HashMap<String, usize>)->Result<Param, String>;
 
 type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
