@@ -238,7 +238,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
 
 fn verify_childless(nod: &ParseNode) -> Result<(), String> {
     if nod.params.items.len() > 0 {
-        return Err(format!("line {}: node cannot have params: {:?}", nod.linenum, nod.term));
+        return Err(format!("line {}: node cannot have params: {}", nod.linenum, nod.term));
     }
     Ok(())
 }
@@ -269,7 +269,7 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
                     }
                 }
                 else {
-                    return Err(format!("line {}: param not known: {}", nod.linenum, name));
+                    return Err(format!("line {}: param not known for {}: {}", nod.linenum, nod.term, name));
                 }
             },
         }
@@ -277,7 +277,7 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
 
     for pos in 0..layout.len() {
         if !used[pos] && !layout[pos].optional {
-            return Err(format!("line {}: required parameter: {}", nod.linenum, layout[pos].name));
+            return Err(format!("line {}: required parameter for {}: {}", nod.linenum, nod.term, layout[pos].name));
         }
     }
     

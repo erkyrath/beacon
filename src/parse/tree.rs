@@ -1,3 +1,4 @@
+use std::fmt;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
@@ -9,6 +10,16 @@ pub enum ParseTerm {
     Number(f32),
     Color(Pix<f32>),
     Ident(String),
+}
+
+impl fmt::Display for ParseTerm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ParseTerm::Number(val) => write!(f, "{}", *val),
+            ParseTerm::Color(pix) => write!(f, "${:02x}{:02x}{:02x}", (pix.r*255.0) as u8, (pix.g*255.0) as u8, (pix.b*255.0) as u8),
+            ParseTerm::Ident(val) => write!(f, "{}", val),
+        }
+    }
 }
 
 pub struct ParseItems {
