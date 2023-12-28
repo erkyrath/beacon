@@ -169,9 +169,23 @@ lazy_static! {
                 let subop1 = parse_for_op1(&nod.params.items[pmap["r"]])?;
                 let subop2 = parse_for_op1(&nod.params.items[pmap["g"]])?;
                 let subop3 = parse_for_op1(&nod.params.items[pmap["b"]])?;
-                let op = Op3Def::RGB(0, 0, 0);
+                let op = Op3Def::RGB(0, 1, 2);
                 Ok(BuildOp3::new(op).addchild1(subop1).addchild1(subop2).addchild1(subop3))
             } as BuildFuncOp3)
+        );
+        
+        map.insert(
+            "muls",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+                OpLayoutParam::param("_2", OpLayoutType::Op1),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let subop1 = parse_for_op3(&nod.params.items[pmap["_1"]])?;
+                 let subop2 = parse_for_op1(&nod.params.items[pmap["_2"]])?;
+                 let op = Op3Def::MulS(0, 0);
+                 Ok(BuildOp3::new(op).addchild3(subop1).addchild1(subop2))
+             } as BuildFuncOp3)
         );
         
         map
