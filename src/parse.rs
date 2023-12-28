@@ -119,8 +119,21 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
     let itemls = tree::parse_tree(filename)?;
 
     for item in &itemls.items {
-        let op3 = parse_for_op3(item)?;
-        println!("### got op3 {:?}", op3);
+        match parse_for_op3(item) {
+            Ok(op3) => {
+                println!("### got op3 {:?}", op3);
+            },
+            Err(err3) => {
+                match parse_for_op1(item) {
+                    Ok(op1) => {
+                        println!("### got op1 {:?}", op1);
+                    },
+                    Err(_err1) => {
+                        return Err(err3);
+                    }
+                }
+            },
+        }
     }
     
     return Ok(());
