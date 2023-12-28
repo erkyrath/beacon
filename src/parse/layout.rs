@@ -125,7 +125,7 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
                  let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
-                 let op = Op1Def::Brightness(0);
+                 let op = Op1Def::Brightness();
                  Ok(BuildOp1::new(op).addchild3(subop))
              } as BuildFuncOp1)
         );

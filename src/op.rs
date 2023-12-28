@@ -10,7 +10,7 @@ pub enum Op1Def {
     Constant(f32),
     Invert(), // op1
     Pulser(Pulser),
-    Brightness(usize), // op3
+    Brightness(), // op3
     Sum(), // op1...
 }
 
@@ -53,8 +53,8 @@ impl Op1Def {
                     indentstr, pulser.spaceshape, pulser.timeshape);
                 desc
             },
-            Op1Def::Brightness(bufnum) => {
-                format!("Brightness(3/{bufnum})")
+            Op1Def::Brightness() => {
+                format!("Brightness()")
             },
             Op1Def::Sum() => {
                 format!("Sum()")
