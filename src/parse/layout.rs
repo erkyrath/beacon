@@ -118,6 +118,18 @@ lazy_static! {
              } as BuildFuncOp1)
         );
         
+        map.insert(
+            "brightness",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
+                 let op = Op1Def::Brightness(0);
+                 Ok(BuildOp1::new(op).addchild3(subop))
+             } as BuildFuncOp1)
+        );
+        
         map
     };
     
