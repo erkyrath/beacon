@@ -24,7 +24,6 @@ pub enum Op3Def {
 }
 
 impl Op1Def {
-    //### drop bufs from return val (just make debug?)
     pub fn describe(&self, indent: Option<String>) -> String {
         match self {
             Op1Def::Constant(val) => {
@@ -65,7 +64,6 @@ impl Op1Def {
 }
 
 impl Op3Def {
-    //### drop bufs from return val
     pub fn describe(&self, _indent: Option<String>) -> String {
         match self {
             Op3Def::Constant(pix) => {
