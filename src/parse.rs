@@ -8,7 +8,6 @@ use crate::parse::tree::{ParseTerm, ParseNode};
 
 pub mod tree;
 
-//###?
 enum OpLayoutType {
     Op1,
     Op3,
@@ -61,6 +60,14 @@ lazy_static! {
     
     static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncOp3)> = {
         let mut map = HashMap::new();
+        
+        map.insert("constant", (vec![
+            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Color, optional: false },
+        ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+            let pix = parse_for_color(&nod.params.items[pmap["_1"]])?;
+            let op = Op3Def::Constant(pix);
+            Ok(BuildOp3::new(op))
+        } as BuildFuncOp3));
         
         map.insert("invert", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
@@ -195,6 +202,16 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
     }
     
     return Ok(());
+}
+
+fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
+    match &nod.term {
+        ParseTerm::Color(pix) => {
+            verify_childless(nod)?;
+            Ok(pix.clone())
+        },
+        _ => Err(format!("line {}: color expected", nod.linenum)),
+    }
 }
 
 fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
