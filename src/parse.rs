@@ -214,6 +214,16 @@ fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
     }
 }
 
+fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {
+    match &nod.term {
+        ParseTerm::Number(val) => {
+            verify_childless(nod)?;
+            Ok(*val)
+        },
+        _ => Err(format!("line {}: number expected", nod.linenum)),
+    }
+}
+
 fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
