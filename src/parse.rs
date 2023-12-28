@@ -24,6 +24,8 @@ struct OpLayoutParam {
     optional: bool,
 }
 
+type BuildFunc = fn ()->BuildOp3;
+
 lazy_static! {
     static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
         let mut map = HashMap::new();
@@ -57,14 +59,23 @@ lazy_static! {
         map
     };
     
-    static ref OP3LAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
+    static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFunc)> = {
         let mut map = HashMap::new();
-        map.insert("invert", vec![
+        
+        fn build_invert() -> BuildOp3 {
+            BuildOp3::new(Op3Def::Grey(0))
+        }
+        map.insert("invert", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
-        ]);
-        map.insert("grey", vec![
+        ], build_invert as BuildFunc));
+        
+        fn build_grey() -> BuildOp3 {
+            BuildOp3::new(Op3Def::Grey(0))
+        }
+        map.insert("grey", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
-        ]);
+        ], build_grey as BuildFunc));
+        
         map
     };
 }
@@ -196,7 +207,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(subop))
         },
         ParseTerm::Ident(val) => {
-            let params = OP3LAYOUT.get(val.to_lowercase().as_str())
+            let (params, _buildfunc) = OP3LAYOUT.get(val.to_lowercase().as_str())
                 .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
             println!("### pmap = {:?}", pmap);
