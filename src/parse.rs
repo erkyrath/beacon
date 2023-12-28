@@ -210,7 +210,18 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
 }
 
 fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
-    Err("### parse_for_op1 not implemented".to_string())
+    match &nod.term {
+        ParseTerm::Color(_pix) => {
+            Err(format!("line {}: expected number, found color", nod.linenum))
+        },
+        ParseTerm::Number(val) => {
+            verify_childless(nod)?;
+            let op = Op1Def::Constant(*val);
+            Ok(BuildOp1::new(op))
+        },
+        //### Ident
+        _ => Err(format!("unimplemented at line {}", nod.linenum)),
+    }
 }
 
 fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
