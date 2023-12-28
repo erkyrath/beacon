@@ -81,7 +81,7 @@ pub fn build_script() -> Script {
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
     script.op3s.push(csum);
 
-    let cmuls = Op3Def::CMulS(2, 0);
+    let cmuls = Op3Def::MulS(2, 0);
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
     script.op3s.push(cmuls);
 

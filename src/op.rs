@@ -19,7 +19,7 @@ pub enum Op3Def {
     Invert(usize), // op3
     Grey(usize), // op1
     RGB(usize, usize, usize), // op1, op1, op1
-    CMulS(usize, usize), // op3, op1
+    MulS(usize, usize), // op3, op1
     Sum(Vec<usize>), // op3...
 }
 
@@ -80,8 +80,8 @@ impl Op3Def {
             Op3Def::RGB(bufnum1, bufnum2, bufnum3) => {
                 (format!("RGB(1/{bufnum1}, 1/{bufnum2}, 1/{bufnum3})"), vec![ ScriptIndex::Op1(*bufnum1), ScriptIndex::Op1(*bufnum2), ScriptIndex::Op1(*bufnum3) ])
             },
-            Op3Def::CMulS(bufnum1, bufnum2) => {
-                (format!("CMulS(3/{bufnum1}, 1/{bufnum2})"), vec![ ScriptIndex::Op3(*bufnum1), ScriptIndex::Op1(*bufnum2) ])
+            Op3Def::MulS(bufnum1, bufnum2) => {
+                (format!("MulS(3/{bufnum1}, 1/{bufnum2})"), vec![ ScriptIndex::Op3(*bufnum1), ScriptIndex::Op1(*bufnum2) ])
             },
             Op3Def::Sum(bufnums) => {
                 let str = bufnums.iter().map(|val| format!("3/{}", val)).collect::<Vec<String>>().join(", ");
@@ -232,7 +232,7 @@ impl Op3Ctx {
                 }
             }
 
-            Op3Def::CMulS(obufnum1, obufnum2) => {
+            Op3Def::MulS(obufnum1, obufnum2) => {
                 let obuf1 = ctx.op3s[*obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[*obufnum2].buf.borrow();
                 assert!(buf.len() == obuf1.len());
