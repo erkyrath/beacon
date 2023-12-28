@@ -141,10 +141,10 @@ impl Op3State {
 
 impl Op1Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
-        let opdef = &ctx.script.op1s[bufnum].op;
+        let opref = &ctx.script.op1s[bufnum];
         let opbuf = &ctx.script.op1s[bufnum].bufs;
         let mut buf = ctx.op1s[bufnum].buf.borrow_mut();
-        match &opdef {
+        match &opref.op {
             Op1Def::Constant(val) => {
                 for ix in 0..buf.len() {
                     buf[ix] = *val;
@@ -202,11 +202,11 @@ impl Op1Ctx {
 
 impl Op3Ctx {
     pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
-        let opdef = &ctx.script.op3s[bufnum].op;
+        let opref = &ctx.script.op3s[bufnum];
         let opbuf = &ctx.script.op3s[bufnum].bufs;
         //let mut _state = ctx.op3s[bufnum].state.borrow_mut();
         let mut buf = ctx.op3s[bufnum].buf.borrow_mut();
-        match &opdef {
+        match &opref.op {
             Op3Def::Constant(val) => {
                 for ix in 0..buf.len() {
                     buf[ix] = val.clone();
