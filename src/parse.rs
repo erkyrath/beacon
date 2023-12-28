@@ -47,31 +47,31 @@ lazy_static! {
     static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
         let mut map = HashMap::new();
         map.insert("constant", vec![
-            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam::param("_1", OpLayoutType::Number),
         ]);
         map.insert("randflat", vec![
-            OpLayoutParam { name: "min".to_string(), ptype: OpLayoutType::Number, optional: false },
-            OpLayoutParam { name: "max".to_string(), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam::param("min", OpLayoutType::Number),
+            OpLayoutParam::param("max", OpLayoutType::Number),
         ]);
         map.insert("randnorm", vec![
-            OpLayoutParam { name: "mean".to_string(), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: "stdev".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam::param_optional("mean", OpLayoutType::Number),
+            OpLayoutParam::param_optional("stdev", OpLayoutType::Number),
         ]);
         map.insert("changing", vec![
-            OpLayoutParam { name: "start".to_string(), ptype: OpLayoutType::Number, optional: false },
-            OpLayoutParam { name: "velocity".to_string(), ptype: OpLayoutType::Number, optional: false },
+            OpLayoutParam::param("start", OpLayoutType::Number),
+            OpLayoutParam::param("velocity", OpLayoutType::Number),
         ]);
         map.insert("wave", vec![
-            OpLayoutParam { name: "shape".to_string(), ptype: OpLayoutType::Wave, optional: false },
-            OpLayoutParam { name: "min".to_string(), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: "max".to_string(), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: "duration".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam::param("shape", OpLayoutType::Wave),
+            OpLayoutParam::param_optional("min", OpLayoutType::Number),
+            OpLayoutParam::param_optional("max", OpLayoutType::Number),
+            OpLayoutParam::param_optional("duration", OpLayoutType::Number),
         ]);
         map.insert("wavecycle", vec![
-            OpLayoutParam { name: "shape".to_string(), ptype: OpLayoutType::Wave, optional: false },
-            OpLayoutParam { name: "min".to_string(), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: "max".to_string(), ptype: OpLayoutType::Number, optional: true },
-            OpLayoutParam { name: "period".to_string(), ptype: OpLayoutType::Number, optional: true },
+            OpLayoutParam::param("shape", OpLayoutType::Wave),
+            OpLayoutParam::param_optional("min", OpLayoutType::Number),
+            OpLayoutParam::param_optional("max", OpLayoutType::Number),
+            OpLayoutParam::param_optional("period", OpLayoutType::Number),
         ]);
         map
     };
