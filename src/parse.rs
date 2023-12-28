@@ -175,7 +175,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             Ok(BuildOp3::new(op).addchild1(BuildOp1::new(subop)))
         },
         ParseTerm::Ident(val) => {
-            let (params, buildfunc) = get_op3_layout().get(val.to_lowercase().as_str())
+            let (params, buildfunc) = get_op3_layout(val)
                 .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
             println!("### pmap = {:?}", pmap);

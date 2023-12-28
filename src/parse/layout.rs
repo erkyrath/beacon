@@ -43,12 +43,12 @@ impl OpLayoutParam {
 
 type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
-pub fn get_param_layout() -> &'static HashMap<&'static str, Vec<OpLayoutParam>> {
-    return &PARAMLAYOUT;
+pub fn get_param_layout(val: &str) -> Option<&Vec<OpLayoutParam>> {
+    return PARAMLAYOUT.get(val.to_lowercase().as_str());
 }
 
-pub fn get_op3_layout() -> &'static HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncOp3)> {
-    return &OP3LAYOUT;
+pub fn get_op3_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncOp3)> {
+    return OP3LAYOUT.get(val.to_lowercase().as_str());
 }
 
 lazy_static! {
