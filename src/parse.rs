@@ -24,7 +24,7 @@ struct OpLayoutParam {
     optional: bool,
 }
 
-type BuildFunc = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
+type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
 lazy_static! {
     static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
@@ -59,26 +59,24 @@ lazy_static! {
         map
     };
     
-    static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFunc)> = {
+    static ref OP3LAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncOp3)> = {
         let mut map = HashMap::new();
         
-        fn build_invert(nod: &ParseNode, pmap: &HashMap<String, usize>) -> Result<BuildOp3, String> {
+        map.insert("invert", (vec![
+            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
+        ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
             let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Invert(0);
             Ok(BuildOp3::new(op).addchild3(subop))
-        }
-        map.insert("invert", (vec![
-            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
-        ], build_invert as BuildFunc));
+        } as BuildFuncOp3));
         
-        fn build_grey(nod: &ParseNode, pmap: &HashMap<String, usize>) -> Result<BuildOp3, String> {
+        map.insert("grey", (vec![
+            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
+        ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
             let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Grey(0);
             Ok(BuildOp3::new(op).addchild1(subop))
-        }
-        map.insert("grey", (vec![
-            OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
-        ], build_grey as BuildFunc));
+        } as BuildFuncOp3));
         
         map
     };
