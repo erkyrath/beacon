@@ -133,12 +133,12 @@ impl Script {
 pub fn build_script() -> Script {
     let mut script = Script::new();
 
-    let csum = Op3Def::Sum(vec![3, 1]);
+    let csum = Op3Def::Sum();
     let csumbufs: Vec<ScriptIndex> = vec![ ScriptIndex::Op3(3), ScriptIndex::Op3(1) ];
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
     script.op3s.push(Op3DefRef::new(csum, csumbufs));
 
-    let cmuls = Op3Def::MulS(2, 0);
+    let cmuls = Op3Def::MulS();
     let cmulsbufs: Vec<ScriptIndex> = vec![ ScriptIndex::Op3(2), ScriptIndex::Op1(0) ];
     script.order.push(ScriptIndex::Op3(script.op3s.len()));
     script.op3s.push(Op3DefRef::new(cmuls, cmulsbufs));

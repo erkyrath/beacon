@@ -193,7 +193,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
         ParseTerm::Number(val) => {
             verify_childless(nod)?;
             let subop = Op1Def::Constant(*val);
-            let op = Op3Def::Grey(0);
+            let op = Op3Def::Grey();
             Ok(BuildOp3::new(op).addchild1(BuildOp1::new(subop)))
         },
         ParseTerm::Ident(val) => {

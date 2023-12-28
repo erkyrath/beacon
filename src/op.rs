@@ -11,16 +11,16 @@ pub enum Op1Def {
     Invert(usize), // op1
     Pulser(Pulser),
     Brightness(usize), // op3
-    Sum(Vec<usize>), // op1...
+    Sum(), // op1...
 }
 
 pub enum Op3Def {
     Constant(Pix<f32>),
     Invert(usize), // op3
-    Grey(usize), // op1
-    RGB(usize, usize, usize), // op1, op1, op1
-    MulS(usize, usize), // op3, op1
-    Sum(Vec<usize>), // op3...
+    Grey(), // op1
+    RGB(), // op1, op1, op1
+    MulS(), // op3, op1
+    Sum(), // op3...
 }
 
 impl Op1Def {
@@ -56,9 +56,8 @@ impl Op1Def {
             Op1Def::Brightness(bufnum) => {
                 format!("Brightness(3/{bufnum})")
             },
-            Op1Def::Sum(bufnums) => {
-                let str = bufnums.iter().map(|val| format!("1/{}", val)).collect::<Vec<String>>().join(", ");
-                format!("Sum({str})")
+            Op1Def::Sum() => {
+                format!("Sum()")
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -75,18 +74,17 @@ impl Op3Def {
             Op3Def::Invert(bufnum) => {
                 format!("Invert(3/{bufnum})")
             },
-            Op3Def::Grey(bufnum) => {
-                format!("Grey(1/{bufnum})")
+            Op3Def::Grey() => {
+                format!("Grey()")
             },
-            Op3Def::RGB(bufnum1, bufnum2, bufnum3) => {
-                format!("RGB(1/{bufnum1}, 1/{bufnum2}, 1/{bufnum3})")
+            Op3Def::RGB() => {
+                format!("RGB()")
             },
-            Op3Def::MulS(bufnum1, bufnum2) => {
-                format!("MulS(3/{bufnum1}, 1/{bufnum2})")
+            Op3Def::MulS() => {
+                format!("MulS()")
             },
-            Op3Def::Sum(bufnums) => {
-                let str = bufnums.iter().map(|val| format!("3/{}", val)).collect::<Vec<String>>().join(", ");
-                format!("Sum({str})")
+            Op3Def::Sum() => {
+                format!("Sum()")
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -176,7 +174,7 @@ impl Op1Ctx {
                 }
             }
             
-            Op1Def::Sum(_) => {
+            Op1Def::Sum() => {
                 if opbuf.len() == 0 {
                     for ix in 0..buf.len() {
                         buf[ix] = 0.0;
@@ -236,7 +234,7 @@ impl Op3Ctx {
                 }
             }
 
-            Op3Def::RGB(_, _, _) => {
+            Op3Def::RGB() => {
                 let obufnum1 = match opbuf[0] {
                     ScriptIndex::Op3(val) => val,
                     _ => panic!("###"),
@@ -260,7 +258,7 @@ impl Op3Ctx {
                 }
             }
 
-            Op3Def::MulS(_, _) => {
+            Op3Def::MulS() => {
                 let obufnum1 = match opbuf[0] {
                     ScriptIndex::Op3(val) => val,
                     _ => panic!("###"),
@@ -278,7 +276,7 @@ impl Op3Ctx {
                 }
             }
 
-            Op3Def::Sum(_) => {
+            Op3Def::Sum() => {
                 if opbuf.len() == 0 {
                     for ix in 0..buf.len() {
                         buf[ix] = Pix::new(0.0, 0.0, 0.0);
