@@ -233,24 +233,6 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             let pmap = match_children(nod, params)?;
             println!("### pmap = {:?}", pmap);
             return buildfunc(nod, &pmap);
-            
-            /*###
-            match val.to_lowercase().as_str() {
-                "grey" => {
-                    let subop = Op1Def::Constant(0.123); //###
-                    let op = Op3Def::Grey(0);
-                    Ok(BuildOp3::new(op).addchild1(subop))
-                },
-                "invert" => {
-                    let subop = Op3Def::Constant(Pix::new(0.123, 0.123, 0.123)); //###
-                    let op = Op3Def::Invert(0);
-                    Ok(BuildOp3::new(op).addchild3(subop))
-                },
-                _ => {
-                    Err(format!("line {}: op3 not recognized: {}", nod.linenum, val))
-                },
-            }
-            ###*/
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
