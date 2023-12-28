@@ -152,10 +152,7 @@ impl Op1Ctx {
             }
 
             Op1Def::Invert() => {
-                let obufnum = match opbuf[0] {
-                    ScriptIndex::Op1(val) => val,
-                    _ => panic!("###"),
-                };
+                let obufnum = ctx.script.op1s[bufnum].get_type_ref(1, 0);
                 let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
@@ -181,19 +178,13 @@ impl Op1Ctx {
                     }
                 }
                 else {
-                    let obufnum = match opbuf[0] {
-                        ScriptIndex::Op1(val) => val,
-                        _ => panic!("###"),
-                    };
+                    let obufnum = ctx.script.op1s[bufnum].get_type_ref(1, 0);
                     let obuf1 = ctx.op1s[obufnum].buf.borrow();
                     for ix in 0..buf.len() {
                         buf[ix] = obuf1[ix];
                     }
                     for jx in 1..opbuf.len() {
-                        let obufnum = match opbuf[jx] {
-                            ScriptIndex::Op1(val) => val,
-                            _ => panic!("###"),
-                        };
+                        let obufnum = ctx.script.op1s[bufnum].get_type_ref(1, jx);
                         let obuf = ctx.op1s[obufnum].buf.borrow();
                         for ix in 0..buf.len() {
                             buf[ix] += obuf[ix];

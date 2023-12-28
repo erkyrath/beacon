@@ -27,11 +27,37 @@ impl Op1DefRef {
     fn new(op: Op1Def, bufs: Vec<ScriptIndex>) -> Op1DefRef {
         Op1DefRef { op:op, bufs:bufs }
     }
+    
+    pub fn get_type_ref(&self, op: u8, num: usize) -> usize {
+        if op == 1 {
+            if let ScriptIndex::Op1(val) = self.bufs[num] {
+                return val;
+            }
+        } else if op == 3 {
+            if let ScriptIndex::Op3(val) = self.bufs[num] {
+                return val;
+            }
+        }
+        panic!("invalid typeref: type {} num {}", op, num);
+    }
 }
 
 impl Op3DefRef {
     fn new(op: Op3Def, bufs: Vec<ScriptIndex>) -> Op3DefRef {
         Op3DefRef { op:op, bufs:bufs }
+    }
+    
+    pub fn get_type_ref(&self, op: u8, num: usize) -> usize {
+        if op == 1 {
+            if let ScriptIndex::Op1(val) = self.bufs[num] {
+                return val;
+            }
+        } else if op == 3 {
+            if let ScriptIndex::Op3(val) = self.bufs[num] {
+                return val;
+            }
+        }
+        panic!("invalid typeref: type {} num {}", op, num);
     }
 }
 
