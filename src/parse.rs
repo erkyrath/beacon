@@ -119,7 +119,7 @@ impl fmt::Debug for BuildOp3 {
 pub fn parse_script(filename: &str) -> Result<(), String> {
     let itemls = tree::parse_tree(filename)?;
 
-    let mut script = Script::new();
+    //let mut script = Script::new();
 
     for item in &itemls.items {
         match parse_for_op3(item) {
