@@ -69,8 +69,13 @@ impl Script {
         }
 
         // Now any unmentioned ops
+        let mut gotany = false;
         for bufnum in 0..self.op3s.len() {
             if !track.op3s.contains(&bufnum) {
+                if !gotany {
+                    gotany = true;
+                    println!("unmentioned ops:");
+                }
                 self.dumpop(&mut track, ScriptIndex::Op3(bufnum), 0);
             }
         }
@@ -85,39 +90,41 @@ impl Script {
         let indentstr: String = "  ".repeat(indent);
         let subindentstr = "\n         ".to_string() + &indentstr;
         let desc: String;
-        let bufs: Vec<ScriptIndex>;
+        let bufs: Option<&Vec<ScriptIndex>>;
         let scstr: String;
         match scix {
             ScriptIndex::Op1(bufnum) => {
                 if bufnum < self.op1s.len() {
                     track.op1s.insert(bufnum);
-                    bufs = Vec::default(); //### from opex
+                    bufs = Some(&self.op1s[bufnum].bufs);
                     desc = self.op1s[bufnum].op.describe(Some(subindentstr));
                 }
                 else {
                     desc = "???".to_string();
-                    bufs = Vec::default();
+                    bufs = None;
                 }
                 scstr = format!("1/{}", bufnum);
             },
             ScriptIndex::Op3(bufnum) => {
                 if bufnum < self.op3s.len() {
                     track.op3s.insert(bufnum);
-                    bufs = Vec::default(); //### from opex
+                    bufs = Some(&self.op3s[bufnum].bufs);
                     desc = self.op3s[bufnum].op.describe(Some(subindentstr));
                 }
                 else {
                     desc = "???".to_string();
-                    bufs = Vec::default();
+                    bufs = None;
                 }
                 scstr = format!("3/{}", bufnum);
             },
         }
 
         println!("({}): {}{}", scstr, indentstr, desc);
-        
-        for val in bufs {
-            self.dumpop(track, val, indent+1);
+
+        if let Some(buflist) = bufs {
+            for val in buflist {
+                self.dumpop(track, *val, indent+1);
+            }
         }
     }
     
