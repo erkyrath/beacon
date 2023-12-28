@@ -65,7 +65,7 @@ lazy_static! {
         fn build_invert(nod: &ParseNode, pmap: &HashMap<String, usize>) -> Result<BuildOp3, String> {
             let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Invert(0);
-            Ok(BuildOp3::new(op).addchild3x(subop))
+            Ok(BuildOp3::new(op).addchild3(subop))
         }
         map.insert("invert", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op3, optional: false },
@@ -74,7 +74,7 @@ lazy_static! {
         fn build_grey(nod: &ParseNode, pmap: &HashMap<String, usize>) -> Result<BuildOp3, String> {
             let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
             let op = Op3Def::Grey(0);
-            Ok(BuildOp3::new(op).addchild1x(subop))
+            Ok(BuildOp3::new(op).addchild1(subop))
         }
         map.insert("grey", (vec![
             OpLayoutParam { name: "_1".to_string(), ptype: OpLayoutType::Op1, optional: false },
@@ -105,13 +105,13 @@ impl BuildOp1 {
         }
     }
 
-    fn addchild1(mut self, op: Op1Def) -> BuildOp1 {
-        self.child1.push(Box::new(BuildOp1::new(op)));
+    fn addchild1(mut self, op: BuildOp1) -> BuildOp1 {
+        self.child1.push(Box::new(op));
         return self;
     }
 
-    fn addchild3(mut self, op: Op3Def) -> BuildOp1 {
-        self.child3.push(Box::new(BuildOp3::new(op)));
+    fn addchild3(mut self, op: BuildOp3) -> BuildOp1 {
+        self.child3.push(Box::new(op));
         return self;
     }
 }
@@ -125,22 +125,12 @@ impl BuildOp3 {
         }
     }
 
-    fn addchild1(mut self, op: Op1Def) -> BuildOp3 {
-        self.child1.push(Box::new(BuildOp1::new(op)));
-        return self;
-    }
-
-    fn addchild1x(mut self, op: BuildOp1) -> BuildOp3 {
+    fn addchild1(mut self, op: BuildOp1) -> BuildOp3 {
         self.child1.push(Box::new(op));
         return self;
     }
 
-    fn addchild3(mut self, op: Op3Def) -> BuildOp3 {
-        self.child3.push(Box::new(BuildOp3::new(op)));
-        return self;
-    }
-
-    fn addchild3x(mut self, op: BuildOp3) -> BuildOp3 {
+    fn addchild3(mut self, op: BuildOp3) -> BuildOp3 {
         self.child3.push(Box::new(op));
         return self;
     }
@@ -235,7 +225,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             verify_childless(nod)?;
             let subop = Op1Def::Constant(*val);
             let op = Op3Def::Grey(0);
-            Ok(BuildOp3::new(op).addchild1(subop))
+            Ok(BuildOp3::new(op).addchild1(BuildOp1::new(subop)))
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = OP3LAYOUT.get(val.to_lowercase().as_str())
