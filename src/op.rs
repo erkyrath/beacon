@@ -221,9 +221,9 @@ impl Op3Ctx {
             }
 
             Op3Def::RGB() => {
-                let obufnum1 = opref.get_type_ref(3, 0);
-                let obufnum2 = opref.get_type_ref(3, 1);
-                let obufnum3 = opref.get_type_ref(3, 2);
+                let obufnum1 = opref.get_type_ref(1, 0);
+                let obufnum2 = opref.get_type_ref(1, 1);
+                let obufnum3 = opref.get_type_ref(1, 2);
                 let obuf1 = ctx.op1s[obufnum1].buf.borrow();
                 let obuf2 = ctx.op1s[obufnum2].buf.borrow();
                 let obuf3 = ctx.op1s[obufnum3].buf.borrow();
