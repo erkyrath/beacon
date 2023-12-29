@@ -393,18 +393,18 @@ lazy_static! {
             "clamp",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
-                OpLayoutParam::param_optional("min", OpLayoutType::Number),
-                OpLayoutParam::param_optional("max", OpLayoutType::Number),
+                OpLayoutParam::param_optional("min", OpLayoutType::Param),
+                OpLayoutParam::param_optional("max", OpLayoutType::Param),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
                  let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
                  let min = match pmap.get("min") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 0.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.0),
                  };
                  let max = match pmap.get("max") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 1.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(1.0),
                  };
                  let op = Op1Def::Clamp(min, max);
                  Ok(BuildOp1::new(op).addchild1(subop))

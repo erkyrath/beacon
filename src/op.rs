@@ -18,7 +18,7 @@ pub enum Op1Def {
     Brightness(), // op3
     Mul(), // op1, op1
     Sum(), // op1...
-    Clamp(f32, f32), // min, max; op1
+    Clamp(Param, Param), // min, max; op1
 }
 
 #[derive(Clone)]
@@ -76,7 +76,7 @@ impl Op1Def {
                 format!("Sum()")
             },
             Op1Def::Clamp(min, max) => {
-                format!("Clamp({}, {})", min, max)
+                format!("Clamp({:?}, {:?})", min, max)
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -249,11 +249,14 @@ impl Op1Ctx {
             }
             
             Op1Def::Clamp(min, max) => {
+                let age = ctx.age() as f32;
+                let min = min.eval(ctx, age);
+                let max = max.eval(ctx, age);
                 let obufnum = opref.get_type_ref(1, 0);
                 let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
-                    buf[ix] = obuf[ix].clamp(*min, *max);
+                    buf[ix] = obuf[ix].clamp(min, max);
                 }
             }
 
