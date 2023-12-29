@@ -235,6 +235,15 @@ impl Op3Ctx {
                 }
             }
 
+            Op3Def::Grey() => {
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = Pix::new(obuf[ix], obuf[ix], obuf[ix]);
+                }
+            }
+
             Op3Def::MulS() => {
                 let obufnum1 = opref.get_type_ref(3, 0);
                 let obufnum2 = opref.get_type_ref(1, 1);
