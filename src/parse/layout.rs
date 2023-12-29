@@ -140,6 +140,10 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
                  let mut pulser = Pulser::new();
+                 if let Some(val) = pmap.get("countlimit") {
+                     let limit = parse_for_number(&nod.params.items[*val])? as usize;
+                     pulser.countlimit = Some(limit);
+                 }
                  if let Some(val) = pmap.get("spaceshape") {
                      pulser.spaceshape = parse_for_waveshape(&nod.params.items[*val])?;
                  }
