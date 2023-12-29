@@ -26,5 +26,23 @@ impl Pix<f32> {
             b: self.b * (1.0-pos) + other.b * pos,
         }
     }
+
+    pub fn from_hsv(hue: f32, sat: f32, value: f32) -> Pix<f32> {
+        let chr = value * sat;
+        let hp = hue.rem_euclid(1.0) * 6.0;
+        let xp = chr * (1.0 - (hp.rem_euclid(2.0) - 1.0).abs());
+        let (rval, gval, bval) = match hp as u8 {
+            0 => (chr, xp, 0.0),
+            1 => (xp, chr, 0.0),
+            2 => (0.0, chr, xp),
+            3 => (0.0, xp, chr),
+            4 => (xp, 0.0, chr),
+            5 => (chr, 0.0, xp),
+            6 => (chr, xp, 0.0),
+            _ => panic!("hsv math is wrong"),
+        };
+        let m = value - chr;
+        Pix::new(rval+m, gval+m, bval+m)
+    }
 }
 

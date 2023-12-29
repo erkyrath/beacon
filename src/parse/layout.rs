@@ -480,6 +480,21 @@ lazy_static! {
         );
         
         map.insert(
+            "hsv",
+            (vec![
+                OpLayoutParam::param("h", OpLayoutType::Op1),
+                OpLayoutParam::param("s", OpLayoutType::Op1),
+                OpLayoutParam::param("v", OpLayoutType::Op1),
+            ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                let subop1 = parse_for_op1(&nod.params.items[pmap["h"]])?;
+                let subop2 = parse_for_op1(&nod.params.items[pmap["s"]])?;
+                let subop3 = parse_for_op1(&nod.params.items[pmap["v"]])?;
+                let op = Op3Def::HSV();
+                Ok(BuildOp3::new(op).addchild1(subop1).addchild1(subop2).addchild1(subop3))
+            } as BuildFuncOp3)
+        );
+        
+        map.insert(
             "gradient",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),

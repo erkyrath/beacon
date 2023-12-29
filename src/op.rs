@@ -28,6 +28,7 @@ pub enum Op3Def {
     Invert(), // op3
     Grey(), // op1
     RGB(), // op1, op1, op1
+    HSV(), // op1, op1, op1
     Gradient(Vec<Pix<f32>>), // stops; op1
     MulS(), // op3, op1
     Sum(), // op3...
@@ -102,6 +103,9 @@ impl Op3Def {
             },
             Op3Def::RGB() => {
                 format!("RGB()")
+            },
+            Op3Def::HSV() => {
+                format!("HSV()")
             },
             Op3Def::Gradient(stops) => {
                 format!("Gradient({:?})", stops)
@@ -315,6 +319,21 @@ impl Op3Ctx {
                 assert!(buf.len() == obuf3.len());
                 for ix in 0..buf.len() {
                     buf[ix] = Pix::new(obuf1[ix], obuf2[ix], obuf3[ix]);
+                }
+            }
+
+            Op3Def::HSV() => {
+                let obufnum1 = opref.get_type_ref(1, 0);
+                let obufnum2 = opref.get_type_ref(1, 1);
+                let obufnum3 = opref.get_type_ref(1, 2);
+                let obuf1 = ctx.op1s[obufnum1].buf.borrow();
+                let obuf2 = ctx.op1s[obufnum2].buf.borrow();
+                let obuf3 = ctx.op1s[obufnum3].buf.borrow();
+                assert!(buf.len() == obuf1.len());
+                assert!(buf.len() == obuf2.len());
+                assert!(buf.len() == obuf3.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = Pix::from_hsv(obuf1[ix], obuf2[ix], obuf3[ix]);
                 }
             }
 
