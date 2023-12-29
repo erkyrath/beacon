@@ -309,6 +309,7 @@ fn verify_childless(nod: &ParseNode) -> Result<(), String> {
 fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMap<String, usize>, String> {
     let mut res: HashMap<String, usize> = HashMap::new();
     let mut used = vec![false; layout.len()];
+    let mut repcount: HashMap<String, usize> = HashMap::new();
 
     for (itemix, item) in nod.params.items.iter().enumerate() {
         match &item.key {
@@ -319,8 +320,11 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
                         res.insert(layout[pos].name.clone(), itemix);
                     }
                     else {
-                            let tempname = format!("{}{}", layout[pos].name, 1+res.len());
-                            res.insert(tempname, itemix);
+                        let count = repcount.entry(layout[pos].name.clone())
+                            .and_modify(|val| { *val += 1 })
+                            .or_insert(1);
+                        let tempname = format!("{}{}", layout[pos].name, count);
+                        res.insert(tempname, itemix);
                     }
                 }
                 else {
@@ -338,7 +342,10 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
                             res.insert(layout[pos].name.clone(), itemix);
                         }
                         else {
-                            let tempname = format!("{}{}", layout[pos].name, 1+res.len());
+                            let count = repcount.entry(layout[pos].name.clone())
+                                .and_modify(|val| { *val += 1 })
+                                .or_insert(1);
+                            let tempname = format!("{}{}", layout[pos].name, count);
                             res.insert(tempname, itemix);
                         }
                     }

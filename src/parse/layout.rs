@@ -468,6 +468,31 @@ lazy_static! {
         );
         
         map.insert(
+            "gradient",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param_repeating("stop", OpLayoutType::Color),
+            ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                let mut stops: Vec<Pix<f32>> = Vec::new();
+                let mut ix = 0;
+                loop {
+                    ix += 1;
+                    let tempname = format!("stop{}", ix);
+                    if let Some(val) = pmap.get(&tempname) {
+                        let col = parse_for_color(&nod.params.items[*val])?;
+                        stops.push(col);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                let op = Op3Def::Gradient(stops);
+                Ok(BuildOp3::new(op).addchild1(subop))
+            } as BuildFuncOp3)
+        );
+        
+        map.insert(
             "muls",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op3),
