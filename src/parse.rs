@@ -195,6 +195,10 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
         }
     }
 
+    if script.order.len() == 0 {
+        return Err("error: script is empty".to_string());
+    }
+    
     script.order.reverse();
     
     return Ok(script);
