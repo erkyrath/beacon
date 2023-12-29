@@ -112,8 +112,14 @@ lazy_static! {
                 OpLayoutParam::param_optional("stdev", OpLayoutType::Number),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
-                 let mean = parse_for_number(&nod.params.items[pmap["mean"]])?;
-                 let stdev = parse_for_number(&nod.params.items[pmap["stdev"]])?;
+                 let mean = match pmap.get("mean") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 0.5,
+                 };
+                 let stdev = match pmap.get("stdev") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 0.25,
+                 };
                  Ok(Param::RandNorm(mean, stdev))
              } as BuildFuncParam)
         );
