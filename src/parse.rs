@@ -310,8 +310,14 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
         match &item.key {
             None => {
                 if let Some(pos) = used.iter().position(|val|!val) {
-                    used[pos] = true;
-                    res.insert(layout[pos].name.clone(), itemix);
+                    if !layout[pos].repeating {
+                        used[pos] = true;
+                        res.insert(layout[pos].name.clone(), itemix);
+                    }
+                    else {
+                            let tempname = format!("{}{}", layout[pos].name, 1+res.len());
+                            res.insert(tempname, itemix);
+                    }
                 }
                 else {
                     return Err(format!("line {}: too many params", nod.linenum));
@@ -323,8 +329,14 @@ fn match_children(nod: &ParseNode, layout: &Vec<OpLayoutParam>) -> Result<HashMa
                         return Err(format!("line {}: param appears twice: {}", nod.linenum, name));
                     }
                     else {
-                        used[pos] = true;
-                        res.insert(layout[pos].name.clone(), itemix);
+                        if !layout[pos].repeating {
+                            used[pos] = true;
+                            res.insert(layout[pos].name.clone(), itemix);
+                        }
+                        else {
+                            let tempname = format!("{}{}", layout[pos].name, 1+res.len());
+                            res.insert(tempname, itemix);
+                        }
                     }
                 }
                 else {

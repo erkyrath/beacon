@@ -24,6 +24,7 @@ pub struct OpLayoutParam {
     pub name: String,
     pub ptype: OpLayoutType,
     pub optional: bool,
+    pub repeating: bool,
 }
 
 impl OpLayoutParam {
@@ -32,6 +33,7 @@ impl OpLayoutParam {
             name: name.to_string(),
             ptype: ptype,
             optional: false,
+            repeating: false,
         }
     }
 
@@ -40,6 +42,16 @@ impl OpLayoutParam {
             name: name.to_string(),
             ptype: ptype,
             optional: true,
+            repeating: false,
+        }
+    }
+    
+    fn param_repeating(name: &str, ptype: OpLayoutType) -> OpLayoutParam {
+        OpLayoutParam {
+            name: name.to_string(),
+            ptype: ptype,
+            optional: true,
+            repeating: true,
         }
     }
 }
@@ -361,6 +373,23 @@ lazy_static! {
                  let subop2 = parse_for_op1(&nod.params.items[pmap["_2"]])?;
                  let op = Op3Def::MulS();
                  Ok(BuildOp3::new(op).addchild3(subop1).addchild1(subop2))
+             } as BuildFuncOp3)
+        );
+        
+        map.insert(
+            "sum",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let op = Op3Def::Sum();
+                 let mut bop = BuildOp3::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op3(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild3(subop);
+                 }
+                 Ok(bop)
              } as BuildFuncOp3)
         );
         
