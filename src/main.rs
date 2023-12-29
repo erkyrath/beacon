@@ -40,19 +40,24 @@ pub struct AppOptions {
 fn main() {
     let opts = AppOptions::parse_args_default_or_exit();
 
-    for filename in opts.args {
-        match parse::parse_script(&filename) {
-            Ok(script) => {
-                script.dump();
-            },
-            Err(msg) => {
-                println!("{msg}");
-            },
-        }
+    if opts.args.len() != 1 {
+        println!("usage: beacon [--dump] script");
+        return;
     }
 
-    /*###
-    let script = script::build_script(); //### temp
+    let filename = &opts.args[0];
+    let script: Script;
+    
+    match parse::parse_script(&filename) {
+        Ok(val) => {
+            script = val;
+        },
+        Err(msg) => {
+            println!("{msg}");
+            return;
+        },
+    }
+
     if opts.dump {
         script.dump();
     }
@@ -61,8 +66,7 @@ fn main() {
         if let Err(msg) = res {
             println!("{msg}");
         }
-}
-    ###*/
+    }
 }
 
 fn sdlmain(script: Script) -> Result<(), String> {
