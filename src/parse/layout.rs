@@ -52,7 +52,7 @@ pub fn get_waveshape(val: &str) -> Option<&WaveShape> {
     return WAVESHAPELAYOUT.get(val.to_lowercase().as_str());
 }
 
-pub fn get_param_layout(val: &str) -> Option<&Vec<OpLayoutParam>> {
+pub fn get_param_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncParam)> {
     return PARAMLAYOUT.get(val.to_lowercase().as_str());
 }
 
@@ -78,35 +78,93 @@ lazy_static! {
         ])
     };
     
-    static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
+    static ref PARAMLAYOUT: HashMap<&'static str, (Vec<OpLayoutParam>, BuildFuncParam)> = {
         let mut map = HashMap::new();
-        map.insert("constant", vec![
-            OpLayoutParam::param("_1", OpLayoutType::Number),
-        ]);
-        map.insert("randflat", vec![
-            OpLayoutParam::param("min", OpLayoutType::Number),
-            OpLayoutParam::param("max", OpLayoutType::Number),
-        ]);
-        map.insert("randnorm", vec![
-            OpLayoutParam::param_optional("mean", OpLayoutType::Number),
-            OpLayoutParam::param_optional("stdev", OpLayoutType::Number),
-        ]);
-        map.insert("changing", vec![
-            OpLayoutParam::param("start", OpLayoutType::Number),
-            OpLayoutParam::param("velocity", OpLayoutType::Number),
-        ]);
-        map.insert("wave", vec![
-            OpLayoutParam::param("shape", OpLayoutType::Wave),
-            OpLayoutParam::param_optional("min", OpLayoutType::Number),
-            OpLayoutParam::param_optional("max", OpLayoutType::Number),
-            OpLayoutParam::param_optional("duration", OpLayoutType::Number),
-        ]);
-        map.insert("wavecycle", vec![
-            OpLayoutParam::param("shape", OpLayoutType::Wave),
-            OpLayoutParam::param_optional("min", OpLayoutType::Number),
-            OpLayoutParam::param_optional("max", OpLayoutType::Number),
-            OpLayoutParam::param_optional("period", OpLayoutType::Number),
-        ]);
+        
+        map.insert(
+            "constant",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let val = parse_for_number(&nod.params.items[pmap["_1"]])?;
+                 Ok(Param::Constant(val))
+             } as BuildFuncParam)
+        );
+
+        map.insert(
+            "randflat",
+            (vec![
+                OpLayoutParam::param("min", OpLayoutType::Number),
+                OpLayoutParam::param("max", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let min = parse_for_number(&nod.params.items[pmap["min"]])?;
+                 let max = parse_for_number(&nod.params.items[pmap["max"]])?;
+                 Ok(Param::RandFlat(min, max))
+             } as BuildFuncParam)
+        );
+        
+        map.insert(
+            "randnorm",
+            (vec![
+                OpLayoutParam::param_optional("mean", OpLayoutType::Number),
+                OpLayoutParam::param_optional("stdev", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let mean = parse_for_number(&nod.params.items[pmap["mean"]])?;
+                 let stdev = parse_for_number(&nod.params.items[pmap["stdev"]])?;
+                 Ok(Param::RandNorm(mean, stdev))
+             } as BuildFuncParam)
+        );
+        
+        map.insert(
+            "changing",
+            (vec![
+                OpLayoutParam::param("start", OpLayoutType::Number),
+                OpLayoutParam::param("velocity", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let start = parse_for_number(&nod.params.items[pmap["start"]])?;
+                 let velocity = parse_for_number(&nod.params.items[pmap["velocity"]])?;
+                 Ok(Param::Changing(start, velocity))
+             } as BuildFuncParam)
+        );
+        
+        map.insert(
+            "wave",
+            (vec![
+                OpLayoutParam::param("shape", OpLayoutType::Wave),
+                OpLayoutParam::param_optional("min", OpLayoutType::Number),
+                OpLayoutParam::param_optional("max", OpLayoutType::Number),
+                OpLayoutParam::param_optional("duration", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
+                 let min = parse_for_number(&nod.params.items[pmap["min"]])?;
+                 let max = parse_for_number(&nod.params.items[pmap["max"]])?;
+                 let duration = parse_for_number(&nod.params.items[pmap["duration"]])?;
+                 Ok(Param::Wave(shape, min, max, duration))
+             } as BuildFuncParam)
+        );
+        
+        map.insert(
+            "wavecycle",
+            (vec![
+                OpLayoutParam::param("shape", OpLayoutType::Wave),
+                OpLayoutParam::param_optional("min", OpLayoutType::Number),
+                OpLayoutParam::param_optional("max", OpLayoutType::Number),
+                OpLayoutParam::param_optional("period", OpLayoutType::Number),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
+                 let min = parse_for_number(&nod.params.items[pmap["min"]])?;
+                 let max = parse_for_number(&nod.params.items[pmap["max"]])?;
+                 let period = parse_for_number(&nod.params.items[pmap["period"]])?;
+                 Ok(Param::WaveCycle(shape, min, max, period))
+             } as BuildFuncParam)
+        );
+        
         map
     };
 
