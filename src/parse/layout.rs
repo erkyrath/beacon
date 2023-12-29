@@ -48,6 +48,10 @@ type BuildFuncParam = fn(&ParseNode, &HashMap<String, usize>)->Result<Param, Str
 type BuildFuncOp1 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp1, String>;
 type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp3, String>;
 
+pub fn get_waveshape(val: &str) -> Option<&WaveShape> {
+    return WAVESHAPELAYOUT.get(val.to_lowercase().as_str());
+}
+
 pub fn get_param_layout(val: &str) -> Option<&Vec<OpLayoutParam>> {
     return PARAMLAYOUT.get(val.to_lowercase().as_str());
 }
@@ -61,6 +65,19 @@ pub fn get_op3_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncOp3)> 
 }
 
 lazy_static! {
+    static ref WAVESHAPELAYOUT: HashMap<&'static str, WaveShape> = {
+        HashMap::from([
+            ("flat", WaveShape::Flat),
+            ("square", WaveShape::Square),
+            ("triangle", WaveShape::Triangle),
+            ("sawtooth", WaveShape::SawTooth),
+            ("sqrtooth", WaveShape::SqrTooth),
+            ("sawdecay", WaveShape::SawDecay),
+            ("sqrdecay", WaveShape::SqrDecay),
+            ("sine", WaveShape::Sine),
+        ])
+    };
+    
     static ref PARAMLAYOUT: HashMap<&'static str, Vec<OpLayoutParam>> = {
         let mut map = HashMap::new();
         map.insert("constant", vec![

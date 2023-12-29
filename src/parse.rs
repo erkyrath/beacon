@@ -13,7 +13,7 @@ use crate::script::{Script, ScriptIndex};
 use crate::script::{Op1DefRef, Op3DefRef};
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
-use crate::parse::layout::{get_param_layout, get_op1_layout, get_op3_layout};
+use crate::parse::layout::{get_waveshape, get_param_layout, get_op1_layout, get_op3_layout};
 
 enum BuildOp {
     Op1(Box<BuildOp1>),
@@ -224,15 +224,8 @@ fn parse_for_waveshape(nod: &ParseNode) -> Result<WaveShape, String> {
     match &nod.term {
         ParseTerm::Ident(val) => {
             verify_childless(nod)?;
-            match val.to_lowercase().as_str() {
-                "flat" => Ok(WaveShape::Flat),
-                "square" => Ok(WaveShape::Square),
-                "triangle" => Ok(WaveShape::Triangle),
-                "sawtooth" => Ok(WaveShape::SawTooth),
-                "sqrtooth" => Ok(WaveShape::SqrTooth),
-                "sawdecay" => Ok(WaveShape::SawDecay),
-                "sqrdecay" => Ok(WaveShape::SqrDecay),
-                "sine" => Ok(WaveShape::Sine),
+            match get_waveshape(val) {
+                Some(shape) => Ok(*shape),
                 _ => Err(format!("line {}: waveshape expected", nod.linenum)),
             }
         },
