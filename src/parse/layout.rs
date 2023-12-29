@@ -137,6 +137,9 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_optional("interval", OpLayoutType::Param),
                 OpLayoutParam::param_optional("countlimit", OpLayoutType::Number),
+                OpLayoutParam::param_optional("duration", OpLayoutType::Param),
+                OpLayoutParam::param_optional("pos", OpLayoutType::Param),
+                OpLayoutParam::param_optional("width", OpLayoutType::Param),
                 OpLayoutParam::param_optional("spaceshape", OpLayoutType::Wave),
                 OpLayoutParam::param_optional("timeshape", OpLayoutType::Wave),
             ],
@@ -144,6 +147,15 @@ lazy_static! {
                  let mut pulser = Pulser::new();
                  if let Some(val) = pmap.get("interval") {
                      pulser.interval = parse_for_param(&nod.params.items[*val])?;
+                 }
+                 if let Some(val) = pmap.get("duration") {
+                     pulser.duration = parse_for_param(&nod.params.items[*val])?;
+                 }
+                 if let Some(val) = pmap.get("pos") {
+                     pulser.pos = parse_for_param(&nod.params.items[*val])?;
+                 }
+                 if let Some(val) = pmap.get("width") {
+                     pulser.width = parse_for_param(&nod.params.items[*val])?;
                  }
                  if let Some(val) = pmap.get("countlimit") {
                      let limit = parse_for_number(&nod.params.items[*val])? as usize;
