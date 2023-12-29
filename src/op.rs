@@ -280,9 +280,7 @@ impl Op3Ctx {
                 }
             }
             
-            _ => {
-                panic!("unimplemented Op3");
-            }
+            //_ => { panic!("unimplemented Op3"); }
         }
     }
 }

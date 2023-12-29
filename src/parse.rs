@@ -72,7 +72,7 @@ impl BuildOp1 {
         let bufnum = script.op1s.len();
         script.order.push(ScriptIndex::Op1(bufnum));
         if let Some(op) = &self.op1 {
-            script.op1s.push(Op1DefRef::new(*op.clone(), Vec::default()));
+            script.op1s.push(Op1DefRef::new(*op.clone(), bufs));
         }
         else {
             panic!("build: missing opdef1");
