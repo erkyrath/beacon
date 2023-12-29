@@ -135,19 +135,19 @@ lazy_static! {
         map.insert(
             "pulser",
             (vec![
-                OpLayoutParam::param_optional("countlimit", OpLayoutType::Number),
                 OpLayoutParam::param_optional("interval", OpLayoutType::Param),
+                OpLayoutParam::param_optional("countlimit", OpLayoutType::Number),
                 OpLayoutParam::param_optional("spaceshape", OpLayoutType::Wave),
                 OpLayoutParam::param_optional("timeshape", OpLayoutType::Wave),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
                  let mut pulser = Pulser::new();
+                 if let Some(val) = pmap.get("interval") {
+                     pulser.interval = parse_for_param(&nod.params.items[*val])?;
+                 }
                  if let Some(val) = pmap.get("countlimit") {
                      let limit = parse_for_number(&nod.params.items[*val])? as usize;
                      pulser.countlimit = Some(limit);
-                 }
-                 if let Some(val) = pmap.get("interval") {
-                     pulser.interval = parse_for_param(&nod.params.items[*val])?;
                  }
                  if let Some(val) = pmap.get("spaceshape") {
                      pulser.spaceshape = parse_for_waveshape(&nod.params.items[*val])?;

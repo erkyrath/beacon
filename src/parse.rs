@@ -249,6 +249,7 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
             verify_childless(nod)?;
             Ok(Param::Constant(*val))
         },
+        //### Ident
         _ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
 }
