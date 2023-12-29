@@ -13,42 +13,61 @@ use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
 use crate::parse::layout::{get_param_layout, get_op1_layout, get_op3_layout};
 
+enum BuildOp {
+    Op1(Box<BuildOp1>),
+    Op3(Box<BuildOp3>),
+}
+
+impl fmt::Debug for BuildOp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            BuildOp::Op1(op) => op.fmt(f),
+            BuildOp::Op3(op) => op.fmt(f),
+        }
+    }
+}
+
 pub struct BuildOp1 {
     op1: Option<Box<Op1Def>>,
-    child1: Vec<Box<BuildOp1>>,
-    child3: Vec<Box<BuildOp3>>,
+    children: Vec<BuildOp>,
 }
 
 pub struct BuildOp3 {
     op3: Option<Box<Op3Def>>,
-    child1: Vec<Box<BuildOp1>>,
-    child3: Vec<Box<BuildOp3>>,
+    children: Vec<BuildOp>,
 }
 
 impl BuildOp1 {
     fn new(op: Op1Def) -> BuildOp1 {
         BuildOp1 {
             op1: Some(Box::new(op)),
-            child1: Vec::default(),
-            child3: Vec::default(),
+            children: Vec::default(),
         }
     }
 
     fn addchild1(mut self, op: BuildOp1) -> BuildOp1 {
-        self.child1.push(Box::new(op));
+        self.children.push(BuildOp::Op1(Box::new(op)));
         return self;
     }
 
     fn addchild3(mut self, op: BuildOp3) -> BuildOp1 {
-        self.child3.push(Box::new(op));
+        self.children.push(BuildOp::Op3(Box::new(op)));
         return self;
     }
 
     fn build(&self, script: &mut Script) -> ScriptIndex {
         let mut bufs: Vec<ScriptIndex> = Vec::default();
-        for nod in &self.child1 { //###wrong
-            let obufnum = nod.build(script);
-            bufs.push(obufnum);
+        for bnod in &self.children {
+            match bnod {
+                BuildOp::Op1(nod) => {
+                    let obufnum = nod.build(script);
+                    bufs.push(obufnum);
+                },
+                BuildOp::Op3(nod) => {
+                    let obufnum = nod.build(script);
+                    bufs.push(obufnum);
+                },
+            }
         }
         let bufnum = script.op3s.len();
         script.order.push(ScriptIndex::Op1(bufnum));
@@ -67,26 +86,33 @@ impl BuildOp3 {
     fn new(op: Op3Def) -> BuildOp3 {
         BuildOp3 {
             op3: Some(Box::new(op)),
-            child1: Vec::default(),
-            child3: Vec::default(),
+            children: Vec::default(),
         }
     }
 
     fn addchild1(mut self, op: BuildOp1) -> BuildOp3 {
-        self.child1.push(Box::new(op));
+        self.children.push(BuildOp::Op1(Box::new(op)));
         return self;
     }
 
     fn addchild3(mut self, op: BuildOp3) -> BuildOp3 {
-        self.child3.push(Box::new(op));
+        self.children.push(BuildOp::Op3(Box::new(op)));
         return self;
     }
 
     fn build(&self, script: &mut Script) -> ScriptIndex {
         let mut bufs: Vec<ScriptIndex> = Vec::default();
-        for nod in &self.child3 { //###wrong
-            let obufnum = nod.build(script);
-            bufs.push(obufnum);
+        for bnod in &self.children {
+            match bnod {
+                BuildOp::Op1(nod) => {
+                    let obufnum = nod.build(script);
+                    bufs.push(obufnum);
+                },
+                BuildOp::Op3(nod) => {
+                    let obufnum = nod.build(script);
+                    bufs.push(obufnum);
+                },
+            }
         }
         let bufnum = script.op3s.len();
         script.order.push(ScriptIndex::Op3(bufnum));
@@ -109,13 +135,7 @@ impl fmt::Debug for BuildOp1 {
         }
         
         let mut gotany = false;
-        for subop in &self.child1 {
-            if !gotany { write!(f, "[")?; }
-            else { write!(f, ", ")?; }
-            subop.fmt(f)?;
-            gotany = true;
-        }
-        for subop in &self.child3 {
+        for subop in &self.children {
             if !gotany { write!(f, "[")?; }
             else { write!(f, ", ")?; }
             subop.fmt(f)?;
@@ -135,13 +155,7 @@ impl fmt::Debug for BuildOp3 {
         }
         
         let mut gotany = false;
-        for subop in &self.child1 {
-            if !gotany { write!(f, "[")?; }
-            else { write!(f, ", ")?; }
-            subop.fmt(f)?;
-            gotany = true;
-        }
-        for subop in &self.child3 {
+        for subop in &self.children {
             if !gotany { write!(f, "[")?; }
             else { write!(f, ", ")?; }
             subop.fmt(f)?;
