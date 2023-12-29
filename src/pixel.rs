@@ -18,3 +18,13 @@ impl<T: Copy> Pix<T> {
     }
 }
 
+impl Pix<f32> {
+    pub fn lerp(&self, other: &Pix<f32>, pos: f32) -> Pix<f32> {
+        Pix {
+            r: self.r * (1.0-pos) + other.r * pos,
+            g: self.r * (1.0-pos) + other.g * pos,
+            b: self.r * (1.0-pos) + other.b * pos,
+        }
+    }
+}
+
