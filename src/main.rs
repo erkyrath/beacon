@@ -42,7 +42,9 @@ fn main() {
 
     for filename in opts.args {
         match parse::parse_script(&filename) {
-            Ok(_) => {},
+            Ok(script) => {
+                script.dump();
+            },
             Err(msg) => {
                 println!("{msg}");
             },

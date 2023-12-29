@@ -4,6 +4,7 @@ use crate::context::RunContext;
 use crate::param::Param;
 use crate::waves::WaveShape;
 
+#[derive(Clone)]
 pub struct Pulser {
     pub interval: Param,
     pub countlimit: Option<usize>,

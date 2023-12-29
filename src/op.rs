@@ -6,6 +6,7 @@ use crate::pixel::Pix;
 use crate::pulser::{Pulser, PulserState};
 use crate::script::ScriptIndex;
 
+#[derive(Clone)]
 pub enum Op1Def {
     Constant(f32),
     Invert(), // op1

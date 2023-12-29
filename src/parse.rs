@@ -44,8 +44,14 @@ impl BuildOp1 {
         return self;
     }
 
-    fn build(&self, _script: &mut Script) {
-        //###
+    fn build(&self, script: &mut Script) {
+        script.order.push(ScriptIndex::Op1(script.op1s.len()));
+        if let Some(op) = &self.op1 {
+            script.op1s.push(Op1DefRef::new(*op.clone(), Vec::default()));
+        }
+        else {
+            panic!("build: missing opdef1");
+        }
     }
         
 }
