@@ -320,9 +320,34 @@ impl Op3Ctx {
                 let obufnum = opref.get_type_ref(1, 0);
                 let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
-                for ix in 0..buf.len() {
-                    //###
-                    buf[ix] = Pix::new(obuf[ix], obuf[ix], obuf[ix]);
+                let count = stops.len();
+                if count == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = Pix::new(0.0, 0.0, 0.0);
+                    }
+                }
+                else if count == 1 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = stops[0].clone();
+                    }
+                }
+                else {
+                    for ix in 0..buf.len() {
+                        if obuf[ix] < 0.0 {
+                            buf[ix] = stops[0].clone();
+                        }
+                        else {
+                            let val = obuf[ix] * ((count-1) as f32);
+                            let seg = val as usize;
+                            let frac = val - (seg as f32);
+                            if seg >= (count-1) {
+                                buf[ix] = stops[count-1].clone();
+                            }
+                            else {
+                                buf[ix] = stops[seg].lerp(&stops[seg+1], frac);
+                            }
+                        }
+                    }
                 }
             }
 
