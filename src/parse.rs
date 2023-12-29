@@ -44,14 +44,21 @@ impl BuildOp1 {
         return self;
     }
 
-    fn build(&self, script: &mut Script) {
-        script.order.push(ScriptIndex::Op1(script.op1s.len()));
+    fn build(&self, script: &mut Script) -> ScriptIndex {
+        let mut bufs: Vec<ScriptIndex> = Vec::default();
+        for nod in &self.child1 { //###wrong
+            let obufnum = nod.build(script);
+            bufs.push(obufnum);
+        }
+        let bufnum = script.op3s.len();
+        script.order.push(ScriptIndex::Op1(bufnum));
         if let Some(op) = &self.op1 {
             script.op1s.push(Op1DefRef::new(*op.clone(), Vec::default()));
         }
         else {
             panic!("build: missing opdef1");
         }
+        return ScriptIndex::Op1(bufnum);
     }
         
 }
@@ -75,14 +82,21 @@ impl BuildOp3 {
         return self;
     }
 
-    fn build(&self, script: &mut Script) {
-        script.order.push(ScriptIndex::Op3(script.op3s.len()));
+    fn build(&self, script: &mut Script) -> ScriptIndex {
+        let mut bufs: Vec<ScriptIndex> = Vec::default();
+        for nod in &self.child3 { //###wrong
+            let obufnum = nod.build(script);
+            bufs.push(obufnum);
+        }
+        let bufnum = script.op3s.len();
+        script.order.push(ScriptIndex::Op3(bufnum));
         if let Some(op) = &self.op3 {
-            script.op3s.push(Op3DefRef::new(*op.clone(), Vec::default()));
+            script.op3s.push(Op3DefRef::new(*op.clone(), bufs));
         }
         else {
             panic!("build: missing opdef3");
         }
+        return ScriptIndex::Op3(bufnum);
     }
         
 }
@@ -163,6 +177,8 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
             },
         }
     }
+
+    script.order.reverse();
     
     return Ok(script);
 }
