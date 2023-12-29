@@ -87,6 +87,7 @@ impl Script {
             op3s: HashSet::new(),
         };
         
+        println!("script has {} 1-bufs, {} 3-bufs", self.op1s.len(), self.op3s.len());
         if self.order.len() == 0 {
             println!("script order is empty");
         }
