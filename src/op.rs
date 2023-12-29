@@ -12,7 +12,7 @@ use crate::script::ScriptIndex;
 pub enum Op1Def {
     Constant(f32),
     Wave(WaveShape, Param, Param, Param, Param), // wave, min, max, pos, width
-    //###WaveCycle(WaveShape, Param, Param, Param, Param), // wave, min, max, pos, period
+    WaveCycle(WaveShape, Param, Param, Param, Param), // wave, min, max, pos, period
     Invert(), // op1
     Pulser(Pulser),
     Brightness(), // op3
@@ -38,6 +38,9 @@ impl Op1Def {
             },
             Op1Def::Wave(shape, min, max, pos, width) => {
                 format!("Wave({:?}, min={:?}, max={:?}, pos={:?}, width={:?})", shape, min, max, pos, width)
+            },
+            Op1Def::WaveCycle(shape, min, max, pos, period) => {
+                format!("Wave({:?}, min={:?}, max={:?}, pos={:?}, period={:?})", shape, min, max, pos, period)
             },
             Op1Def::Invert() => {
                 format!("Invert()")
@@ -171,6 +174,19 @@ impl Op1Ctx {
                 for ix in 0..buf.len() {
                     let basepos = ix as f32 / buflen32;
                     buf[ix] = shape.sample((basepos-startpos) / width) * (max-min) + min;
+                }
+            }
+
+            Op1Def::WaveCycle(shape, min, max, pos, period) => {
+                let age = ctx.age() as f32;
+                let period = period.eval(ctx, age);
+                let startpos = pos.eval(ctx, age) - period*0.5;
+                let min = min.eval(ctx, age);
+                let max = max.eval(ctx, age);
+                let buflen32 = buf.len() as f32;
+                for ix in 0..buf.len() {
+                    let basepos = ix as f32 / buflen32;
+                    buf[ix] = shape.sample(((basepos-startpos) / period) % 1.0) * (max-min) + min;
                 }
             }
 

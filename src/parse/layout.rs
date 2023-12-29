@@ -263,6 +263,38 @@ lazy_static! {
         );
         
         map.insert(
+            "wavecycle",
+            (vec![
+                OpLayoutParam::param("shape", OpLayoutType::Wave),
+                OpLayoutParam::param_optional("min", OpLayoutType::Param),
+                OpLayoutParam::param_optional("max", OpLayoutType::Param),
+                OpLayoutParam::param_optional("pos", OpLayoutType::Param),
+                OpLayoutParam::param_optional("period", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
+                 let min = match pmap.get("min") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.0),
+                 };
+                 let max = match pmap.get("max") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(1.0),
+                 };
+                 let pos = match pmap.get("pos") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.5),
+                 };
+                 let period = match pmap.get("period") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(1.0),
+                 };
+                 let op = Op1Def::WaveCycle(shape, min, max, pos, period);
+                 Ok(BuildOp1::new(op))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "invert",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
