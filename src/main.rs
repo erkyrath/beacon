@@ -35,6 +35,9 @@ pub struct AppOptions {
     #[options(long="dump", help = "dump script to stdout")]
     dump: bool,
 
+    #[options(long="spin", help = "run script headless and measure speed")]
+    spin: bool,
+
 }
 
 fn main() {
@@ -61,15 +64,43 @@ fn main() {
     if opts.dump {
         script.dump();
     }
+    else if opts.spin {
+        let dur: f64 = 0.1;
+        let res = run_spin(script, dur);
+        match res {
+            Err(msg) => {
+                println!("{msg}");
+            },
+            Ok(count) => {
+                println!("{} frames in {} seconds", count, dur);
+            },
+        }
+    }
     else {
-        let res = sdlmain(script);
+        let res = run_sdl(script);
         if let Err(msg) = res {
             println!("{msg}");
         }
     }
 }
 
-fn sdlmain(script: Script) -> Result<(), String> {
+fn run_spin(script: Script, seconds: f64) -> Result<usize, String> {
+    let pixsize: usize = 160;
+    let mut ctx = context::RunContext::new(script, pixsize);
+    let mut count = 0;
+    
+    loop {
+        ctx.tick();
+        count += 1;
+        if ctx.age() > seconds {
+            break;
+        }
+    }
+    
+    Ok(count)
+}
+
+fn run_sdl(script: Script) -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
  
