@@ -90,7 +90,6 @@ impl ParseNode {
 
     pub fn dump(&self, indent: usize) {
         let indentstr: String = "  ".repeat(indent);
-        //println!("{}### linenum {}, indent {}", indentstr, self.linenum, self.indent); //###
         match &self.key {
             None => println!("{}_={:?}", indentstr, self.term),
             Some(key) => println!("{}{}={:?}", indentstr, key, self.term),
@@ -162,7 +161,6 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
         if line.len() == 0 || line.starts_with('#') {
             continue;
         }
-        //println!("### line: {indent} '{line}'");
 
         let mut lineterms = ParseItems::new();
         let mut depth = 0;
@@ -210,8 +208,8 @@ pub fn parse_tree(filename: &str) -> Result<ParseItems, String> {
             .map_err(|msg| format!("{msg} at line {linenum}"))?;
     }
 
-    println!("### tree:");
-    scriptitems.dump(1); //###
+    //println!("tree:");
+    //scriptitems.dump(1);
     
     Ok(scriptitems)
 }

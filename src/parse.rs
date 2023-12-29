@@ -178,13 +178,13 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
         //### this gives a bad error if pulser is the root
         match parse_for_op3(item) {
             Ok(op3) => {
-                println!("### got op3 (name {:?}) {:?}", item.key, op3);
+                //println!("got op3 (name {:?}) {:?}", item.key, op3);
                 op3.build(&mut script);
             },
             Err(err3) => {
                 match parse_for_op1(item) {
                     Ok(op1) => {
-                        println!("### got op1 (name {:?}) {:?}", item.key, op1);
+                        //println!("got op1 (name {:?}) {:?}", item.key, op1);
                         op1.build(&mut script);
                     },
                     Err(_err1) => {
