@@ -161,10 +161,16 @@ impl Op1Ctx {
                 }
             }
 
-            Op1Def::Wave(shape, min, max, start, width) => {
+            Op1Def::Wave(shape, min, max, pos, width) => {
+                let age = ctx.age() as f32;
+                let width = width.eval(ctx, age);
+                let startpos = pos.eval(ctx, age) - width*0.5;
+                let min = min.eval(ctx, age);
+                let max = max.eval(ctx, age);
                 let buflen32 = buf.len() as f32;
                 for ix in 0..buf.len() {
-                    buf[ix] = shape.sample(ix as f32 / buflen32);
+                    let basepos = ix as f32 / buflen32;
+                    buf[ix] = shape.sample((basepos-startpos) / width) * (max-min) + min;
                 }
             }
 

@@ -255,7 +255,7 @@ lazy_static! {
                  };
                  let width = match pmap.get("width") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.5),
+                     None => Param::Constant(1.0),
                  };
                  let op = Op1Def::Wave(shape, min, max, pos, width);
                  Ok(BuildOp1::new(op))
