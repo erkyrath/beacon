@@ -3,12 +3,14 @@ use std::cell::RefCell;
 
 use crate::context::RunContext;
 use crate::pixel::Pix;
+use crate::waves::WaveShape;
 use crate::pulser::{Pulser, PulserState};
 use crate::script::ScriptIndex;
 
 #[derive(Clone)]
 pub enum Op1Def {
     Constant(f32),
+    Wave(WaveShape),
     Invert(), // op1
     Pulser(Pulser),
     Brightness(), // op3
@@ -30,6 +32,9 @@ impl Op1Def {
         match self {
             Op1Def::Constant(val) => {
                 format!("Constant({})", val)
+            },
+            Op1Def::Wave(shape) => {
+                format!("Wave({:?})", shape)
             },
             Op1Def::Invert() => {
                 format!("Invert()")
@@ -147,6 +152,13 @@ impl Op1Ctx {
             Op1Def::Constant(val) => {
                 for ix in 0..buf.len() {
                     buf[ix] = *val;
+                }
+            }
+
+            Op1Def::Wave(shape) => {
+                let buflen32 = buf.len() as f32;
+                for ix in 0..buf.len() {
+                    buf[ix] = shape.sample(ix as f32 / buflen32);
                 }
             }
 

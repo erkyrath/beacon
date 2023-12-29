@@ -219,6 +219,18 @@ lazy_static! {
         );
         
         map.insert(
+            "wave",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Wave),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let val = parse_for_waveshape(&nod.params.items[pmap["_1"]])?;
+                 let op = Op1Def::Wave(val);
+                 Ok(BuildOp1::new(op))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "invert",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
