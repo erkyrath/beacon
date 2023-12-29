@@ -147,9 +147,18 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
-                 let min = parse_for_number(&nod.params.items[pmap["min"]])?;
-                 let max = parse_for_number(&nod.params.items[pmap["max"]])?;
-                 let duration = parse_for_number(&nod.params.items[pmap["duration"]])?;
+                 let min = match pmap.get("min") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 0.0,
+                 };
+                 let max = match pmap.get("max") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 1.0,
+                 };
+                 let duration = match pmap.get("duration") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 1.0,
+                 };
                  Ok(Param::Wave(shape, min, max, duration))
              } as BuildFuncParam)
         );
@@ -164,9 +173,18 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
-                 let min = parse_for_number(&nod.params.items[pmap["min"]])?;
-                 let max = parse_for_number(&nod.params.items[pmap["max"]])?;
-                 let period = parse_for_number(&nod.params.items[pmap["period"]])?;
+                 let min = match pmap.get("min") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 0.0,
+                 };
+                 let max = match pmap.get("max") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 1.0,
+                 };
+                 let period = match pmap.get("period") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 1.0,
+                 };
                  Ok(Param::WaveCycle(shape, min, max, period))
              } as BuildFuncParam)
         );
