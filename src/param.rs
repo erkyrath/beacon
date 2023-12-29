@@ -56,7 +56,7 @@ impl Param {
                 shape.sample(age/dur) * (max-min) + min
             },
             Param::WaveCycle(shape, min, max, period) => {
-                shape.sample((age/period) % 1.0) * (max-min) + min
+                shape.sample((age/period).rem_euclid(1.0)) * (max-min) + min
             },
             Param::Quote(_) => {
                 panic!("eval Quote");

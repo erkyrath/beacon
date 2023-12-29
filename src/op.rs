@@ -186,7 +186,7 @@ impl Op1Ctx {
                 let buflen32 = buf.len() as f32;
                 for ix in 0..buf.len() {
                     let basepos = ix as f32 / buflen32;
-                    buf[ix] = shape.sample(((basepos-startpos) / period) % 1.0) * (max-min) + min;
+                    buf[ix] = shape.sample(((basepos-startpos) / period).rem_euclid(1.0)) * (max-min) + min;
                 }
             }
 
