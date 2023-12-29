@@ -24,7 +24,7 @@ pub struct Op3DefRef {
 }
 
 impl Op1DefRef {
-    fn new(op: Op1Def, bufs: Vec<ScriptIndex>) -> Op1DefRef {
+    pub fn new(op: Op1Def, bufs: Vec<ScriptIndex>) -> Op1DefRef {
         Op1DefRef { op:op, bufs:bufs }
     }
     
@@ -43,7 +43,7 @@ impl Op1DefRef {
 }
 
 impl Op3DefRef {
-    fn new(op: Op3Def, bufs: Vec<ScriptIndex>) -> Op3DefRef {
+    pub fn new(op: Op3Def, bufs: Vec<ScriptIndex>) -> Op3DefRef {
         Op3DefRef { op:op, bufs:bufs }
     }
     

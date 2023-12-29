@@ -7,7 +7,8 @@ use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
-use crate::script::Script;
+use crate::script::{Script, ScriptIndex};
+use crate::script::{Op1DefRef, Op3DefRef};
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
 use crate::parse::layout::{get_param_layout, get_op1_layout, get_op3_layout};
@@ -42,6 +43,11 @@ impl BuildOp1 {
         self.child3.push(Box::new(op));
         return self;
     }
+
+    fn build(&self, _script: &mut Script) {
+        //###
+    }
+        
 }
 
 impl BuildOp3 {
@@ -62,6 +68,17 @@ impl BuildOp3 {
         self.child3.push(Box::new(op));
         return self;
     }
+
+    fn build(&self, script: &mut Script) {
+        script.order.push(ScriptIndex::Op3(script.op3s.len()));
+        if let Some(op) = &self.op3 {
+            script.op3s.push(Op3DefRef::new(*op.clone(), Vec::default()));
+        }
+        else {
+            panic!("build: missing opdef3");
+        }
+    }
+        
 }
 
 impl fmt::Debug for BuildOp1 {
@@ -116,20 +133,22 @@ impl fmt::Debug for BuildOp3 {
     }
 }
 
-pub fn parse_script(filename: &str) -> Result<(), String> {
+pub fn parse_script(filename: &str) -> Result<Script, String> {
     let itemls = tree::parse_tree(filename)?;
 
-    //let mut script = Script::new();
+    let mut script = Script::new();
 
     for item in &itemls.items {
         match parse_for_op3(item) {
             Ok(op3) => {
                 println!("### got op3 (name {:?}) {:?}", item.key, op3);
+                op3.build(&mut script);
             },
             Err(err3) => {
                 match parse_for_op1(item) {
                     Ok(op1) => {
                         println!("### got op1 (name {:?}) {:?}", item.key, op1);
+                        op1.build(&mut script);
                     },
                     Err(_err1) => {
                         return Err(err3);
@@ -139,7 +158,7 @@ pub fn parse_script(filename: &str) -> Result<(), String> {
         }
     }
     
-    return Ok(());
+    return Ok(script);
 }
 
 fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {

@@ -14,6 +14,7 @@ pub enum Op1Def {
     Sum(), // op1...
 }
 
+#[derive(Clone)]
 pub enum Op3Def {
     Constant(Pix<f32>),
     Invert(), // op3
