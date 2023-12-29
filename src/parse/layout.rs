@@ -189,6 +189,17 @@ lazy_static! {
              } as BuildFuncParam)
         );
         
+        map.insert(
+            "quote",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let val = parse_for_param(&nod.params.items[pmap["_1"]])?;
+                 Ok(Param::Quote(Box::new(val)))
+             } as BuildFuncParam)
+        );
+
         map
     };
 
