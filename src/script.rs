@@ -7,7 +7,7 @@ use crate::pixel::Pix;
 use crate::pulser::Pulser;
 use crate::waves::WaveShape;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum ScriptIndex {
     Op1(usize),
     Op3(usize),
@@ -88,9 +88,10 @@ impl Script {
         };
         
         if self.order.len() == 0 {
-            println!("script has no root");
+            println!("script order is empty");
         }
         else {
+            println!("script order: {:?}", self.order);
             self.dumpop(&mut track, self.order[0], 0);
         }
 
