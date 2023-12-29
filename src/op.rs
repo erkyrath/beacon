@@ -11,6 +11,7 @@ use crate::script::ScriptIndex;
 #[derive(Clone)]
 pub enum Op1Def {
     Constant(f32),
+    Param(Param),
     Wave(WaveShape, Param, Param, Param, Param), // wave, min, max, pos, width
     WaveCycle(WaveShape, Param, Param, Param, Param), // wave, min, max, pos, period
     Invert(), // op1
@@ -37,6 +38,9 @@ impl Op1Def {
         match self {
             Op1Def::Constant(val) => {
                 format!("Constant({})", val)
+            },
+            Op1Def::Param(val) => {
+                format!("Param({:?})", val)
             },
             Op1Def::Wave(shape, min, max, pos, width) => {
                 format!("Wave({:?}, min={:?}, max={:?}, pos={:?}, width={:?})", shape, min, max, pos, width)
@@ -169,6 +173,13 @@ impl Op1Ctx {
             Op1Def::Constant(val) => {
                 for ix in 0..buf.len() {
                     buf[ix] = *val;
+                }
+            }
+
+            Op1Def::Param(val) => {
+                let age = ctx.age() as f32;
+                for ix in 0..buf.len() {
+                    buf[ix] = val.eval(ctx, age);
                 }
             }
 

@@ -231,6 +231,18 @@ lazy_static! {
         );
         
         map.insert(
+            "param",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let val = parse_for_param(&nod.params.items[pmap["_1"]])?;
+                 let op = Op1Def::Param(val);
+                 Ok(BuildOp1::new(op))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "wave",
             (vec![
                 OpLayoutParam::param("shape", OpLayoutType::Wave),
