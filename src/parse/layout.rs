@@ -4,10 +4,12 @@ use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
+use crate::waves::WaveShape;
+use crate::pulser::Pulser;
 use crate::param::Param;
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::{BuildOp1, BuildOp3};
-use crate::parse::{parse_for_op1, parse_for_op3, parse_for_number, parse_for_color};
+use crate::parse::{parse_for_op1, parse_for_op3, parse_for_number, parse_for_color, parse_for_waveshape};
 
 pub enum OpLayoutType {
     Op1,
@@ -127,6 +129,25 @@ lazy_static! {
                  let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
                  let op = Op1Def::Brightness();
                  Ok(BuildOp1::new(op).addchild3(subop))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
+            "pulser",
+            (vec![
+                OpLayoutParam::param_optional("spaceshape", OpLayoutType::Wave),
+                OpLayoutParam::param_optional("timeshape", OpLayoutType::Wave),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let mut pulser = Pulser::new();
+                 if let Some(val) = pmap.get("spaceshape") {
+                     pulser.spaceshape = parse_for_waveshape(&nod.params.items[*val])?;
+                 }
+                 if let Some(val) = pmap.get("timeshape") {
+                     pulser.timeshape = parse_for_waveshape(&nod.params.items[*val])?;
+                 }
+                 let op = Op1Def::Pulser(pulser);
+                 Ok(BuildOp1::new(op))
              } as BuildFuncOp1)
         );
         

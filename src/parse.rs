@@ -7,6 +7,7 @@ use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
+use crate::waves::WaveShape;
 use crate::script::{Script, ScriptIndex};
 use crate::script::{Op1DefRef, Op3DefRef};
 use crate::parse::tree::{ParseTerm, ParseNode};
@@ -173,6 +174,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     let mut script = Script::new();
 
     for item in &itemls.items {
+        //### this gives a bad error if pulser is the root
         match parse_for_op3(item) {
             Ok(op3) => {
                 println!("### got op3 (name {:?}) {:?}", item.key, op3);
@@ -214,6 +216,26 @@ fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
             Ok(pix.clone())
         },
         _ => Err(format!("line {}: color expected", nod.linenum)),
+    }
+}
+
+fn parse_for_waveshape(nod: &ParseNode) -> Result<WaveShape, String> {
+    match &nod.term {
+        ParseTerm::Ident(val) => {
+            verify_childless(nod)?;
+            match val.to_lowercase().as_str() {
+                "flat" => Ok(WaveShape::Flat),
+                "square" => Ok(WaveShape::Square),
+                "triangle" => Ok(WaveShape::Triangle),
+                "sawtooth" => Ok(WaveShape::SawTooth),
+                "sqrtooth" => Ok(WaveShape::SqrTooth),
+                "sawdecay" => Ok(WaveShape::SawDecay),
+                "sqrdecay" => Ok(WaveShape::SqrDecay),
+                "sine" => Ok(WaveShape::Sine),
+                _ => Err(format!("line {}: waveshape expected", nod.linenum)),
+            }
+        },
+        _ => Err(format!("line {}: waveshape expected", nod.linenum)),
     }
 }
 
