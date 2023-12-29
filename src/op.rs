@@ -14,6 +14,7 @@ pub enum Op1Def {
     Invert(), // op1
     Pulser(Pulser),
     Brightness(), // op3
+    Mul(), // op1, op1
     Sum(), // op1...
 }
 
@@ -61,6 +62,9 @@ impl Op1Def {
             },
             Op1Def::Brightness() => {
                 format!("Brightness()")
+            },
+            Op1Def::Mul() => {
+                format!("Mul()")
             },
             Op1Def::Sum() => {
                 format!("Sum()")
@@ -179,6 +183,18 @@ impl Op1Ctx {
                 }
                 else {
                     panic!("Op1 state mismatch: PulserState");
+                }
+            }
+
+            Op1Def::Mul() => {
+                let obufnum1 = opref.get_type_ref(1, 0);
+                let obufnum2 = opref.get_type_ref(1, 1);
+                let obuf1 = ctx.op1s[obufnum1].buf.borrow();
+                let obuf2 = ctx.op1s[obufnum2].buf.borrow();
+                assert!(buf.len() == obuf1.len());
+                assert!(buf.len() == obuf2.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = obuf1[ix]*obuf2[ix]
                 }
             }
             

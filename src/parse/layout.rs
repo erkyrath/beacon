@@ -306,6 +306,20 @@ lazy_static! {
              } as BuildFuncOp1)
         );
         
+        map.insert(
+            "mul",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param("_2", OpLayoutType::Op1),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let subop1 = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                 let subop2 = parse_for_op1(&nod.params.items[pmap["_2"]])?;
+                 let op = Op1Def::Mul();
+                 Ok(BuildOp1::new(op).addchild1(subop1).addchild1(subop2))
+             } as BuildFuncOp1)
+        );
+        
         map
     };
     
