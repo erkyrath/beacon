@@ -233,11 +233,31 @@ lazy_static! {
         map.insert(
             "wave",
             (vec![
-                OpLayoutParam::param("_1", OpLayoutType::Wave),
+                OpLayoutParam::param("shape", OpLayoutType::Wave),
+                OpLayoutParam::param_optional("min", OpLayoutType::Param),
+                OpLayoutParam::param_optional("max", OpLayoutType::Param),
+                OpLayoutParam::param_optional("pos", OpLayoutType::Param),
+                OpLayoutParam::param_optional("width", OpLayoutType::Param),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
-                 let val = parse_for_waveshape(&nod.params.items[pmap["_1"]])?;
-                 let op = Op1Def::Wave(val);
+                 let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
+                 let min = match pmap.get("min") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.0),
+                 };
+                 let max = match pmap.get("max") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(1.0),
+                 };
+                 let pos = match pmap.get("pos") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.5),
+                 };
+                 let width = match pmap.get("width") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.5),
+                 };
+                 let op = Op1Def::Wave(shape, min, max, pos, width);
                  Ok(BuildOp1::new(op))
              } as BuildFuncOp1)
         );
