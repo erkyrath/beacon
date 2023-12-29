@@ -320,6 +320,23 @@ lazy_static! {
              } as BuildFuncOp1)
         );
         
+        map.insert(
+            "sum",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let op = Op1Def::Sum();
+                 let mut bop = BuildOp1::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op1(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild1(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp1)
+        );
+        
         map
     };
     
