@@ -27,6 +27,7 @@ pub enum Op3Def {
     Invert(), // op3
     Grey(), // op1
     RGB(), // op1, op1, op1
+    Gradient(Vec<Pix<f32>>), // stops; op1
     MulS(), // op3, op1
     Sum(), // op3...
 }
@@ -97,6 +98,9 @@ impl Op3Def {
             },
             Op3Def::RGB() => {
                 format!("RGB()")
+            },
+            Op3Def::Gradient(stops) => {
+                format!("Gradient({:?})", stops)
             },
             Op3Def::MulS() => {
                 format!("MulS()")
@@ -308,6 +312,16 @@ impl Op3Ctx {
                 let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
+                    buf[ix] = Pix::new(obuf[ix], obuf[ix], obuf[ix]);
+                }
+            }
+
+            Op3Def::Gradient(stops) => {
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    //###
                     buf[ix] = Pix::new(obuf[ix], obuf[ix], obuf[ix]);
                 }
             }
