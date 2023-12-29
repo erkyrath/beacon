@@ -242,8 +242,13 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
             verify_childless(nod)?;
             Ok(Param::Constant(*val))
         },
-        //### Ident
-        _ => Err(format!("unimplemented at line {}", nod.linenum)),
+        ParseTerm::Ident(val) => {
+            let (params, buildfunc) = get_param_layout(val)
+                .ok_or_else(|| format!("line {}: param not recognized: {}", nod.linenum, val))?;
+            let pmap = match_children(nod, params)?;
+            return buildfunc(nod, &pmap);
+        },
+        //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
 }
 
