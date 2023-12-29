@@ -8,6 +8,7 @@ use lazy_static::lazy_static;
 use crate::op::{Op1Def, Op3Def};
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
+use crate::param::Param;
 use crate::script::{Script, ScriptIndex};
 use crate::script::{Op1DefRef, Op3DefRef};
 use crate::parse::tree::{ParseTerm, ParseNode};
@@ -239,6 +240,19 @@ fn parse_for_waveshape(nod: &ParseNode) -> Result<WaveShape, String> {
     }
 }
 
+fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
+    match &nod.term {
+        ParseTerm::Color(_pix) => {
+            Err(format!("line {}: unexpected color", nod.linenum))
+        },
+        ParseTerm::Number(val) => {
+            verify_childless(nod)?;
+            Ok(Param::Constant(*val))
+        },
+        _ => Err(format!("unimplemented at line {}", nod.linenum)),
+    }
+}
+
 fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
@@ -253,7 +267,6 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
             let (params, buildfunc) = get_op1_layout(val)
                 .ok_or_else(|| format!("line {}: op1 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
-            println!("### pmap = {:?}", pmap);
             return buildfunc(nod, &pmap);
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
@@ -277,7 +290,6 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
             let (params, buildfunc) = get_op3_layout(val)
                 .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
-            println!("### pmap = {:?}", pmap);
             return buildfunc(nod, &pmap);
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
