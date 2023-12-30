@@ -16,6 +16,8 @@ pub struct RunContext {
     
     birth: Instant,
     age: f64,
+    ticklen: f32,
+    
     pub rng: Rc<RefCell<SmallRng>>,
 
     pub op1s: Vec<Op1Ctx>,
@@ -46,6 +48,7 @@ impl RunContext {
             size: size,
             birth: Instant::now(),
             age: 0.0,
+            ticklen: 0.0,
             rng: Rc::new(RefCell::new(SmallRng::from_entropy())),
             op1s: op1s,
             op3s: op3s,
@@ -58,6 +61,10 @@ impl RunContext {
 
     pub fn age(&self) -> f64 {
         self.age
+    }
+    
+    pub fn ticklen(&self) -> f32 {
+        self.ticklen
     }
     
     pub fn applybuf1<F>(&self, val: usize, mut func: F)
@@ -74,7 +81,9 @@ impl RunContext {
 
     pub fn tick(&mut self) {
         let dur = self.birth.elapsed();
-        self.age = dur.as_secs_f64();
+        let newage = dur.as_secs_f64();
+        self.ticklen = (newage - self.age) as f32;
+        self.age = newage;
 
         for ix in (0..self.script.order.len()).rev() {
             match self.script.order[ix] {
