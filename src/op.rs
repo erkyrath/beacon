@@ -153,7 +153,7 @@ pub struct Op3Ctx {
 }
 
 impl Op1State {
-    pub fn new_for(op: &Op1Def) -> Op1State {
+    pub fn new_for(op: &Op1Def, _size: usize) -> Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
             _ => Op1State::NoState,
@@ -162,7 +162,7 @@ impl Op1State {
 }
 
 impl Op3State {
-    pub fn new_for(op: &Op3Def) -> Op3State {
+    pub fn new_for(op: &Op3Def, _size: usize) -> Op3State {
         match op {
             _ => Op3State::NoState,
         }

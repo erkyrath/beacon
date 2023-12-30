@@ -29,14 +29,14 @@ impl RunContext {
         
         for op in &script.op1s {
             op1s.push(Op1Ctx {
-                state: RefCell::new(Op1State::new_for(&op.op)),
+                state: RefCell::new(Op1State::new_for(&op.op, size)),
                 buf: RefCell::new(vec![0.0; size]),
             });
         }
         
         for op in &script.op3s {
             op3s.push(Op3Ctx {
-                state: RefCell::new(Op3State::new_for(&op.op)),
+                state: RefCell::new(Op3State::new_for(&op.op, size)),
                 buf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
             });
         }
