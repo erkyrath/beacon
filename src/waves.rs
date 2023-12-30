@@ -3,6 +3,7 @@ pub enum WaveShape {
     Flat,
     Square,
     Triangle,
+    Trapezoid,
     SawTooth,
     SqrTooth,
     SawDecay,
@@ -60,6 +61,20 @@ impl WaveShape {
                 }
                 else if pos >= 0.5 && pos < 1.0 {
                     (1.0 - pos) * 2.0
+                }
+                else {
+                    0.0
+                }
+            },
+            WaveShape::Trapezoid => {
+                if pos >= 0.0 && pos < 0.25 {
+                    pos * 4.0
+                }
+                else if pos >= 0.75 && pos < 1.0 {
+                    (1.0 - pos) * 4.0
+                }
+                else if pos >= 0.25 && pos < 0.75 {
+                    1.0
                 }
                 else {
                     0.0

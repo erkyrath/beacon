@@ -82,6 +82,7 @@ lazy_static! {
             ("flat", WaveShape::Flat),
             ("square", WaveShape::Square),
             ("triangle", WaveShape::Triangle),
+            ("trapezoid", WaveShape::Trapezoid),
             ("sawtooth", WaveShape::SawTooth),
             ("sqrtooth", WaveShape::SqrTooth),
             ("sawdecay", WaveShape::SawDecay),
