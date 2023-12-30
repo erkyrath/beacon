@@ -619,6 +619,57 @@ lazy_static! {
              } as BuildFuncOp3)
         );
         
+        map.insert(
+            "mean",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let op = Op3Def::Mean();
+                 let mut bop = BuildOp3::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op3(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild3(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp3)
+        );
+        
+        map.insert(
+            "min",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let op = Op3Def::Min();
+                 let mut bop = BuildOp3::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op3(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild3(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp3)
+        );
+        
+        map.insert(
+            "max",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let op = Op3Def::Max();
+                 let mut bop = BuildOp3::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op3(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild3(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp3)
+        );
+        
         map
     };
 }

@@ -36,6 +36,9 @@ pub enum Op3Def {
     Gradient(Vec<Pix<f32>>), // stops; op1
     MulS(), // op3, op1
     Sum(), // op3...
+    Mean(), // op3...
+    Min(), // op3...
+    Max(), // op3...
 }
 
 impl Op1Def {
@@ -131,6 +134,15 @@ impl Op3Def {
             },
             Op3Def::Sum() => {
                 format!("Sum()")
+            },
+            Op3Def::Mean() => {
+                format!("Mean()")
+            },
+            Op3Def::Min() => {
+                format!("Min()")
+            },
+            Op3Def::Max() => {
+                format!("Max()")
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -541,6 +553,104 @@ impl Op3Ctx {
                             buf[ix].r += obuf[ix].r;
                             buf[ix].g += obuf[ix].g;
                             buf[ix].b += obuf[ix].b;
+                        }
+                    }
+                }
+            }
+            
+            Op3Def::Mean() => {
+                if opref.bufs.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = Pix::new(0.0, 0.0, 0.0);
+                    }
+                }
+                else if opref.bufs.len() == 1 {
+                    let obufnum = opref.get_type_ref(3, 0);
+                    let obuf1 = ctx.op3s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                }
+                else {
+                    let obufnum = opref.get_type_ref(3, 0);
+                    let obuf1 = ctx.op3s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(3, jx);
+                        let obuf = ctx.op3s[obufnum].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix].r += obuf[ix].r;
+                            buf[ix].g += obuf[ix].g;
+                            buf[ix].b += obuf[ix].b;
+                        }
+                    }
+                    for ix in 0..buf.len() {
+                        buf[ix].r /= opref.bufs.len() as f32;
+                        buf[ix].g /= opref.bufs.len() as f32;
+                        buf[ix].b /= opref.bufs.len() as f32;
+                    }
+                }
+            }
+            
+            Op3Def::Min() => {
+                if opref.bufs.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = Pix::new(0.0, 0.0, 0.0);
+                    }
+                }
+                else if opref.bufs.len() == 1 {
+                    let obufnum = opref.get_type_ref(3, 0);
+                    let obuf1 = ctx.op3s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                }
+                else {
+                    let obufnum = opref.get_type_ref(3, 0);
+                    let obuf1 = ctx.op3s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(3, jx);
+                        let obuf = ctx.op3s[obufnum].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix].r = buf[ix].r.min(obuf[ix].r);
+                            buf[ix].g = buf[ix].g.min(obuf[ix].g);
+                            buf[ix].b = buf[ix].b.min(obuf[ix].b);
+                        }
+                    }
+                }
+            }
+            
+            Op3Def::Max() => {
+                if opref.bufs.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = Pix::new(0.0, 0.0, 0.0);
+                    }
+                }
+                else if opref.bufs.len() == 1 {
+                    let obufnum = opref.get_type_ref(3, 0);
+                    let obuf1 = ctx.op3s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                }
+                else {
+                    let obufnum = opref.get_type_ref(3, 0);
+                    let obuf1 = ctx.op3s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(3, jx);
+                        let obuf = ctx.op3s[obufnum].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix].r = buf[ix].r.max(obuf[ix].r);
+                            buf[ix].g = buf[ix].g.max(obuf[ix].g);
+                            buf[ix].b = buf[ix].b.max(obuf[ix].b);
                         }
                     }
                 }
