@@ -20,6 +20,9 @@ pub enum Op1Def {
     Brightness(), // op3
     Mul(), // op1, op1
     Sum(), // op1...
+    Mean(), // op1...
+    Min(), // op1...
+    Max(), // op1...
     Clamp(Param, Param), // min, max; op1
 }
 
@@ -84,6 +87,15 @@ impl Op1Def {
             },
             Op1Def::Sum() => {
                 format!("Sum()")
+            },
+            Op1Def::Mean() => {
+                format!("Mean()")
+            },
+            Op1Def::Min() => {
+                format!("Min()")
+            },
+            Op1Def::Max() => {
+                format!("Max()")
             },
             Op1Def::Clamp(min, max) => {
                 format!("Clamp({:?}, {:?})", min, max)
@@ -289,6 +301,96 @@ impl Op1Ctx {
                         let obuf = ctx.op1s[obufnum].buf.borrow();
                         for ix in 0..buf.len() {
                             buf[ix] += obuf[ix];
+                        }
+                    }
+                }
+            }
+            
+            Op1Def::Mean() => {
+                if opref.bufs.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = 0.0;
+                    }
+                }
+                else if opref.bufs.len() == 1 {
+                    let obufnum = opref.get_type_ref(1, 0);
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                }
+                else {
+                    let obufnum = opref.get_type_ref(1, 0);
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(1, jx);
+                        let obuf = ctx.op1s[obufnum].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix] += obuf[ix];
+                        }
+                    }
+                    for ix in 0..buf.len() {
+                        buf[ix] /= opref.bufs.len() as f32;
+                    }
+                }
+            }
+            
+            Op1Def::Min() => {
+                if opref.bufs.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = 0.0;
+                    }
+                }
+                else if opref.bufs.len() == 1 {
+                    let obufnum = opref.get_type_ref(1, 0);
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                }
+                else {
+                    let obufnum = opref.get_type_ref(1, 0);
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(1, jx);
+                        let obuf = ctx.op1s[obufnum].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix] = buf[ix].min(obuf[ix]);
+                        }
+                    }
+                }
+            }
+            
+            Op1Def::Max() => {
+                if opref.bufs.len() == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = 0.0;
+                    }
+                }
+                else if opref.bufs.len() == 1 {
+                    let obufnum = opref.get_type_ref(1, 0);
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                }
+                else {
+                    let obufnum = opref.get_type_ref(1, 0);
+                    let obuf1 = ctx.op1s[obufnum].buf.borrow();
+                    for ix in 0..buf.len() {
+                        buf[ix] = obuf1[ix];
+                    }
+                    for jx in 1..opref.bufs.len() {
+                        let obufnum = opref.get_type_ref(1, jx);
+                        let obuf = ctx.op1s[obufnum].buf.borrow();
+                        for ix in 0..buf.len() {
+                            buf[ix] = buf[ix].max(obuf[ix]);
                         }
                     }
                 }

@@ -420,6 +420,57 @@ lazy_static! {
         );
         
         map.insert(
+            "mean",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let op = Op1Def::Mean();
+                 let mut bop = BuildOp1::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op1(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild1(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
+            "min",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let op = Op1Def::Min();
+                 let mut bop = BuildOp1::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op1(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild1(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
+            "max",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let op = Op1Def::Max();
+                 let mut bop = BuildOp1::new(op);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let subop = parse_for_op1(&nod.params.items[pmap[&tempname]])?;
+                     bop = bop.addchild1(subop);
+                 }
+                 Ok(bop)
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "clamp",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
