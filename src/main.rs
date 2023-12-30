@@ -38,6 +38,9 @@ pub struct AppOptions {
     #[options(long="spin", help = "run script headless and measure speed")]
     spin: bool,
 
+    #[options(long="size", help = "pixel count (default 160)")]
+    size: Option<usize>,
+
 }
 
 fn main() {
@@ -47,6 +50,11 @@ fn main() {
         println!("usage: beacon [--dump] script");
         return;
     }
+
+    let pixsize = match opts.size {
+        Some(val) => val,
+        None => 160,
+    };
 
     let filename = &opts.args[0];
     let script: Script;
@@ -66,7 +74,7 @@ fn main() {
     }
     else if opts.spin {
         let dur: f64 = 0.1;
-        let res = run_spin(script, dur);
+        let res = run_spin(script, pixsize, dur);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -77,15 +85,14 @@ fn main() {
         }
     }
     else {
-        let res = run_sdl(script);
+        let res = run_sdl(script, pixsize);
         if let Err(msg) = res {
             println!("{msg}");
         }
     }
 }
 
-fn run_spin(script: Script, seconds: f64) -> Result<usize, String> {
-    let pixsize: usize = 160;
+fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, String> {
     let mut ctx = context::RunContext::new(script, pixsize);
     let mut count = 0;
     
@@ -100,7 +107,7 @@ fn run_spin(script: Script, seconds: f64) -> Result<usize, String> {
     Ok(count)
 }
 
-fn run_sdl(script: Script) -> Result<(), String> {
+fn run_sdl(script: Script, pixsize: usize) -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
  
@@ -109,8 +116,6 @@ fn run_sdl(script: Script) -> Result<(), String> {
         .build()
         .map_err(|err| err.to_string())?;
 
-    let pixsize: usize = 160;
-    
     let mut canvas = window.into_canvas().build()
         .map_err(|err| err.to_string())?;
     let tc = canvas.texture_creator();
