@@ -16,6 +16,7 @@ pub enum Op1Def {
     WaveCycle(WaveShape, Param, Param, Param, Param), // wave, min, max, pos, period
     Invert(), // op1
     Pulser(Pulser),
+    Decay(Param), // halflife; op1
     Brightness(), // op3
     Mul(), // op1, op1
     Sum(), // op1...
@@ -71,6 +72,9 @@ impl Op1Def {
                     indentstr, pulser.width,
                     indentstr, pulser.spaceshape, pulser.timeshape);
                 desc
+            },
+            Op1Def::Decay(halflife) => {
+                format!("Decay({:?})", halflife)
             },
             Op1Def::Brightness() => {
                 format!("Brightness()")
@@ -136,6 +140,7 @@ impl fmt::Debug for Op3Def {
 pub enum Op1State {
     NoState,
     Pulser(PulserState),
+    Decay(Vec<f32>),
 }
 
 pub enum Op3State {
@@ -153,9 +158,10 @@ pub struct Op3Ctx {
 }
 
 impl Op1State {
-    pub fn new_for(op: &Op1Def, _size: usize) -> Op1State {
+    pub fn new_for(op: &Op1Def, size: usize) -> Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
+            Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; size]),
             _ => Op1State::NoState,
         }
     }
@@ -230,6 +236,27 @@ impl Op1Ctx {
                 }
                 else {
                     panic!("Op1 state mismatch: PulserState");
+                }
+            }
+
+            Op1Def::Decay(halflife) => {
+                let age = ctx.age() as f32;
+                let halflife = halflife.eval(ctx, age);
+                let decaymul = (2.0_f32).powf(-ctx.ticklen()/halflife);
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                let mut state = ctx.op1s[bufnum].state.borrow_mut();
+                if let Op1State::Decay(historybuf) = &mut *state {
+                    assert!(buf.len() == obuf.len());
+                    assert!(buf.len() == historybuf.len());
+                    for ix in 0..buf.len() {
+                        let lastval = historybuf[ix];
+                        historybuf[ix] = buf[ix];
+                        buf[ix] = obuf[ix].max(lastval*decaymul);
+                    }
+                }
+                else {
+                    panic!("Op1 state mismatch: Decay");
                 }
             }
 

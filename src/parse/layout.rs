@@ -371,6 +371,23 @@ lazy_static! {
         );
         
         map.insert(
+            "decay",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param_optional("halflife", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                 let halflife = match pmap.get("halflife") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(1.0),
+                 };
+                 let op = Op1Def::Decay(halflife);
+                 Ok(BuildOp1::new(op).addchild1(subop))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "mul",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
