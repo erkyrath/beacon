@@ -85,7 +85,7 @@ fn main() {
         }
     }
     else {
-        let res = run_sdl(script, pixsize);
+        let res = run_sdl(script, pixsize, filename);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -107,11 +107,11 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
     Ok(count)
 }
 
-fn run_sdl(script: Script, pixsize: usize) -> Result<(), String> {
+fn run_sdl(script: Script, pixsize: usize, filename: &str) -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
  
-    let window = video_subsystem.window("beacon demo", 800, 100)
+    let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), 800, 100)
         .position_centered()
         .build()
         .map_err(|err| err.to_string())?;
