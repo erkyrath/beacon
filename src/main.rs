@@ -138,9 +138,12 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str) -> Result<(), String>
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut ctx = context::RunContext::new(script, pixsize);
+    let mut pause = false;
         
     'running: loop {
-        ctx.tick();
+        if !pause {
+            ctx.tick();
+        }
 
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
             match &ctx.script.order[0] {
@@ -173,6 +176,9 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str) -> Result<(), String>
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running Ok(())
+                },
+                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+                    pause = !pause;
                 },
                 _ => {}
             }
