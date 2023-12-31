@@ -266,8 +266,9 @@ impl Op1Ctx {
 
             Op1Def::Param(val) => {
                 let age = ctx.age() as f32;
+                let fval = val.eval(ctx, age);
                 for ix in 0..buf.len() {
-                    buf[ix] = val.eval(ctx, age);
+                    buf[ix] = fval;
                 }
             }
 
