@@ -159,8 +159,16 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool) -> R
             let newtime = stat.modified()
                 .map_err(|err| err.to_string())?;
             if newtime != watchtime {
-                println!("### change!");
+                println!("Reloading...");
                 watchtime = newtime;
+                match parse::parse_script(&filename) {
+                    Ok(newscript) => {
+                        ctx = context::RunContext::new(newscript, pixsize);
+                    },
+                    Err(msg) => {
+                        println!("{msg}");
+                    },
+                }
             }
         }
 
