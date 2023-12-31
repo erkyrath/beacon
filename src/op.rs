@@ -1,5 +1,6 @@
 use std::fmt;
 use std::cell::RefCell;
+use rand::Rng;
 
 use crate::context::RunContext;
 use crate::pixel::Pix;
@@ -199,13 +200,20 @@ pub struct NoiseState {
 }
 
 impl NoiseState {
-    pub fn new(grain: usize, octaves: usize) -> NoiseState {
+    pub fn new(grain: usize, octaves: usize, ctx: &mut RunContext) -> NoiseState {
         let mut res = NoiseState {
             seeds: Vec::default(),
         };
+        
+        let mut rng = ctx.rng.borrow_mut();
         for _ in 0..octaves {
-            res.seeds.push(vec![0.0; grain]);
+            let mut seed: Vec<f32> = Vec::default();
+            for _ in 0..grain {
+                seed.push(rng.gen_range(0.0..1.0));
+            }
+            res.seeds.push(seed);
         }
+        
         res
     }
 }
@@ -215,7 +223,7 @@ impl Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
             Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
-            Op1Def::Noise(grain, octaves, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves)),
+            Op1Def::Noise(grain, octaves, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves, ctx)),
             _ => Op1State::NoState,
         }
     }
