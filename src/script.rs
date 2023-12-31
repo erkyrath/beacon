@@ -81,6 +81,33 @@ impl Script {
         }
     }
 
+    pub fn consistency_check(&self) -> Result<(), String> {
+        for ix in 0..self.order.len() {
+            let scix = &self.order[ix];
+            let bufs: &Vec<ScriptIndex> = match scix {
+                ScriptIndex::Op1(bufnum) => {
+                    if bufnum < &self.op1s.len() {
+                        &self.op1s[*bufnum].bufs
+                    }
+                    else {
+                        return Err(format!("SceneIndex {:?} does not exist", scix));
+                    }
+                },
+                ScriptIndex::Op3(bufnum) => {
+                    if bufnum < &self.op3s.len() {
+                        &self.op3s[*bufnum].bufs
+                    }
+                    else {
+                        return Err(format!("SceneIndex {:?} does not exist", scix));
+                    }
+                },
+            };
+            
+        }
+
+        Ok(())
+    }
+    
     pub fn dump(&self) {
         let mut track = BufTrackPair {
             op1s: HashSet::new(),
@@ -117,7 +144,7 @@ impl Script {
             }
         }
     }
-    
+
     fn dumpop(&self, track: &mut BufTrackPair, scix: ScriptIndex, indent: usize) {
         let indentstr: String = "  ".repeat(indent);
         let subindentstr = "\n         ".to_string() + &indentstr;

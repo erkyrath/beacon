@@ -201,6 +201,8 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     
     script.order.reverse();
     
+    script.consistency_check()?;
+    
     return Ok(script);
 }
 
