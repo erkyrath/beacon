@@ -71,6 +71,13 @@ fn main() {
 
     if opts.dump {
         script.dump();
+        let res = script.consistency_check();
+        match res {
+            Err(msg) => {
+                println!("{msg}");
+            },
+            Ok(()) => {},
+        }
     }
     else if opts.spin {
         let dur: f64 = 0.1;
