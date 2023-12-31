@@ -108,7 +108,7 @@ impl Op1Def {
                 format!("Clamp({:?}, {:?})", min, max)
             },
             Op1Def::Noise(grain, octaves, max) => {
-                format!("Noise({}, {}, {:?})", grain, octaves, max)
+                format!("Noise(grain={}, octaves={}, max={:?})", grain, octaves, max)
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -212,6 +212,7 @@ impl NoiseState {
                 seed.push(rng.gen_range(0.0..1.0));
             }
             res.seeds.push(seed);
+            //### grain*2?
         }
         
         res
@@ -458,6 +459,31 @@ impl Op1Ctx {
                 }
             }
 
+            Op1Def::Noise(_grain, octaves, max) => {
+                let mut state = ctx.op1s[bufnum].state.borrow_mut();
+                if let Op1State::Noise(state) = &mut *state {
+                    let age = ctx.age() as f32;
+                    let max = max.eval(ctx, age);
+                    let buflen32 = buf.len() as f32;
+                    for ix in 0..buf.len() {
+                        buf[ix] = 0.0;
+                    }
+                    for ix in 0..buf.len() {
+                        for oct in 0..*octaves {
+                            let grain = state.seeds[oct].len();
+                            let basepos = (ix as f32 / buflen32) * grain as f32;
+                            let seg = basepos as usize;
+                            let frac = basepos - (seg as f32);
+                            let val = state.seeds[oct][seg] * (1.0-frac) + state.seeds[oct][(seg+1) % grain] * frac;
+                            buf[ix] += val * max;
+                        }
+                    }
+                }
+                else {
+                    panic!("Op1 state mismatch: Noise");
+                }
+            }
+            
             _ => {
                 panic!("unimplemented Op1");
             }

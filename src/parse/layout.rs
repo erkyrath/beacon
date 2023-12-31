@@ -493,6 +493,31 @@ lazy_static! {
              } as BuildFuncOp1)
         );
         
+        map.insert(
+            "noise",
+            (vec![
+                OpLayoutParam::param_optional("grain", OpLayoutType::Number),
+                OpLayoutParam::param_optional("octaves", OpLayoutType::Number),
+                OpLayoutParam::param_optional("max", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let grain = match pmap.get("grain") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 32.0,
+                 };
+                 let octaves = match pmap.get("octaves") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 1.0,
+                 };
+                 let max = match pmap.get("max") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(1.0),
+                 };
+                 let op = Op1Def::Noise(grain as usize, octaves as usize, max);
+                 Ok(BuildOp1::new(op))
+             } as BuildFuncOp1)
+        );
+        
         map
     };
     
