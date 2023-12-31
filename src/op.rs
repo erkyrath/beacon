@@ -486,7 +486,8 @@ impl Op1Ctx {
                             let basepos = (ix as f32 / buflen32) * grain as f32;
                             let seg = basepos as usize;
                             let frac = basepos - (seg as f32);
-                            let val = state.seeds[oct][seg] * (1.0-frac) + state.seeds[oct][(seg+1) % grain] * frac;
+                            let smoothfrac = (frac*frac)*(3.0-2.0*frac);
+                            let val = state.seeds[oct][seg] * (1.0-smoothfrac) + state.seeds[oct][(seg+1) % grain] * smoothfrac;
                             buf[ix] += val * omax;
                             omax /= 2.0;
                         }
