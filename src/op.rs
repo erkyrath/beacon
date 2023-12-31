@@ -39,6 +39,7 @@ pub enum Op3Def {
     Mean(), // op3...
     Min(), // op3...
     Max(), // op3...
+    Mask(Param), // op3, op3, op1
 }
 
 impl Op1Def {
@@ -143,6 +144,9 @@ impl Op3Def {
             },
             Op3Def::Max() => {
                 format!("Max()")
+            },
+            Op3Def::Mask(threshold) => {
+                format!("Mask({:?})", threshold)
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -656,6 +660,28 @@ impl Op3Ctx {
                 }
             }
             
+            Op3Def::Mask(threshold) => {
+                let age = ctx.age() as f32;
+                let thresval = threshold.eval(ctx, age);
+                let obufnum1 = opref.get_type_ref(3, 0);
+                let obufnum2 = opref.get_type_ref(3, 1);
+                let obufnum3 = opref.get_type_ref(1, 2);
+                let obuf1 = ctx.op3s[obufnum1].buf.borrow();
+                let obuf2 = ctx.op3s[obufnum2].buf.borrow();
+                let obuf3 = ctx.op1s[obufnum3].buf.borrow();
+                assert!(buf.len() == obuf1.len());
+                assert!(buf.len() == obuf2.len());
+                assert!(buf.len() == obuf3.len());
+                for ix in 0..buf.len() {
+                    if obuf3[ix] < thresval {
+                        buf[ix] = obuf1[ix].clone();
+                    }
+                    else {
+                        buf[ix] = obuf2[ix].clone();
+                    }
+                }
+            }
+
             //_ => { panic!("unimplemented Op3"); }
         }
     }

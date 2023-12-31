@@ -670,6 +670,27 @@ lazy_static! {
              } as BuildFuncOp3)
         );
         
+        map.insert(
+            "mask",
+            (vec![
+                OpLayoutParam::param("mask", OpLayoutType::Op1),
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+                OpLayoutParam::param("_2", OpLayoutType::Op3),
+                OpLayoutParam::param_optional("threshold", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let subop1 = parse_for_op3(&nod.params.items[pmap["_1"]])?;
+                 let subop2 = parse_for_op3(&nod.params.items[pmap["_2"]])?;
+                 let subopm = parse_for_op1(&nod.params.items[pmap["mask"]])?;
+                 let threshold = match pmap.get("threshold") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.5),
+                 };
+                 let op = Op3Def::Mask(threshold);
+                 Ok(BuildOp3::new(op).addchild3(subop1).addchild3(subop2).addchild1(subopm))
+             } as BuildFuncOp3)
+        );
+        
         map
     };
 }
