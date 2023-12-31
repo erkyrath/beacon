@@ -216,9 +216,12 @@ impl NoiseState {
         let mut ofudge = 1.0;
         for _ in 0..octaves {
             let mut seed: Vec<f32> = Vec::default();
-            for _ in 0..ograin {
-                seed.push(rng.gen_range(0.0..1.0));
-                //### do we want to normalize this? or permute the range?
+            for ix in 0..ograin {
+                seed.push(ix as f32 / ograin as f32);
+            }
+            for ix in 0..ograin {
+                let jx = rng.gen_range(0..ograin);
+                seed.swap(ix, jx);
             }
             res.seeds.push(seed);
             ograin *= 2;
