@@ -27,7 +27,7 @@ pub struct RunContext {
 impl RunContext {
     pub fn new(script: Script, size: usize) -> RunContext {
         let mut ctx = RunContext {
-            script: script,
+            script: Script::new(),
             size: size,
             birth: Instant::now(),
             age: 0.0,
@@ -36,20 +36,27 @@ impl RunContext {
             op1s: Vec::default(),
             op3s: Vec::default(),
         };
+
+        let mut op1s: Vec<Op1Ctx> = Vec::default();
+        let mut op3s: Vec<Op3Ctx> = Vec::default();
         
-        for op in &ctx.script.op1s {
-            ctx.op1s.push(Op1Ctx {
-                state: RefCell::new(Op1State::new_for(&op.op, size)),
+        for op in &script.op1s {
+            op1s.push(Op1Ctx {
+                state: RefCell::new(Op1State::new_for(&op.op, &mut ctx, size)),
                 buf: RefCell::new(vec![0.0; size]),
             });
         }
         
-        for op in &ctx.script.op3s {
-            ctx.op3s.push(Op3Ctx {
-                state: RefCell::new(Op3State::new_for(&op.op, size)),
+        for op in &script.op3s {
+            op3s.push(Op3Ctx {
+                state: RefCell::new(Op3State::new_for(&op.op, &mut ctx, size)),
                 buf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
             });
         }
+
+        ctx.script = script;
+        ctx.op1s = op1s;
+        ctx.op3s = op3s;
 
         ctx
     }
