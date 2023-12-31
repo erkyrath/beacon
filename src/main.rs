@@ -108,6 +108,8 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
 }
 
 fn run_sdl(script: Script, pixsize: usize, filename: &str) -> Result<(), String> {
+    script.consistency_check()?;
+    
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
  
