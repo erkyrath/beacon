@@ -81,6 +81,7 @@ lazy_static! {
         HashMap::from([
             ("flat", WaveShape::Flat),
             ("square", WaveShape::Square),
+            ("halfsquare", WaveShape::HalfSquare),
             ("triangle", WaveShape::Triangle),
             ("trapezoid", WaveShape::Trapezoid),
             ("sawtooth", WaveShape::SawTooth),

@@ -2,6 +2,7 @@
 pub enum WaveShape {
     Flat,
     Square,
+    HalfSquare,
     Triangle,
     Trapezoid,
     SawTooth,
@@ -17,6 +18,14 @@ impl WaveShape {
             WaveShape::Flat => 1.0,
             WaveShape::Square => {
                 if pos >= 0.0 && pos < 1.0 {
+                    1.0
+                }
+                else {
+                    0.0
+                }
+            },
+            WaveShape::HalfSquare => {
+                if pos >= 0.0 && pos < 0.5 {
                     1.0
                 }
                 else {
