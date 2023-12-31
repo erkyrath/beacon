@@ -7,7 +7,7 @@ use crate::pixel::Pix;
 use crate::pulser::Pulser;
 use crate::waves::WaveShape;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ScriptIndex {
     Op1(usize),
     Op3(usize),
@@ -84,25 +84,28 @@ impl Script {
     pub fn consistency_check(&self) -> Result<(), String> {
         for ix in 0..self.order.len() {
             let scix = &self.order[ix];
-            let bufs: &Vec<ScriptIndex> = match scix {
+            let buflist = match scix {
                 ScriptIndex::Op1(bufnum) => {
-                    if bufnum < &self.op1s.len() {
-                        &self.op1s[*bufnum].bufs
-                    }
-                    else {
-                        return Err(format!("SceneIndex {:?} does not exist", scix));
-                    }
+                    &self.op1s.get(*bufnum)
+                        .ok_or_else(|| format!("SceneIndex {:?} does not exist", scix))?
+                        .bufs
                 },
                 ScriptIndex::Op3(bufnum) => {
-                    if bufnum < &self.op3s.len() {
-                        &self.op3s[*bufnum].bufs
-                    }
-                    else {
-                        return Err(format!("SceneIndex {:?} does not exist", scix));
-                    }
+                    &self.op3s.get(*bufnum)
+                        .ok_or_else(|| format!("SceneIndex {:?} does not exist", scix))?
+                        .bufs
                 },
             };
-            
+            for scjx in buflist {
+                if let Some(pos) = self.order.iter().position(|val| val == scjx) {
+                    if pos <= ix {
+                        return Err(format!("SceneIndex {:?} refers to {:?} which is earlier in the order", scix, scjx));
+                    }
+                }
+                else {
+                    return Err(format!("SceneIndex {:?} refers to {:?} which does not exist", scix, scjx));
+                }
+            }
         }
 
         Ok(())
