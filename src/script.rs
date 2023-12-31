@@ -109,6 +109,10 @@ impl Script {
         }
         for bufnum in 0..self.op1s.len() {
             if !track.op1s.contains(&bufnum) {
+                if !gotany {
+                    gotany = true;
+                    println!("unmentioned ops:");
+                }
                 self.dumpop(&mut track, ScriptIndex::Op1(bufnum), 0);
             }
         }
