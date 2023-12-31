@@ -39,6 +39,7 @@ pub enum Op3Def {
     Mean(), // op3...
     Min(), // op3...
     Max(), // op3...
+    Lerp(), // op3, op3, op1
     Mask(Param), // op3, op3, op1
 }
 
@@ -144,6 +145,9 @@ impl Op3Def {
             },
             Op3Def::Max() => {
                 format!("Max()")
+            },
+            Op3Def::Lerp() => {
+                format!("Lerp()")
             },
             Op3Def::Mask(threshold) => {
                 format!("Mask({:?})", threshold)
@@ -657,6 +661,21 @@ impl Op3Ctx {
                             buf[ix].b = buf[ix].b.max(obuf[ix].b);
                         }
                     }
+                }
+            }
+
+            Op3Def::Lerp() => {
+                let obufnum1 = opref.get_type_ref(3, 0);
+                let obufnum2 = opref.get_type_ref(3, 1);
+                let obufnum3 = opref.get_type_ref(1, 2);
+                let obuf1 = ctx.op3s[obufnum1].buf.borrow();
+                let obuf2 = ctx.op3s[obufnum2].buf.borrow();
+                let obuf3 = ctx.op1s[obufnum3].buf.borrow();
+                assert!(buf.len() == obuf1.len());
+                assert!(buf.len() == obuf2.len());
+                assert!(buf.len() == obuf3.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = obuf1[ix].lerp(&obuf2[ix], obuf3[ix]);
                 }
             }
             
