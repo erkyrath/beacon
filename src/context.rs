@@ -26,6 +26,7 @@ pub struct RunContext {
 
 impl RunContext {
     pub fn new(script: Script, size: usize) -> RunContext {
+        // Gotta create this with some temporary values and then fill them in.
         let mut ctx = RunContext {
             script: Script::new(),
             size: size,
@@ -42,14 +43,14 @@ impl RunContext {
         
         for op in &script.op1s {
             op1s.push(Op1Ctx {
-                state: RefCell::new(Op1State::new_for(&op.op, &mut ctx, size)),
+                state: RefCell::new(Op1State::new_for(&op.op, &mut ctx)),
                 buf: RefCell::new(vec![0.0; size]),
             });
         }
         
         for op in &script.op3s {
             op3s.push(Op3Ctx {
-                state: RefCell::new(Op3State::new_for(&op.op, &mut ctx, size)),
+                state: RefCell::new(Op3State::new_for(&op.op, &mut ctx)),
                 buf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
             });
         }

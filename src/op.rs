@@ -24,6 +24,7 @@ pub enum Op1Def {
     Min(), // op1...
     Max(), // op1...
     Clamp(Param, Param), // min, max; op1
+    Noise(usize, usize, Param), // grain, octaves, max
 }
 
 #[derive(Clone)]
@@ -105,6 +106,9 @@ impl Op1Def {
             Op1Def::Clamp(min, max) => {
                 format!("Clamp({:?}, {:?})", min, max)
             },
+            Op1Def::Noise(grain, octaves, max) => {
+                format!("Noise({}, {}, {:?})", grain, octaves, max)
+            },
             //_ => "?Op1Def".to_string(),
         }
     }
@@ -173,6 +177,7 @@ pub enum Op1State {
     NoState,
     Pulser(PulserState),
     Decay(Vec<f32>),
+    Noise(NoiseState),
 }
 
 pub enum Op3State {
@@ -189,18 +194,35 @@ pub struct Op3Ctx {
     pub buf: RefCell<Vec<Pix<f32>>>,
 }
 
+pub struct NoiseState {
+    seeds: Vec<Vec<f32>>,
+}
+
+impl NoiseState {
+    pub fn new(grain: usize, octaves: usize) -> NoiseState {
+        let mut res = NoiseState {
+            seeds: Vec::default(),
+        };
+        for _ in 0..octaves {
+            res.seeds.push(vec![0.0; grain]);
+        }
+        res
+    }
+}
+
 impl Op1State {
-    pub fn new_for(op: &Op1Def, size: usize) -> Op1State {
+    pub fn new_for(op: &Op1Def, ctx: &mut RunContext) -> Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
-            Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; size]),
+            Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
+            Op1Def::Noise(grain, octaves, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves)),
             _ => Op1State::NoState,
         }
     }
 }
 
 impl Op3State {
-    pub fn new_for(op: &Op3Def, _size: usize) -> Op3State {
+    pub fn new_for(op: &Op3Def, _ctx: &mut RunContext) -> Op3State {
         match op {
             _ => Op3State::NoState,
         }
