@@ -498,6 +498,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_optional("grain", OpLayoutType::Number),
                 OpLayoutParam::param_optional("octaves", OpLayoutType::Number),
+                OpLayoutParam::param_optional("offset", OpLayoutType::Param),
                 OpLayoutParam::param_optional("max", OpLayoutType::Param),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
@@ -513,7 +514,11 @@ lazy_static! {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
                      None => Param::Constant(1.0),
                  };
-                 let op = Op1Def::Noise(grain as usize, octaves as usize, max);
+                 let offset = match pmap.get("offset") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.0),
+                 };
+                 let op = Op1Def::Noise(grain as usize, octaves as usize, offset, max);
                  Ok(BuildOp1::new(op))
              } as BuildFuncOp1)
         );

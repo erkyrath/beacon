@@ -25,7 +25,7 @@ pub enum Op1Def {
     Min(), // op1...
     Max(), // op1...
     Clamp(Param, Param), // min, max; op1
-    Noise(usize, usize, Param), // grain, octaves, max
+    Noise(usize, usize, Param, Param), // grain, octaves, offset, max
 }
 
 #[derive(Clone)]
@@ -107,8 +107,8 @@ impl Op1Def {
             Op1Def::Clamp(min, max) => {
                 format!("Clamp({:?}, {:?})", min, max)
             },
-            Op1Def::Noise(grain, octaves, max) => {
-                format!("Noise(grain={}, octaves={}, max={:?})", grain, octaves, max)
+            Op1Def::Noise(grain, octaves, offset, max) => {
+                format!("Noise(grain={}, octaves={}, offset={:?}, max={:?})", grain, octaves, offset, max)
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -218,6 +218,7 @@ impl NoiseState {
             let mut seed: Vec<f32> = Vec::default();
             for _ in 0..ograin {
                 seed.push(rng.gen_range(0.0..1.0));
+                //### do we want to normalize this? or permute the range?
             }
             res.seeds.push(seed);
             ograin *= 2;
@@ -235,7 +236,7 @@ impl Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
             Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
-            Op1Def::Noise(grain, octaves, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves, ctx)),
+            Op1Def::Noise(grain, octaves, _offset, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves, ctx)),
             _ => Op1State::NoState,
         }
     }
@@ -470,11 +471,12 @@ impl Op1Ctx {
                 }
             }
 
-            Op1Def::Noise(_grain, octaves, max) => {
+            Op1Def::Noise(_grain, octaves, offset, max) => {
                 let mut state = ctx.op1s[bufnum].state.borrow_mut();
                 if let Op1State::Noise(state) = &mut *state {
                     let age = ctx.age() as f32;
                     let max = max.eval(ctx, age);
+                    let offset = offset.eval(ctx, age);
                     let buflen32 = buf.len() as f32;
                     for ix in 0..buf.len() {
                         buf[ix] = 0.0;
@@ -482,12 +484,12 @@ impl Op1Ctx {
                     for ix in 0..buf.len() {
                         let mut omax = max * state.fudgemax;
                         for oct in 0..*octaves {
-                            let grain = state.seeds[oct].len();
-                            let basepos = (ix as f32 / buflen32) * grain as f32;
-                            let seg = basepos as usize;
+                            let grain = state.seeds[oct].len() as i32;
+                            let basepos = (ix as f32 / buflen32 - offset) * grain as f32;
+                            let seg = basepos.floor() as i32;
                             let frac = basepos - (seg as f32);
                             let smoothfrac = (frac*frac)*(3.0-2.0*frac);
-                            let val = state.seeds[oct][seg] * (1.0-smoothfrac) + state.seeds[oct][(seg+1) % grain] * smoothfrac;
+                            let val = state.seeds[oct][(seg.rem_euclid(grain)) as usize] * (1.0-smoothfrac) + state.seeds[oct][((seg+1).rem_euclid(grain)) as usize] * smoothfrac;
                             buf[ix] += val * omax;
                             omax /= 2.0;
                         }
