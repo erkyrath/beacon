@@ -197,23 +197,34 @@ pub struct Op3Ctx {
 
 pub struct NoiseState {
     seeds: Vec<Vec<f32>>,
+    fudgemax: f32,
 }
 
 impl NoiseState {
     pub fn new(grain: usize, octaves: usize, ctx: &mut RunContext) -> NoiseState {
         let mut res = NoiseState {
             seeds: Vec::default(),
+            fudgemax: 1.0,
         };
+
+        if octaves == 0 {
+            return res;
+        }
         
         let mut rng = ctx.rng.borrow_mut();
+        let mut ograin = grain;
+        let mut ofudge = 1.0;
         for _ in 0..octaves {
             let mut seed: Vec<f32> = Vec::default();
-            for _ in 0..grain {
+            for _ in 0..ograin {
                 seed.push(rng.gen_range(0.0..1.0));
             }
             res.seeds.push(seed);
-            //### grain*2?
+            ograin *= 2;
+            ofudge /= 2.0;
         }
+
+        res.fudgemax = 0.5 / (1.0 - ofudge);
         
         res
     }
@@ -469,13 +480,15 @@ impl Op1Ctx {
                         buf[ix] = 0.0;
                     }
                     for ix in 0..buf.len() {
+                        let mut omax = max * state.fudgemax;
                         for oct in 0..*octaves {
                             let grain = state.seeds[oct].len();
                             let basepos = (ix as f32 / buflen32) * grain as f32;
                             let seg = basepos as usize;
                             let frac = basepos - (seg as f32);
                             let val = state.seeds[oct][seg] * (1.0-frac) + state.seeds[oct][(seg+1) % grain] * frac;
-                            buf[ix] += val * max;
+                            buf[ix] += val * omax;
+                            omax /= 2.0;
                         }
                     }
                 }
