@@ -7,6 +7,7 @@ extern crate sdl2;
 extern crate lazy_static;
 
 use std::time::Duration;
+use std::time::SystemTime;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -37,6 +38,9 @@ pub struct AppOptions {
 
     #[options(long="spin", help = "run script headless and measure speed")]
     spin: bool,
+
+    #[options(long="watch", help = "watch script and reload if it changes")]
+    watchfile: bool,
 
     #[options(long="size", help = "pixel count (default 160)")]
     size: Option<usize>,
@@ -92,7 +96,7 @@ fn main() {
         }
     }
     else {
-        let res = run_sdl(script, pixsize, filename);
+        let res = run_sdl(script, pixsize, filename, opts.watchfile);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -114,11 +118,19 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
     Ok(count)
 }
 
-fn run_sdl(script: Script, pixsize: usize, filename: &str) -> Result<(), String> {
+fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool) -> Result<(), String> {
     script.consistency_check()?;
     
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
+
+    let mut watchtime: SystemTime = SystemTime::now();
+    if watchfile {
+        let stat = std::fs::metadata(filename)
+            .map_err(|err| err.to_string())?;
+        watchtime = stat.modified()
+            .map_err(|err| err.to_string())?;
+    }
  
     let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), 800, 100)
         .position_centered()
@@ -141,6 +153,17 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str) -> Result<(), String>
     let mut pause = false;
         
     'running: loop {
+        if watchfile {
+            let stat = std::fs::metadata(filename)
+                .map_err(|err| err.to_string())?;
+            let newtime = stat.modified()
+                .map_err(|err| err.to_string())?;
+            if newtime != watchtime {
+                println!("### change!");
+                watchtime = newtime;
+            }
+        }
+
         if !pause {
             ctx.tick();
         }
