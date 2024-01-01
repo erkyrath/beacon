@@ -209,8 +209,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
                         }
                     }
                 }
-            },
-            )
+            })
         })?;
         canvas.copy(&texture, None, None)?;
 
