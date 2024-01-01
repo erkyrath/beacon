@@ -33,6 +33,9 @@ pub struct AppOptions {
     #[options(help = "print help message")]
     help: bool,
 
+    #[options(long="size", help = "pixel count (default 160)")]
+    size: Option<usize>,
+
     #[options(long="dump", help = "dump script to stdout")]
     dump: bool,
 
@@ -42,8 +45,8 @@ pub struct AppOptions {
     #[options(long="watch", help = "watch script and reload if it changes")]
     watchfile: bool,
 
-    #[options(long="size", help = "pixel count (default 160)")]
-    size: Option<usize>,
+    #[options(long="power", help = "estimate power usage")]
+    showpower: bool,
 
 }
 
@@ -96,7 +99,7 @@ fn main() {
         }
     }
     else {
-        let res = run_sdl(script, pixsize, filename, opts.watchfile);
+        let res = run_sdl(script, pixsize, filename, opts.watchfile, opts.showpower);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -118,12 +121,14 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
     Ok(count)
 }
 
-fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool) -> Result<(), String> {
+fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, showpower: bool) -> Result<(), String> {
     script.consistency_check()?;
     
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
+    let mut powertime: f64 = 0.0;
+ 
     let mut watchtime: SystemTime = SystemTime::now();
     if watchfile {
         let stat = std::fs::metadata(filename)
@@ -131,7 +136,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool) -> R
         watchtime = stat.modified()
             .map_err(|err| err.to_string())?;
     }
- 
+
     let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), 800, 100)
         .position_centered()
         .build()
@@ -176,6 +181,13 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool) -> R
             ctx.tick();
         }
 
+        if showpower {
+            if ctx.age() >= powertime+1.0 {
+                powertime = ctx.age();
+                println!("### power");
+            }
+        }
+        
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
             match &ctx.script.order[0] {
                 ScriptIndex::Op1(val) => {
@@ -201,7 +213,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool) -> R
             }
         })?;
         canvas.copy(&texture, None, None)?;
-        
+
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} |
