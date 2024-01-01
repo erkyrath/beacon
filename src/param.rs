@@ -17,7 +17,7 @@ pub enum Param {
     RandNorm(f32, f32),  // mean, stddev
     Changing(f32, f32),  // start, velocity
     Wave(WaveShape, f32, f32, f32), // shape, min, max, duration
-    WaveCycle(WaveShape, f32, f32, f32), // shape, min, max, period
+    WaveCycle(WaveShape, f32, f32, f32, f32), // shape, min, max, period, offset
 
     Quote(Box<Param>),
 }
@@ -30,7 +30,7 @@ impl fmt::Debug for Param {
             Param::RandNorm(mean, stdev) => write!(f, "RandNorm(mean={}, stdev={})", mean, stdev),
             Param::Changing(start, velocity) => write!(f, "Changing(start={}, velocity={})", start, velocity),
             Param::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={}, max={}, duration={})", shape, min, max, duration),
-            Param::WaveCycle(shape, min, max, period) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={})", shape, min, max, period),
+            Param::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={}, offset={})", shape, min, max, period, offset),
             Param::Quote(param) => write!(f, "Quote({:?})", *param)
         }
     }
@@ -55,8 +55,8 @@ impl Param {
             Param::Wave(shape, min, max, dur) => {
                 shape.sample(age/dur) * (max-min) + min
             },
-            Param::WaveCycle(shape, min, max, period) => {
-                shape.sample((age/period).rem_euclid(1.0)) * (max-min) + min
+            Param::WaveCycle(shape, min, max, period, offset) => {
+                shape.sample(((age-offset)/period).rem_euclid(1.0)) * (max-min) + min
             },
             Param::Quote(_) => {
                 panic!("eval Quote");
@@ -80,7 +80,7 @@ impl Param {
                 }
             },
             Param::Wave(_shape, min, _max, _period) => Some(*min),
-            Param::WaveCycle(_shape, min, _max, _period) => Some(*min),
+            Param::WaveCycle(_shape, min, _max, _period, _offset) => Some(*min),
             Param::Quote(_) => {
                 panic!("eval Quote");
             },
@@ -103,7 +103,7 @@ impl Param {
                 }
             },
             Param::Wave(_shape, _min, max, _period) => Some(*max),
-            Param::WaveCycle(_shape, _min, max, _period) => Some(*max),
+            Param::WaveCycle(_shape, _min, max, _period, _offset) => Some(*max),
             Param::Quote(_) => {
                 panic!("eval Quote");
             },

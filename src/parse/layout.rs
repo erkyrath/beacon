@@ -184,6 +184,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("min", OpLayoutType::Number),
                 OpLayoutParam::param_optional("max", OpLayoutType::Number),
                 OpLayoutParam::param_optional("period", OpLayoutType::Number),
+                OpLayoutParam::param_optional("offset", OpLayoutType::Number),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
@@ -199,7 +200,11 @@ lazy_static! {
                      Some(val) => parse_for_number(&nod.params.items[*val])?,
                      None => 1.0,
                  };
-                 Ok(Param::WaveCycle(shape, min, max, period))
+                 let offset = match pmap.get("offset") {
+                     Some(val) => parse_for_number(&nod.params.items[*val])?,
+                     None => 0.0,
+                 };
+                 Ok(Param::WaveCycle(shape, min, max, period, offset))
              } as BuildFuncParam)
         );
         
