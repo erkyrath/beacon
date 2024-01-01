@@ -184,8 +184,23 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
 
         if showpower {
             if ctx.age() >= powertime+1.0 {
+                let mut total = 0.0;
+                ctx.applybuf(|pixbuf| {
+                    match pixbuf {
+                        PixBuffer::Buf1(buf) => {
+                            for xpos in 0..pixsize {
+                                total += buf[xpos];
+                            }
+                        },
+                        PixBuffer::Buf3(buf) => {
+                            for xpos in 0..pixsize {
+                                total += (buf[xpos].r + buf[xpos].g + buf[xpos].b) / 3.0;
+                            }
+                        },
+                    }
+                });
+                println!("Power use: {:.1} white pixels ({:.01}%)", total, 100.0 * total / (pixsize as f32));
                 powertime = ctx.age();
-                println!("### power");
             }
         }
         
