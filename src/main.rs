@@ -24,6 +24,7 @@ mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
+use context::{RunContext, PixBuffer};
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
@@ -107,7 +108,7 @@ fn main() {
 }
 
 fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, String> {
-    let mut ctx = context::RunContext::new(script, pixsize);
+    let mut ctx = RunContext::new(script, pixsize);
     let mut count = 0;
     
     loop {
@@ -154,7 +155,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = context::RunContext::new(script, pixsize);
+    let mut ctx = RunContext::new(script, pixsize);
     let mut pause = false;
         
     'running: loop {
@@ -168,7 +169,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
                 watchtime = newtime;
                 match parse::parse_script(&filename) {
                     Ok(newscript) => {
-                        ctx = context::RunContext::new(newscript, pixsize);
+                        ctx = RunContext::new(newscript, pixsize);
                     },
                     Err(msg) => {
                         println!("{msg}");
@@ -190,21 +191,23 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
         
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
             ctx.applybuf(
-                |buf1, buf3| {
-                    if let Some(buf) = buf1 {
-                        for xpos in 0..pixsize {
-                            let offset = (xpos as usize) * 3;
-                            buffer[offset] = (buf[xpos] * 255.0) as u8;
-                            buffer[offset+1] = buffer[offset];
-                            buffer[offset+2] = buffer[offset];
-                        }
-                    }
-                    if let Some(buf) = buf3 {
-                        for xpos in 0..pixsize {
-                            let offset = (xpos as usize) * 3;
-                            buffer[offset] = (buf[xpos].r * 255.0) as u8;
-                            buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
-                            buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
+                |pixbuf| {
+                    match pixbuf {
+                        PixBuffer::Buf1(buf) => {
+                            for xpos in 0..pixsize {
+                                let offset = (xpos as usize) * 3;
+                                buffer[offset] = (buf[xpos] * 255.0) as u8;
+                                buffer[offset+1] = buffer[offset];
+                                buffer[offset+2] = buffer[offset];
+                            }
+                        },
+                        PixBuffer::Buf3(buf) => {
+                            for xpos in 0..pixsize {
+                                let offset = (xpos as usize) * 3;
+                                buffer[offset] = (buf[xpos].r * 255.0) as u8;
+                                buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
+                                buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
+                            }
                         }
                     }
                 },

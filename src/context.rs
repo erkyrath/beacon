@@ -10,6 +10,11 @@ use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
 
+pub enum PixBuffer<'a> {
+    Buf1(&'a [f32]),
+    Buf3(&'a [Pix<f32>]),
+}
+
 pub struct RunContext {
     pub script: Script,
     pub size: usize,
@@ -75,15 +80,15 @@ impl RunContext {
     }
 
     pub fn applybuf<F>(&self, mut func: F)
-    where F: FnMut(Option<&[f32]>, Option<&[Pix<f32>]>) {
+    where F: FnMut(PixBuffer) {
         match &self.script.order[0] {
             ScriptIndex::Op1(val) => {
                 let buf = self.op1s[*val].buf.borrow();
-                func(Some(&buf), None);
+                func(PixBuffer::Buf1(&buf));
             },
             ScriptIndex::Op3(val) => {
                 let buf = self.op3s[*val].buf.borrow();
-                func(None, Some(&buf));
+                func(PixBuffer::Buf3(&buf));
             },
         }
     }
