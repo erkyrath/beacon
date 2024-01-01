@@ -190,27 +190,26 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
         }
         
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
-            ctx.applybuf(
-                |pixbuf| {
-                    match pixbuf {
-                        PixBuffer::Buf1(buf) => {
-                            for xpos in 0..pixsize {
-                                let offset = (xpos as usize) * 3;
-                                buffer[offset] = (buf[xpos] * 255.0) as u8;
-                                buffer[offset+1] = buffer[offset];
-                                buffer[offset+2] = buffer[offset];
-                            }
-                        },
-                        PixBuffer::Buf3(buf) => {
-                            for xpos in 0..pixsize {
-                                let offset = (xpos as usize) * 3;
-                                buffer[offset] = (buf[xpos].r * 255.0) as u8;
-                                buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
-                                buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
-                            }
+            ctx.applybuf(|pixbuf| {
+                match pixbuf {
+                    PixBuffer::Buf1(buf) => {
+                        for xpos in 0..pixsize {
+                            let offset = (xpos as usize) * 3;
+                            buffer[offset] = (buf[xpos] * 255.0) as u8;
+                            buffer[offset+1] = buffer[offset];
+                            buffer[offset+2] = buffer[offset];
+                        }
+                    },
+                    PixBuffer::Buf3(buf) => {
+                        for xpos in 0..pixsize {
+                            let offset = (xpos as usize) * 3;
+                            buffer[offset] = (buf[xpos].r * 255.0) as u8;
+                            buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
+                            buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
                         }
                     }
-                },
+                }
+            },
             )
         })?;
         canvas.copy(&texture, None, None)?;
