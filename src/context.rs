@@ -73,6 +73,20 @@ impl RunContext {
     pub fn ticklen(&self) -> f32 {
         self.ticklen
     }
+
+    pub fn applybuf<F>(&self, mut func: F)
+    where F: FnMut(Option<&[f32]>, Option<&[Pix<f32>]>) {
+        match &self.script.order[0] {
+            ScriptIndex::Op1(val) => {
+                let buf = self.op1s[*val].buf.borrow();
+                func(Some(&buf), None);
+            },
+            ScriptIndex::Op3(val) => {
+                let buf = self.op3s[*val].buf.borrow();
+                func(None, Some(&buf));
+            },
+        }
+    }
     
     pub fn applybuf1<F>(&self, val: usize, mut func: F)
     where F: FnMut(&[f32]) {

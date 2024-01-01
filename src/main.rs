@@ -189,28 +189,26 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
         }
         
         texture.with_lock(None, |buffer: &mut [u8], _pitch: usize| {
-            match &ctx.script.order[0] {
-                ScriptIndex::Op1(val) => {
-                    ctx.applybuf1(*val, |buf| {
+            ctx.applybuf(
+                |buf1, buf3| {
+                    if let Some(buf) = buf1 {
                         for xpos in 0..pixsize {
                             let offset = (xpos as usize) * 3;
                             buffer[offset] = (buf[xpos] * 255.0) as u8;
                             buffer[offset+1] = buffer[offset];
                             buffer[offset+2] = buffer[offset];
                         }
-                    });
-                },
-                ScriptIndex::Op3(val) => {
-                    ctx.applybuf3(*val, |buf| {
+                    }
+                    if let Some(buf) = buf3 {
                         for xpos in 0..pixsize {
                             let offset = (xpos as usize) * 3;
                             buffer[offset] = (buf[xpos].r * 255.0) as u8;
                             buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
                             buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
                         }
-                    });
+                    }
                 },
-            }
+            )
         })?;
         canvas.copy(&texture, None, None)?;
 
