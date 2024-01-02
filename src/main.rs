@@ -49,6 +49,12 @@ pub struct AppOptions {
     #[options(long="power", help = "estimate power usage")]
     showpower: bool,
 
+    #[options(long="width", help = "display window width")]
+    winwidth: Option<u32>,
+
+    #[options(long="height", help = "display window height")]
+    winheight: Option<u32>,
+
 }
 
 fn main() {
@@ -100,7 +106,9 @@ fn main() {
         }
     }
     else {
-        let res = run_sdl(script, pixsize, filename, opts.watchfile, opts.showpower);
+        let winwidth = opts.winwidth.unwrap_or(800);
+        let winheight = opts.winheight.unwrap_or(100);
+        let res = run_sdl(script, pixsize, filename, opts.watchfile, opts.showpower, winwidth, winheight);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -122,7 +130,7 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
     Ok(count)
 }
 
-fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, showpower: bool) -> Result<(), String> {
+fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     script.consistency_check()?;
     
     let sdl_context = sdl2::init()?;
@@ -138,7 +146,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
             .map_err(|err| err.to_string())?;
     }
 
-    let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), 800, 100)
+    let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), winwidth, winheight)
         .position_centered()
         .build()
         .map_err(|err| err.to_string())?;
