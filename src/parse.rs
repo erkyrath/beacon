@@ -55,13 +55,17 @@ impl BuildOp {
     }
 
     fn addchild1(mut self, op: BuildOp) -> BuildOp {
-        //### verify op1
+        if let BuildOpDef::Op3(_) = *op.op {
+            panic!("addchild1 mismatch");
+        }
         self.children.push(Box::new(op));
         return self;
     }
 
     fn addchild3(mut self, op: BuildOp) -> BuildOp {
-        //### verify op3
+        if let BuildOpDef::Op1(_) = *op.op {
+            panic!("addchild3 mismatch");
+        }
         self.children.push(Box::new(op));
         return self;
     }
