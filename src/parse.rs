@@ -175,6 +175,10 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     let mut script = Script::new();
 
     for item in &itemls.items {
+        verify_wellformed(&item)?;
+    }
+
+    for item in &itemls.items {
         //### this gives a bad error if pulser is the root
         match parse_for_op3(item) {
             Ok(op3) => {
@@ -202,6 +206,27 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     script.order.reverse();
     
     return Ok(script);
+}
+
+fn verify_wellformed(nod: &ParseNode) -> Result<(), String> {
+    match &nod.term {
+        ParseTerm::Number(_val) => {
+            if nod.params.items.len() > 0 {
+                return Err(format!("line {}: number cannot have params: {}", nod.linenum, nod.term));
+            }
+        },
+        ParseTerm::Color(_val) => {
+            if nod.params.items.len() > 0 {
+                return Err(format!("line {}: color cannot have params: {}", nod.linenum, nod.term));
+            }
+        },
+        ParseTerm::Ident(_val) => {
+            for item in &nod.params.items {
+                verify_wellformed(item)?;
+            }
+        },
+    }
+    Ok(())
 }
 
 fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {
