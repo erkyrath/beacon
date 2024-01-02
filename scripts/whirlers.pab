@@ -1,0 +1,25 @@
+matrix=max
+  $880
+  muls: $FF0
+    pulser
+      interval=randnorm: 0.2, 0.02
+      spaceshape=sqrtooth
+      timeshape=flat
+      pos=quote: changing: -0.2, 0.3
+      width=0.1
+  muls: $FF0
+    pulser
+      interval=randnorm: 0.25, 0.05
+      spaceshape=sqrtooth
+      timeshape=flat
+      pos=quote: changing: 1.2, -0.2
+      width=0.1
+
+muls
+  'matrix
+  pulser:
+    interval=0.5
+    spaceshape=sine
+    timeshape=sine
+    pos=randflat: 0, 1
+    width=0.4
