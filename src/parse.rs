@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
+use crate::op::GradStop;
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
 use crate::param::Param;
@@ -13,7 +14,7 @@ use crate::script::{Script, ScriptIndex};
 use crate::script::{Op1DefRef, Op3DefRef};
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
-use crate::parse::layout::{get_waveshape, get_param_layout, get_op1_layout, get_op3_layout};
+use crate::parse::layout::{get_waveshape, get_param_layout, get_gradstop_layout, get_op1_layout, get_op3_layout};
 
 type VarMapType = HashMap<String, ScriptIndex>;
 
@@ -272,6 +273,25 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
             return buildfunc(nod, &pmap);
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
+    }
+}
+
+fn parse_for_gradstop(nod: &ParseNode) -> Result<GradStop, String> {
+    match &nod.term {
+        ParseTerm::Color(_pix) => {
+            Err(format!("line {}: stop must include both color and number", nod.linenum))
+        },
+        ParseTerm::Number(val) => {
+            Err(format!("line {}: stop must include both color and number", nod.linenum))
+        },
+        ParseTerm::VarName(_val) => {
+            Err(format!("line {}: stop cannot be variable ref", nod.linenum))
+        },
+        ParseTerm::Ident(val) => {
+            let (params, buildfunc) = get_gradstop_layout();
+            let pmap = match_children(nod, params)?;
+            return buildfunc(nod, &pmap);
+        },
     }
 }
 

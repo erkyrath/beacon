@@ -3,13 +3,14 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use crate::op::{Op1Def, Op3Def};
+use crate::op::GradStop;
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
 use crate::pulser::Pulser;
 use crate::param::Param;
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::BuildOp;
-use crate::parse::{parse_for_op1, parse_for_op3, parse_for_number, parse_for_color, parse_for_waveshape, parse_for_param};
+use crate::parse::{parse_for_op1, parse_for_op3, parse_for_number, parse_for_color, parse_for_waveshape, parse_for_param, parse_for_gradstop};
 
 pub enum OpLayoutType {
     Op1,
@@ -17,6 +18,7 @@ pub enum OpLayoutType {
     Number,
     Color,
     Param,
+    GradStop,
     Wave,
 }
 
@@ -57,11 +59,20 @@ impl OpLayoutParam {
 }
 
 type BuildFuncParam = fn(&ParseNode, &HashMap<String, usize>)->Result<Param, String>;
+type BuildFuncGradStop = fn(&ParseNode, &HashMap<String, usize>)->Result<GradStop, String>;
 type BuildFuncOp1 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp, String>;
 type BuildFuncOp3 = fn(&ParseNode, &HashMap<String, usize>)->Result<BuildOp, String>;
 
 pub fn get_waveshape(val: &str) -> Option<&WaveShape> {
     return WAVESHAPELAYOUT.get(val.to_lowercase().as_str());
+}
+
+pub fn get_gradstop_layout() -> (&'static Vec<OpLayoutParam>, BuildFuncGradStop) {
+    return (&GRADSTOPLAYOUT, |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<GradStop, String> {
+        let pos = parse_for_number(&nod.params.items[pmap["pos"]])?;
+        let color = parse_for_color(&nod.params.items[pmap["color"]])?;
+        Ok(GradStop { pos:pos, color:color })
+    } as BuildFuncGradStop);
 }
 
 pub fn get_param_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncParam)> {
@@ -77,6 +88,13 @@ pub fn get_op3_layout(val: &str) -> Option<&(Vec<OpLayoutParam>, BuildFuncOp3)> 
 }
 
 lazy_static! {
+    static ref GRADSTOPLAYOUT: Vec<OpLayoutParam> = {
+        vec![
+            OpLayoutParam::param("pos", OpLayoutType::Number),
+            OpLayoutParam::param("color", OpLayoutType::Color),
+        ]
+    };
+    
     static ref WAVESHAPELAYOUT: HashMap<&'static str, WaveShape> = {
         HashMap::from([
             ("flat", WaveShape::Flat),
@@ -649,6 +667,31 @@ lazy_static! {
                     }
                 }
                 let op = Op3Def::Gradient(stops);
+                Ok(BuildOp::new3(op).addchild1(subop))
+            } as BuildFuncOp3)
+        );
+        
+        map.insert(
+            "pgradient",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param_repeating("stop", OpLayoutType::GradStop),
+            ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+                let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                let mut stops: Vec<GradStop> = Vec::new();
+                let mut ix = 0;
+                loop {
+                    ix += 1;
+                    let tempname = format!("stop{}", ix);
+                    if let Some(val) = pmap.get(&tempname) {
+                        let stop = parse_for_gradstop(&nod.params.items[*val])?;
+                        stops.push(stop);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                let op = Op3Def::PGradient(stops);
                 Ok(BuildOp::new3(op).addchild1(subop))
             } as BuildFuncOp3)
         );

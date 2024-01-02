@@ -38,6 +38,7 @@ pub enum Op3Def {
     RGB(), // op1, op1, op1
     HSV(), // op1, op1, op1
     Gradient(Vec<Pix<f32>>), // stops; op1
+    PGradient(Vec<GradStop>), // stops; op1
     MulS(), // op3, op1
     Sum(), // op3...
     Mean(), // op3...
@@ -145,6 +146,9 @@ impl Op3Def {
             Op3Def::Gradient(stops) => {
                 format!("Gradient({:?})", stops)
             },
+            Op3Def::PGradient(stops) => {
+                format!("PGradient({:?})", stops)
+            },
             Op3Def::MulS() => {
                 format!("MulS()")
             },
@@ -211,6 +215,12 @@ pub struct Op3Ctx {
 pub struct NoiseState {
     seeds: Vec<Vec<f32>>,
     fudgemax: f32,
+}
+
+#[derive(Clone, Debug)]
+pub struct GradStop {
+    pub pos: f32,
+    pub color: Pix<f32>,
 }
 
 impl NoiseState {
@@ -654,6 +664,10 @@ impl Op3Ctx {
                 }
             }
 
+            Op3Def::PGradient(stops) => {
+                //###
+            },
+            
             Op3Def::MulS() => {
                 let obufnum1 = opref.get_type_ref(3, 0);
                 let obufnum2 = opref.get_type_ref(1, 1);
