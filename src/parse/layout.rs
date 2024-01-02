@@ -760,6 +760,23 @@ lazy_static! {
              } as BuildFuncOp3)
         );
         
+        map.insert(
+            "shift",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+                OpLayoutParam::param_optional("offset", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp3, String> {
+                 let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
+                 let offset = match pmap.get("offset") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.0),
+                 };
+                 let op = Op3Def::Shift(offset);
+                 Ok(BuildOp3::new(op).addchild3(subop))
+             } as BuildFuncOp3)
+        );
+        
         map
     };
 }

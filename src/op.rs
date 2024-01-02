@@ -25,7 +25,7 @@ pub enum Op1Def {
     Min(), // op1...
     Max(), // op1...
     Clamp(Param, Param), // min, max; op1
-    Shift(Param), // offset
+    Shift(Param), // offset; op1
     Noise(usize, usize, Param, Param), // grain, octaves, offset, max
 }
 
@@ -44,6 +44,7 @@ pub enum Op3Def {
     Max(), // op3...
     Lerp(), // op3, op3, op1
     Mask(Param), // op3, op3, op1
+    Shift(Param), // offset; op3
 }
 
 impl Op1Def {
@@ -160,6 +161,9 @@ impl Op3Def {
             },
             Op3Def::Mask(threshold) => {
                 format!("Mask({:?})", threshold)
+            },
+            Op3Def::Shift(offset) => {
+                format!("Shift({:?})", offset)
             },
             //_ => "?Op1Def".to_string(),
         }
@@ -794,6 +798,24 @@ impl Op3Ctx {
                     else {
                         buf[ix] = obuf2[ix].clone();
                     }
+                }
+            }
+
+            Op3Def::Shift(offset) => {
+                let age = ctx.age() as f32;
+                let offset = offset.eval(ctx, age);
+                let buflen = buf.len() as i32;
+                let buflen32 = buf.len() as f32;
+                let obufnum = opref.get_type_ref(3, 0);
+                let obuf = ctx.op3s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    let pos = ix as f32 - offset * buflen32;
+                    let seg = pos.floor() as i32;
+                    let frac = pos - (seg as f32);
+                    buf[ix].r = obuf[seg.rem_euclid(buflen) as usize].r * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize].r * frac;
+                    buf[ix].g = obuf[seg.rem_euclid(buflen) as usize].g * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize].g * frac;
+                    buf[ix].b = obuf[seg.rem_euclid(buflen) as usize].b * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize].b * frac;
                 }
             }
 
