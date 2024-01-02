@@ -17,113 +17,86 @@ use crate::parse::layout::{get_waveshape, get_param_layout, get_op1_layout, get_
 
 type VarMapType = HashMap<String, ScriptIndex>;
 
-enum BuildOp {
-    Op1(Box<BuildOp1>),
-    Op3(Box<BuildOp3>),
+#[derive(Clone)]
+enum BuildOpDef {
+    Op1(Op1Def),
+    Op3(Op3Def),
+    Var(String),
+}
+
+impl fmt::Debug for BuildOpDef {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            BuildOpDef::Op1(op) => op.fmt(f),
+            BuildOpDef::Op3(op) => op.fmt(f),
+            BuildOpDef::Var(val) => write!(f, "{}", val),
+        }
+    }
+}
+
+pub struct BuildOp {
+    op: Box<BuildOpDef>,
+    children: Vec<Box<BuildOp>>,
+}
+
+impl BuildOp {
+    fn new1(op: Op1Def) -> BuildOp {
+        BuildOp {
+            op: Box::new(BuildOpDef::Op1(op)),
+            children: Vec::default(),
+        }
+    }
+
+    fn new3(op: Op3Def) -> BuildOp {
+        BuildOp {
+            op: Box::new(BuildOpDef::Op3(op)),
+            children: Vec::default(),
+        }
+    }
+
+    fn addchild1(mut self, op: BuildOp) -> BuildOp {
+        //### verify op1
+        self.children.push(Box::new(op));
+        return self;
+    }
+
+    fn addchild3(mut self, op: BuildOp) -> BuildOp {
+        //### verify op3
+        self.children.push(Box::new(op));
+        return self;
+    }
+
+    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> ScriptIndex {
+        let mut bufs: Vec<ScriptIndex> = Vec::default();
+        for nod in &self.children {
+            let obufnum = nod.build(script, varmap);
+            bufs.push(obufnum);
+        }
+        let bop = (*self.op).clone();
+        match bop {
+            BuildOpDef::Op1(op) => {
+                let bufnum = script.op1s.len();
+                script.order.push(ScriptIndex::Op1(bufnum));
+                script.op1s.push(Op1DefRef::new(op, bufs));
+                return ScriptIndex::Op1(bufnum);
+            },
+            BuildOpDef::Op3(op) => {
+                let bufnum = script.op3s.len();
+                script.order.push(ScriptIndex::Op3(bufnum));
+                script.op3s.push(Op3DefRef::new(op, bufs));
+                return ScriptIndex::Op3(bufnum);
+            },
+            BuildOpDef::Var(_val) => {
+                panic!("###");
+            },
+        }
+    }
+        
 }
 
 impl fmt::Debug for BuildOp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            BuildOp::Op1(op) => op.fmt(f),
-            BuildOp::Op3(op) => op.fmt(f),
-        }
-    }
-}
-
-pub struct BuildOp1 {
-    op1: Box<Op1Def>,
-    children: Vec<BuildOp>,
-}
-
-pub struct BuildOp3 {
-    op3: Box<Op3Def>,
-    children: Vec<BuildOp>,
-}
-
-impl BuildOp1 {
-    fn new(op: Op1Def) -> BuildOp1 {
-        BuildOp1 {
-            op1: Box::new(op),
-            children: Vec::default(),
-        }
-    }
-
-    fn addchild1(mut self, op: BuildOp1) -> BuildOp1 {
-        self.children.push(BuildOp::Op1(Box::new(op)));
-        return self;
-    }
-
-    fn addchild3(mut self, op: BuildOp3) -> BuildOp1 {
-        self.children.push(BuildOp::Op3(Box::new(op)));
-        return self;
-    }
-
-    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> ScriptIndex {
-        let mut bufs: Vec<ScriptIndex> = Vec::default();
-        for bnod in &self.children {
-            match bnod {
-                BuildOp::Op1(nod) => {
-                    let obufnum = nod.build(script, varmap);
-                    bufs.push(obufnum);
-                },
-                BuildOp::Op3(nod) => {
-                    let obufnum = nod.build(script, varmap);
-                    bufs.push(obufnum);
-                },
-            }
-        }
-        let bufnum = script.op1s.len();
-        script.order.push(ScriptIndex::Op1(bufnum));
-        script.op1s.push(Op1DefRef::new(*self.op1.clone(), bufs));
-        return ScriptIndex::Op1(bufnum);
-    }
-        
-}
-
-impl BuildOp3 {
-    fn new(op: Op3Def) -> BuildOp3 {
-        BuildOp3 {
-            op3: Box::new(op),
-            children: Vec::default(),
-        }
-    }
-
-    fn addchild1(mut self, op: BuildOp1) -> BuildOp3 {
-        self.children.push(BuildOp::Op1(Box::new(op)));
-        return self;
-    }
-
-    fn addchild3(mut self, op: BuildOp3) -> BuildOp3 {
-        self.children.push(BuildOp::Op3(Box::new(op)));
-        return self;
-    }
-
-    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> ScriptIndex {
-        let mut bufs: Vec<ScriptIndex> = Vec::default();
-        for bnod in &self.children {
-            match bnod {
-                BuildOp::Op1(nod) => {
-                    let obufnum = nod.build(script, varmap);
-                    bufs.push(obufnum);
-                },
-                BuildOp::Op3(nod) => {
-                    let obufnum = nod.build(script, varmap);
-                    bufs.push(obufnum);
-                },
-            }
-        }
-        let bufnum = script.op3s.len();
-        script.order.push(ScriptIndex::Op3(bufnum));
-        script.op3s.push(Op3DefRef::new(*self.op3.clone(), bufs));
-        return ScriptIndex::Op3(bufnum);
-    }
-        
-}
-
-impl fmt::Debug for BuildOp1 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.op1.fmt(f)?;
+        self.op.fmt(f)?;
         
         let mut gotany = false;
         for subop in &self.children {
@@ -134,23 +107,6 @@ impl fmt::Debug for BuildOp1 {
         }
         if gotany { write!(f, "]")?; }
 
-        Ok(())
-    }
-}
-
-impl fmt::Debug for BuildOp3 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.op3.fmt(f)?;
-        
-        let mut gotany = false;
-        for subop in &self.children {
-            if !gotany { write!(f, "[")?; }
-            else { write!(f, ", ")?; }
-            subop.fmt(f)?;
-            gotany = true;
-        }
-        if gotany { write!(f, "]")?; }
-        
         Ok(())
     }
 }
@@ -198,6 +154,8 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
             },
         }
     }
+
+    println!("### varmap: {:?}", varmap);
 
     if script.order.len() == 0 {
         return Err("error: script is empty".to_string());
@@ -287,14 +245,14 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
     }
 }
 
-fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
+fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: unexpected color", nod.linenum))
         },
         ParseTerm::Number(val) => {
             let op = Op1Def::Constant(*val);
-            Ok(BuildOp1::new(op))
+            Ok(BuildOp::new1(op))
         },
         ParseTerm::VarName(_val) => {
             panic!("###");
@@ -309,16 +267,16 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
     }
 }
 
-fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
+fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
             let op = Op3Def::Constant(pix.clone());
-            Ok(BuildOp3::new(op))
+            Ok(BuildOp::new3(op))
         },
         ParseTerm::Number(val) => {
             let subop = Op1Def::Constant(*val);
             let op = Op3Def::Grey();
-            Ok(BuildOp3::new(op).addchild1(BuildOp1::new(subop)))
+            Ok(BuildOp::new3(op).addchild1(BuildOp::new1(subop)))
         },
         ParseTerm::VarName(_val) => {
             panic!("###");
