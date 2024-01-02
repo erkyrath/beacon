@@ -133,6 +133,9 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
 fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     script.consistency_check()?;
     
+    let margin: u32 = 16;
+    let copyrect = sdl2::rect::Rect::new(0, margin as i32, winwidth, winheight);
+    
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -146,7 +149,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
             .map_err(|err| err.to_string())?;
     }
 
-    let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), winwidth, winheight)
+    let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), winwidth, winheight+2*margin)
         .position_centered()
         .build()
         .map_err(|err| err.to_string())?;
@@ -234,7 +237,8 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
                 }
             })
         })?;
-        canvas.copy(&texture, None, None)?;
+        canvas.clear();
+        canvas.copy(&texture, None, Some(copyrect))?;
 
         for event in event_pump.poll_iter() {
             match event {
