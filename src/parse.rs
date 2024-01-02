@@ -15,6 +15,8 @@ use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::layout::{OpLayoutParam};
 use crate::parse::layout::{get_waveshape, get_param_layout, get_op1_layout, get_op3_layout};
 
+type VarMapType = HashMap<String, ScriptIndex>;
+
 enum BuildOp {
     Op1(Box<BuildOp1>),
     Op3(Box<BuildOp3>),
@@ -57,16 +59,16 @@ impl BuildOp1 {
         return self;
     }
 
-    fn build(&self, script: &mut Script) -> ScriptIndex {
+    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> ScriptIndex {
         let mut bufs: Vec<ScriptIndex> = Vec::default();
         for bnod in &self.children {
             match bnod {
                 BuildOp::Op1(nod) => {
-                    let obufnum = nod.build(script);
+                    let obufnum = nod.build(script, varmap);
                     bufs.push(obufnum);
                 },
                 BuildOp::Op3(nod) => {
-                    let obufnum = nod.build(script);
+                    let obufnum = nod.build(script, varmap);
                     bufs.push(obufnum);
                 },
             }
@@ -97,16 +99,16 @@ impl BuildOp3 {
         return self;
     }
 
-    fn build(&self, script: &mut Script) -> ScriptIndex {
+    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> ScriptIndex {
         let mut bufs: Vec<ScriptIndex> = Vec::default();
         for bnod in &self.children {
             match bnod {
                 BuildOp::Op1(nod) => {
-                    let obufnum = nod.build(script);
+                    let obufnum = nod.build(script, varmap);
                     bufs.push(obufnum);
                 },
                 BuildOp::Op3(nod) => {
-                    let obufnum = nod.build(script);
+                    let obufnum = nod.build(script, varmap);
                     bufs.push(obufnum);
                 },
             }
@@ -162,18 +164,32 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
         verify_wellformed(&item, 0)?;
     }
 
+    let mut varmap: VarMapType = HashMap::new();
+
     for item in &itemls.items {
         //### this gives a bad error if a bad pulser is the root
         match parse_for_op3(item) {
             Ok(op3) => {
                 //println!("got op3 (name {:?}) {:?}", item.key, op3);
-                op3.build(&mut script);
+                let scix = op3.build(&mut script, &mut varmap);
+                if let Some(varname) = &item.key {
+                    if varmap.contains_key(varname) {
+                        return Err(format!("line {}: variable has two definitions: {}", item.linenum, varname));
+                    }
+                    varmap.insert(varname.to_string(), scix);
+                }
             },
             Err(err3) => {
                 match parse_for_op1(item) {
                     Ok(op1) => {
                         //println!("got op1 (name {:?}) {:?}", item.key, op1);
-                        op1.build(&mut script);
+                        let scix = op1.build(&mut script, &mut varmap);
+                        if let Some(varname) = &item.key {
+                            if varmap.contains_key(varname) {
+                                return Err(format!("line {}: variable has two definitions: {}", item.linenum, varname));
+                            }
+                            varmap.insert(varname.to_string(), scix);
+                        }
                     },
                     Err(_err1) => {
                         return Err(err3);
