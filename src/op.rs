@@ -25,6 +25,7 @@ pub enum Op1Def {
     Min(), // op1...
     Max(), // op1...
     Clamp(Param, Param), // min, max; op1
+    Shift(Param), // offset
     Noise(usize, usize, Param, Param), // grain, octaves, offset, max
 }
 
@@ -106,6 +107,9 @@ impl Op1Def {
             },
             Op1Def::Clamp(min, max) => {
                 format!("Clamp({:?}, {:?})", min, max)
+            },
+            Op1Def::Shift(offset) => {
+                format!("Shift({:?})", offset)
             },
             Op1Def::Noise(grain, octaves, offset, max) => {
                 format!("Noise(grain={}, octaves={}, offset={:?}, max={:?})", grain, octaves, offset, max)
@@ -472,6 +476,17 @@ impl Op1Ctx {
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
                     buf[ix] = obuf[ix].clamp(min, max);
+                }
+            }
+
+            Op1Def::Shift(offset) => {
+                let age = ctx.age() as f32;
+                let offset = offset.eval(ctx, age);
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    buf[ix] = obuf[ix]; //###
                 }
             }
 

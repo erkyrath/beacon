@@ -499,6 +499,23 @@ lazy_static! {
         );
         
         map.insert(
+            "shift",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param_optional("offset", OpLayoutType::Param),
+            ],
+             |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp1, String> {
+                 let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                 let offset = match pmap.get("offset") {
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::Constant(0.0),
+                 };
+                 let op = Op1Def::Shift(offset);
+                 Ok(BuildOp1::new(op).addchild1(subop))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "noise",
             (vec![
                 OpLayoutParam::param_optional("grain", OpLayoutType::Number),
