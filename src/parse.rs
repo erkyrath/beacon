@@ -163,7 +163,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     }
 
     for item in &itemls.items {
-        //### this gives a bad error if pulser is the root
+        //### this gives a bad error if a bad pulser is the root
         match parse_for_op3(item) {
             Ok(op3) => {
                 //println!("got op3 (name {:?}) {:?}", item.key, op3);
