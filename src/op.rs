@@ -482,11 +482,16 @@ impl Op1Ctx {
             Op1Def::Shift(offset) => {
                 let age = ctx.age() as f32;
                 let offset = offset.eval(ctx, age);
+                let buflen = buf.len() as i32;
+                let buflen32 = buf.len() as f32;
                 let obufnum = opref.get_type_ref(1, 0);
                 let obuf = ctx.op1s[obufnum].buf.borrow();
                 assert!(buf.len() == obuf.len());
                 for ix in 0..buf.len() {
-                    buf[ix] = obuf[ix]; //###
+                    let pos = ix as f32 - offset * buflen32;
+                    let seg = pos.floor() as i32;
+                    let frac = pos - (seg as f32);
+                    buf[ix] = obuf[seg.rem_euclid(buflen) as usize] * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize] * frac;
                 }
             }
 
