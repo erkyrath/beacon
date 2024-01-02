@@ -1,0 +1,29 @@
+max
+  muls: $F0C
+    pulser
+      interval=randnorm: 1.5, 0.2
+      spaceshape=sqrtooth
+      timeshape=flat
+      pos=quote: changing: -0.2, 0.6
+      width=0.2
+  muls: $F0C
+    pulser
+      interval=randnorm: 1.5, 0.2
+      spaceshape=sqrdecay
+      timeshape=flat
+      pos=quote: changing: 1.2, -0.6
+      width=0.2
+  muls: $F04
+    pulser
+      interval=randnorm: 1.0, 0.15
+      spaceshape=sqrtooth
+      timeshape=flat
+      pos=quote: changing: -0.2, 0.3
+      width=0.1
+  muls: $F04
+    pulser
+      interval=randnorm: 1.0, 0.15
+      spaceshape=sqrdecay
+      timeshape=flat
+      pos=quote: changing: 1.2, -0.3
+      width=0.1
