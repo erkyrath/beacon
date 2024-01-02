@@ -98,14 +98,9 @@ impl BuildOp {
                 return Ok(ScriptIndex::Op3(bufnum));
             },
             BuildOpDef::Var(val) => {
-                match varmap.get(&val) {
-                    Some(scix) => {
-                        return Ok(*scix); //### when do we verify 1/3?
-                    },
-                    None => {
-                        return Err(format!("### no such variable: {}", val));
-                    },
-                }
+                let scix = varmap.get(&val)
+                    .ok_or_else(|| format!("no such variable: {}", val))?;
+                return Ok(*scix); //### when do we verify 1/3?
             },
         }
     }
