@@ -54,6 +54,13 @@ impl BuildOp {
         }
     }
 
+    fn newvar(val: &str) -> BuildOp {
+        BuildOp {
+            op: Box::new(BuildOpDef::Var(val.to_string())),
+            children: Vec::default(),
+        }
+    }
+
     fn addchild1(mut self, op: BuildOp) -> BuildOp {
         if let BuildOpDef::Op3(_) = *op.op {
             panic!("addchild1 mismatch");
@@ -90,8 +97,15 @@ impl BuildOp {
                 script.op3s.push(Op3DefRef::new(op, bufs));
                 return ScriptIndex::Op3(bufnum);
             },
-            BuildOpDef::Var(_val) => {
-                panic!("###");
+            BuildOpDef::Var(val) => {
+                match varmap.get(&val) {
+                    Some(scix) => {
+                        return *scix; //### when do we verify 1/3?
+                    },
+                    None => {
+                        panic!("### no such variable: {}", val);
+                    },
+                }
             },
         }
     }
@@ -258,8 +272,8 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp, String> {
             let op = Op1Def::Constant(*val);
             Ok(BuildOp::new1(op))
         },
-        ParseTerm::VarName(_val) => {
-            panic!("###");
+        ParseTerm::VarName(val) => {
+            Ok(BuildOp::newvar(val))
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_op1_layout(val)
@@ -282,8 +296,8 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp, String> {
             let op = Op3Def::Grey();
             Ok(BuildOp::new3(op).addchild1(BuildOp::new1(subop)))
         },
-        ParseTerm::VarName(_val) => {
-            panic!("###");
+        ParseTerm::VarName(val) => {
+            Ok(BuildOp::newvar(val))
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_op3_layout(val)
