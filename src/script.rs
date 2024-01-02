@@ -156,7 +156,11 @@ impl Script {
         let scstr: String;
         match scix {
             ScriptIndex::Op1(bufnum) => {
-                if bufnum < self.op1s.len() {
+                if track.op1s.contains(&bufnum) {
+                    desc = "(var)".to_string(); //### varname
+                    bufs = None;
+                }
+                else if bufnum < self.op1s.len() {
                     track.op1s.insert(bufnum);
                     bufs = Some(&self.op1s[bufnum].bufs);
                     desc = self.op1s[bufnum].op.describe(Some(subindentstr));
@@ -168,7 +172,11 @@ impl Script {
                 scstr = format!("1/{}", bufnum);
             },
             ScriptIndex::Op3(bufnum) => {
-                if bufnum < self.op3s.len() {
+                if track.op3s.contains(&bufnum) {
+                    desc = "(var)".to_string(); //### varname
+                    bufs = None;
+                }
+                else if bufnum < self.op3s.len() {
                     track.op3s.insert(bufnum);
                     bufs = Some(&self.op3s[bufnum].bufs);
                     desc = self.op3s[bufnum].op.describe(Some(subindentstr));
