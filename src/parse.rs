@@ -77,7 +77,7 @@ impl BuildOp {
         return self;
     }
 
-    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> Result<ScriptIndex, String> {
+    fn build(&self, script: &mut Script, varmap: &VarMapType) -> Result<ScriptIndex, String> {
         let mut bufs: Vec<ScriptIndex> = Vec::default();
         for nod in &self.children {
             let obufnum = nod.build(script, varmap)?;
@@ -140,7 +140,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
         match parse_for_op3(item) {
             Ok(op3) => {
                 //println!("got op3 (name {:?}) {:?}", item.key, op3);
-                let scix = op3.build(&mut script, &mut varmap)?;
+                let scix = op3.build(&mut script, &varmap)?;
                 if let Some(varname) = &item.key {
                     if varmap.contains_key(varname) {
                         return Err(format!("line {}: variable has two definitions: {}", item.linenum, varname));
@@ -152,7 +152,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
                 match parse_for_op1(item) {
                     Ok(op1) => {
                         //println!("got op1 (name {:?}) {:?}", item.key, op1);
-                        let scix = op1.build(&mut script, &mut varmap)?;
+                        let scix = op1.build(&mut script, &varmap)?;
                         if let Some(varname) = &item.key {
                             if varmap.contains_key(varname) {
                                 return Err(format!("line {}: variable has two definitions: {}", item.linenum, varname));
