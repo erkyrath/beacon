@@ -137,6 +137,13 @@ fn labelterm(val: &str) -> Result<(Option<&str>, ParseTerm), String> {
 
         return Err(format!("bad $color constant: {}", term));
     }
+
+    if term.starts_with('\'') {
+        if term.len() <= 1 {
+            return Err(format!("empty variable name: {}", term));
+        }
+        return Ok((label, ParseTerm::VarName(term[1..].to_string())));
+    }
     
     return Ok((label, ParseTerm::Ident(term.to_string())));
 }
