@@ -77,10 +77,10 @@ impl BuildOp {
         return self;
     }
 
-    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> ScriptIndex {
+    fn build(&self, script: &mut Script, varmap: &mut VarMapType) -> Result<ScriptIndex, String> {
         let mut bufs: Vec<ScriptIndex> = Vec::default();
         for nod in &self.children {
-            let obufnum = nod.build(script, varmap);
+            let obufnum = nod.build(script, varmap)?;
             bufs.push(obufnum);
         }
         let bop = (*self.op).clone();
@@ -89,21 +89,21 @@ impl BuildOp {
                 let bufnum = script.op1s.len();
                 script.order.push(ScriptIndex::Op1(bufnum));
                 script.op1s.push(Op1DefRef::new(op, bufs));
-                return ScriptIndex::Op1(bufnum);
+                return Ok(ScriptIndex::Op1(bufnum));
             },
             BuildOpDef::Op3(op) => {
                 let bufnum = script.op3s.len();
                 script.order.push(ScriptIndex::Op3(bufnum));
                 script.op3s.push(Op3DefRef::new(op, bufs));
-                return ScriptIndex::Op3(bufnum);
+                return Ok(ScriptIndex::Op3(bufnum));
             },
             BuildOpDef::Var(val) => {
                 match varmap.get(&val) {
                     Some(scix) => {
-                        return *scix; //### when do we verify 1/3?
+                        return Ok(*scix); //### when do we verify 1/3?
                     },
                     None => {
-                        panic!("### no such variable: {}", val);
+                        return Err(format!("### no such variable: {}", val));
                     },
                 }
             },
@@ -145,7 +145,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
         match parse_for_op3(item) {
             Ok(op3) => {
                 //println!("got op3 (name {:?}) {:?}", item.key, op3);
-                let scix = op3.build(&mut script, &mut varmap);
+                let scix = op3.build(&mut script, &mut varmap)?;
                 if let Some(varname) = &item.key {
                     if varmap.contains_key(varname) {
                         return Err(format!("line {}: variable has two definitions: {}", item.linenum, varname));
@@ -157,7 +157,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
                 match parse_for_op1(item) {
                     Ok(op1) => {
                         //println!("got op1 (name {:?}) {:?}", item.key, op1);
-                        let scix = op1.build(&mut script, &mut varmap);
+                        let scix = op1.build(&mut script, &mut varmap)?;
                         if let Some(varname) = &item.key {
                             if varmap.contains_key(varname) {
                                 return Err(format!("line {}: variable has two definitions: {}", item.linenum, varname));
