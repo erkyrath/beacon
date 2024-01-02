@@ -213,7 +213,6 @@ fn verify_wellformed(nod: &ParseNode, depth: usize) -> Result<(), String> {
             if nod.params.items.len() > 0 {
                 return Err(format!("line {}: variable ref cannot have params: {}", nod.linenum, nod.term));
             }
-            //### check that var exists
         },
         ParseTerm::Ident(_val) => {
             for item in &nod.params.items {
@@ -286,6 +285,7 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp, String> {
             Ok(BuildOp::new1(op))
         },
         ParseTerm::VarName(val) => {
+            //### check that var exists
             Ok(BuildOp::newvar1(val))
         },
         ParseTerm::Ident(val) => {
@@ -310,6 +310,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp, String> {
             Ok(BuildOp::new3(op).addchild1(BuildOp::new1(subop)))
         },
         ParseTerm::VarName(val) => {
+            //### check that var exists
             Ok(BuildOp::newvar3(val))
         },
         ParseTerm::Ident(val) => {
