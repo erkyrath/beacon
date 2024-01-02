@@ -21,7 +21,8 @@ type VarMapType = HashMap<String, ScriptIndex>;
 enum BuildOpDef {
     Op1(Op1Def),
     Op3(Op3Def),
-    Var(String),
+    Var1(String),
+    Var3(String),
 }
 
 impl fmt::Debug for BuildOpDef {
@@ -29,7 +30,8 @@ impl fmt::Debug for BuildOpDef {
         match self {
             BuildOpDef::Op1(op) => op.fmt(f),
             BuildOpDef::Op3(op) => op.fmt(f),
-            BuildOpDef::Var(val) => write!(f, "{}", val),
+            BuildOpDef::Var1(val) => write!(f, "1:{}", val),
+            BuildOpDef::Var3(val) => write!(f, "3:{}", val),
         }
     }
 }
@@ -54,9 +56,16 @@ impl BuildOp {
         }
     }
 
-    fn newvar(val: &str) -> BuildOp {
+    fn newvar1(val: &str) -> BuildOp {
         BuildOp {
-            op: Box::new(BuildOpDef::Var(val.to_string())),
+            op: Box::new(BuildOpDef::Var1(val.to_string())),
+            children: Vec::default(),
+        }
+    }
+
+    fn newvar3(val: &str) -> BuildOp {
+        BuildOp {
+            op: Box::new(BuildOpDef::Var3(val.to_string())),
             children: Vec::default(),
         }
     }
@@ -97,10 +106,21 @@ impl BuildOp {
                 script.op3s.push(Op3DefRef::new(op, bufs));
                 return Ok(ScriptIndex::Op3(bufnum));
             },
-            BuildOpDef::Var(val) => {
+            BuildOpDef::Var1(val) => {
                 let scix = varmap.get(&val)
                     .ok_or_else(|| format!("no such variable: {}", val))?;
-                return Ok(*scix); //### when do we verify 1/3?
+                match scix {
+                    ScriptIndex::Op1(bufnum) => Ok(ScriptIndex::Op1(*bufnum)),
+                    ScriptIndex::Op3(_) => Err(format!("variable is a scalar op: {}", val)),
+                }
+            },
+            BuildOpDef::Var3(val) => {
+                let scix = varmap.get(&val)
+                    .ok_or_else(|| format!("no such variable: {}", val))?;
+                match scix {
+                    ScriptIndex::Op3(bufnum) => Ok(ScriptIndex::Op3(*bufnum)),
+                    ScriptIndex::Op1(_) => Err(format!("variable is a color op: {}", val)),
+                }
             },
         }
     }
@@ -167,8 +187,6 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
             },
         }
     }
-
-    println!("### varmap: {:?}", varmap);
 
     if script.order.len() == 0 {
         return Err("error: script is empty".to_string());
@@ -268,7 +286,7 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp, String> {
             Ok(BuildOp::new1(op))
         },
         ParseTerm::VarName(val) => {
-            Ok(BuildOp::newvar(val))
+            Ok(BuildOp::newvar1(val))
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_op1_layout(val)
@@ -292,7 +310,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp, String> {
             Ok(BuildOp::new3(op).addchild1(BuildOp::new1(subop)))
         },
         ParseTerm::VarName(val) => {
-            Ok(BuildOp::newvar(val))
+            Ok(BuildOp::newvar3(val))
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_op3_layout(val)
