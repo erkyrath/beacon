@@ -18,6 +18,7 @@ pub enum Op1Def {
     Invert(), // op1
     Pulser(Pulser),
     Decay(Param), // halflife; op1
+    TimeDelta(), // op1
     Brightness(), // op3
     Mul(), // op1, op1
     Sum(), // op1...
@@ -87,6 +88,9 @@ impl Op1Def {
             },
             Op1Def::Decay(halflife) => {
                 format!("Decay({:?})", halflife)
+            },
+            Op1Def::TimeDelta() => {
+                format!("TimeDelta()")
             },
             Op1Def::Brightness() => {
                 format!("Brightness()")
@@ -186,6 +190,7 @@ pub enum Op1State {
     NoState,
     Pulser(PulserState),
     Decay(Vec<f32>),
+    TimeDelta(Vec<f32>),
     Noise(NoiseState),
 }
 
@@ -247,6 +252,7 @@ impl Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
             Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
+            Op1Def::TimeDelta() => Op1State::TimeDelta(vec![0.0; ctx.size()]),
             Op1Def::Noise(grain, octaves, _offset, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves, ctx)),
             _ => Op1State::NoState,
         }
@@ -344,6 +350,24 @@ impl Op1Ctx {
                 }
                 else {
                     panic!("Op1 state mismatch: Decay");
+                }
+            }
+
+            Op1Def::TimeDelta() => {
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                let mut state = ctx.op1s[bufnum].state.borrow_mut();
+                if let Op1State::TimeDelta(historybuf) = &mut *state {
+                    assert!(buf.len() == obuf.len());
+                    assert!(buf.len() == historybuf.len());
+                    for ix in 0..buf.len() {
+                        let lastval = historybuf[ix];
+                        historybuf[ix] = obuf[ix];
+                        buf[ix] = obuf[ix] - lastval;
+                    }
+                }
+                else {
+                    panic!("Op1 state mismatch: TimeDelta");
                 }
             }
 
