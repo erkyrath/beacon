@@ -1,11 +1,11 @@
-gradient
-  stop=$000
-  stop=$000
-  stop=$040
-  stop=$0F0
-  stop=$040
-  stop=$000
-  stop=$000
+pgradient
+  stop=x: 0.0, $000
+  stop=x: 0.2, $000
+  stop=x: 0.3, $040
+  stop=x: 0.5, $0F0
+  stop=x: 0.7, $040
+  stop=x: 0.8, $000
+  stop=x: 1.0, $000
   mul
       1.5
       clamp: min=0.0, max=0.6666
