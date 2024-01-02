@@ -30,19 +30,19 @@ impl fmt::Debug for BuildOp {
 }
 
 pub struct BuildOp1 {
-    op1: Option<Box<Op1Def>>,
+    op1: Box<Op1Def>,
     children: Vec<BuildOp>,
 }
 
 pub struct BuildOp3 {
-    op3: Option<Box<Op3Def>>,
+    op3: Box<Op3Def>,
     children: Vec<BuildOp>,
 }
 
 impl BuildOp1 {
     fn new(op: Op1Def) -> BuildOp1 {
         BuildOp1 {
-            op1: Some(Box::new(op)),
+            op1: Box::new(op),
             children: Vec::default(),
         }
     }
@@ -73,12 +73,7 @@ impl BuildOp1 {
         }
         let bufnum = script.op1s.len();
         script.order.push(ScriptIndex::Op1(bufnum));
-        if let Some(op) = &self.op1 {
-            script.op1s.push(Op1DefRef::new(*op.clone(), bufs));
-        }
-        else {
-            panic!("build: missing opdef1");
-        }
+        script.op1s.push(Op1DefRef::new(*self.op1.clone(), bufs));
         return ScriptIndex::Op1(bufnum);
     }
         
@@ -87,7 +82,7 @@ impl BuildOp1 {
 impl BuildOp3 {
     fn new(op: Op3Def) -> BuildOp3 {
         BuildOp3 {
-            op3: Some(Box::new(op)),
+            op3: Box::new(op),
             children: Vec::default(),
         }
     }
@@ -118,12 +113,7 @@ impl BuildOp3 {
         }
         let bufnum = script.op3s.len();
         script.order.push(ScriptIndex::Op3(bufnum));
-        if let Some(op) = &self.op3 {
-            script.op3s.push(Op3DefRef::new(*op.clone(), bufs));
-        }
-        else {
-            panic!("build: missing opdef3");
-        }
+        script.op3s.push(Op3DefRef::new(*self.op3.clone(), bufs));
         return ScriptIndex::Op3(bufnum);
     }
         
@@ -131,10 +121,7 @@ impl BuildOp3 {
 
 impl fmt::Debug for BuildOp1 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.op1 {
-            None => write!(f, "(none)")?,
-            Some(opdef) => opdef.fmt(f)?,
-        }
+        self.op1.fmt(f)?;
         
         let mut gotany = false;
         for subop in &self.children {
@@ -151,10 +138,7 @@ impl fmt::Debug for BuildOp1 {
 
 impl fmt::Debug for BuildOp3 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.op3 {
-            None => write!(f, "(none)")?,
-            Some(opdef) => opdef.fmt(f)?,
-        }
+        self.op3.fmt(f)?;
         
         let mut gotany = false;
         for subop in &self.children {
