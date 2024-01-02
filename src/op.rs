@@ -665,7 +665,35 @@ impl Op3Ctx {
             }
 
             Op3Def::PGradient(stops) => {
-                //###
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                let count = stops.len();
+                if count == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = Pix::new(0.0, 0.0, 0.0);
+                    }
+                }
+                else if count == 1 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = stops[0].color.clone();
+                    }
+                }
+                else {
+                    for ix in 0..buf.len() {
+                        let seg = stops.partition_point(|stop| stop.pos < obuf[ix]);
+                        if seg == 0 {
+                            buf[ix] = stops[0].color.clone();
+                        }
+                        else if seg >= count {
+                            buf[ix] = stops[count-1].color.clone();
+                        }
+                        else {
+                            let frac = (obuf[ix] - stops[seg-1].pos) / (stops[seg].pos - stops[seg-1].pos);
+                            buf[ix] = stops[seg-1].color.lerp(&stops[seg].color, frac);
+                        }
+                    }
+                }
             },
             
             Op3Def::MulS() => {

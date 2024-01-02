@@ -281,13 +281,14 @@ fn parse_for_gradstop(nod: &ParseNode) -> Result<GradStop, String> {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: stop must include both color and number", nod.linenum))
         },
-        ParseTerm::Number(val) => {
+        ParseTerm::Number(_val) => {
             Err(format!("line {}: stop must include both color and number", nod.linenum))
         },
         ParseTerm::VarName(_val) => {
             Err(format!("line {}: stop cannot be variable ref", nod.linenum))
         },
-        ParseTerm::Ident(val) => {
+        ParseTerm::Ident(_val) => {
+            //### val?
             let (params, buildfunc) = get_gradstop_layout();
             let pmap = match_children(nod, params)?;
             return buildfunc(nod, &pmap);
