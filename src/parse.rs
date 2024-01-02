@@ -175,7 +175,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     let mut script = Script::new();
 
     for item in &itemls.items {
-        verify_wellformed(&item)?;
+        verify_wellformed(&item, 0)?;
     }
 
     for item in &itemls.items {
@@ -208,7 +208,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     return Ok(script);
 }
 
-fn verify_wellformed(nod: &ParseNode) -> Result<(), String> {
+fn verify_wellformed(nod: &ParseNode, depth: usize) -> Result<(), String> {
     match &nod.term {
         ParseTerm::Number(_val) => {
             if nod.params.items.len() > 0 {
@@ -220,9 +220,15 @@ fn verify_wellformed(nod: &ParseNode) -> Result<(), String> {
                 return Err(format!("line {}: color cannot have params: {}", nod.linenum, nod.term));
             }
         },
+        ParseTerm::VarName(_val) => {
+            if nod.params.items.len() > 0 {
+                return Err(format!("line {}: variable ref cannot have params: {}", nod.linenum, nod.term));
+            }
+            //### check that var exists
+        },
         ParseTerm::Ident(_val) => {
             for item in &nod.params.items {
-                verify_wellformed(item)?;
+                verify_wellformed(item, depth+1)?;
             }
         },
     }
@@ -232,7 +238,6 @@ fn verify_wellformed(nod: &ParseNode) -> Result<(), String> {
 fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {
     match &nod.term {
         ParseTerm::Number(val) => {
-            verify_childless(nod)?;
             Ok(*val)
         },
         _ => Err(format!("line {}: number expected", nod.linenum)),
@@ -242,7 +247,6 @@ fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {
 fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
-            verify_childless(nod)?;
             Ok(pix.clone())
         },
         _ => Err(format!("line {}: color expected", nod.linenum)),
@@ -268,8 +272,10 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
             Err(format!("line {}: unexpected color", nod.linenum))
         },
         ParseTerm::Number(val) => {
-            verify_childless(nod)?;
             Ok(Param::Constant(*val))
+        },
+        ParseTerm::VarName(_val) => {
+            Err(format!("line {}: param cannot be variable ref", nod.linenum))
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_param_layout(val)
@@ -287,9 +293,11 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
             Err(format!("line {}: unexpected color", nod.linenum))
         },
         ParseTerm::Number(val) => {
-            verify_childless(nod)?;
             let op = Op1Def::Constant(*val);
             Ok(BuildOp1::new(op))
+        },
+        ParseTerm::VarName(_val) => {
+            panic!("###");
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_op1_layout(val)
@@ -304,15 +312,16 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp1, String> {
 fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp3, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
-            verify_childless(nod)?;
             let op = Op3Def::Constant(pix.clone());
             Ok(BuildOp3::new(op))
         },
         ParseTerm::Number(val) => {
-            verify_childless(nod)?;
             let subop = Op1Def::Constant(*val);
             let op = Op3Def::Grey();
             Ok(BuildOp3::new(op).addchild1(BuildOp1::new(subop)))
+        },
+        ParseTerm::VarName(_val) => {
+            panic!("###");
         },
         ParseTerm::Ident(val) => {
             let (params, buildfunc) = get_op3_layout(val)
