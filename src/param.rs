@@ -13,8 +13,8 @@ use crate::context::RunContext;
 #[derive(Clone)]
 pub enum ParamDef {
     Constant(f32), //### lose this maybe
-    RandFlat(f32, f32),  // min, max
-    RandNorm(f32, f32),  // mean, stddev
+    RandFlat(usize, usize),  // min, max
+    RandNorm(usize, usize),  // mean, stddev
     Changing(usize, usize),  // start, velocity
     Wave(WaveShape, f32, f32, f32), // shape, min, max, duration
     WaveCycle(WaveShape, f32, f32, f32, f32), // shape, min, max, period, offset
@@ -40,8 +40,8 @@ impl fmt::Debug for Param {
             Param::Const(val) => write!(f, "{}", val),
             Param::Param(param) => match &param.def {
                 ParamDef::Constant(val) => write!(f, "Constant({})", val),
-                ParamDef::RandFlat(min, max) => write!(f, "RandFlat(min={}, max={})", min, max),
-                ParamDef::RandNorm(mean, stdev) => write!(f, "RandNorm(mean={}, stdev={})", mean, stdev),
+                ParamDef::RandFlat(min, max) => write!(f, "RandFlat(min={:?}, max={:?})", param.args[*min], param.args[*max]),
+                ParamDef::RandNorm(mean, stdev) => write!(f, "RandNorm(mean={:?}, stdev={:?})", param.args[*mean], param.args[*stdev]),
                 ParamDef::Changing(start, velocity) => write!(f, "Changing(start={:?}, velocity={:?})", param.args[*start], param.args[*velocity]),
                 ParamDef::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={}, max={}, duration={})", shape, min, max, duration),
                 ParamDef::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={}, offset={})", shape, min, max, period, offset),
@@ -81,10 +81,14 @@ impl Param {
                 ParamDef::Constant(val) => *val,
                 ParamDef::RandFlat(min, max) => {
                     let mut rng = ctx.rng.borrow_mut();
-                    rng.gen_range(*min..*max)
+                    let min = param.args[*min].eval(ctx, age);
+                    let max = param.args[*max].eval(ctx, age);
+                    rng.gen_range(min..max)
                 },
                 ParamDef::RandNorm(mean, stdev) => {
                     let mut rng = ctx.rng.borrow_mut();
+                    let mean = param.args[*mean].eval(ctx, age);
+                    let stdev = param.args[*stdev].eval(ctx, age);
                     let val = rng.gen_range(0.0..1.0) + rng.gen_range(0.0..1.0) + rng.gen_range(0.0..1.0) - 1.5;
                     (val * stdev / 0.522) + mean
                 },
@@ -111,8 +115,13 @@ impl Param {
             Param::Const(val) => Some(*val),
             Param::Param(param) => match &param.def {
                 ParamDef::Constant(val) => Some(*val),
-                ParamDef::RandFlat(min, _max) => Some(*min),
+                ParamDef::RandFlat(min, _max) => {
+                    let min = param.args[*min].min(ctx, age);
+                    min
+                },
                 ParamDef::RandNorm(mean, stdev) => {
+                    let mean = param.args[*mean].min(ctx, age)?;
+                    let stdev = param.args[*stdev].max(ctx, age)?;
                     Some((-1.5 * stdev / 0.522) + mean)
                 },
                 ParamDef::Changing(start, velocity) => {
@@ -140,8 +149,13 @@ impl Param {
             Param::Const(val) => Some(*val),
             Param::Param(param) => match &param.def {
                 ParamDef::Constant(val) => Some(*val),
-                ParamDef::RandFlat(_min, max) => Some(*max),
+                ParamDef::RandFlat(_min, max) => {
+                    let max = param.args[*max].max(ctx, age);
+                    max
+                },
                 ParamDef::RandNorm(mean, stdev) => {
+                    let mean = param.args[*mean].max(ctx, age)?;
+                    let stdev = param.args[*stdev].max(ctx, age)?;
                     Some((1.5 * stdev / 0.522) + mean)
                 },
                 ParamDef::Changing(start, velocity) => {

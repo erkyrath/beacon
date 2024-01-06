@@ -132,9 +132,10 @@ lazy_static! {
                 OpLayoutParam::param("max", OpLayoutType::Number),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
-                 let min = parse_for_number(&nod.params.items[pmap["min"]])?;
-                 let max = parse_for_number(&nod.params.items[pmap["max"]])?;
-                 Ok(Param::new(ParamDef::RandFlat(min, max)))
+                 let min = parse_for_param(&nod.params.items[pmap["min"]])?;
+                 let max = parse_for_param(&nod.params.items[pmap["max"]])?;
+                 let pdef = ParamDef::RandFlat(0, 1);
+                 Ok(Param::new(pdef).addchild(min).addchild(max))
              } as BuildFuncParam)
         );
         
@@ -146,14 +147,15 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let mean = match pmap.get("mean") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 0.5,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(0.5),
                  };
                  let stdev = match pmap.get("stdev") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 0.25,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(0.25),
                  };
-                 Ok(Param::new(ParamDef::RandNorm(mean, stdev)))
+                 let pdef = ParamDef::RandNorm(0, 1);
+                 Ok(Param::new(pdef).addchild(mean).addchild(stdev))
              } as BuildFuncParam)
         );
         
