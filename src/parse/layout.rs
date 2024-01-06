@@ -239,7 +239,8 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let val = parse_for_param(&nod.params.items[pmap["_1"]])?;
-                 Ok(Param::new(ParamDef::Quote(Box::new(val))))
+                 let pdef = ParamDef::Quote(0);
+                 Ok(Param::new(pdef).addchild(val))
              } as BuildFuncParam)
         );
 

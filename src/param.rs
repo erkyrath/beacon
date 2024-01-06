@@ -19,7 +19,7 @@ pub enum ParamDef {
     Wave(WaveShape, usize, usize, usize), // shape, min, max, duration
     WaveCycle(WaveShape, usize, usize, usize, usize), // shape, min, max, period, offset
 
-    Quote(Box<Param>),
+    Quote(usize),   // quotedparam
 }
 
 #[derive(Clone)]
@@ -45,7 +45,7 @@ impl fmt::Debug for Param {
                 ParamDef::Changing(start, velocity) => write!(f, "Changing(start={:?}, velocity={:?})", param.args[*start], param.args[*velocity]),
                 ParamDef::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={:?}, max={:?}, duration={:?})", shape, param.args[*min], param.args[*max], param.args[*duration]),
                 ParamDef::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={:?}, max={:?}, period={:?}, offset={:?})", shape, param.args[*min], param.args[*max], param.args[*period], param.args[*offset]),
-                ParamDef::Quote(param) => write!(f, "Quote({:?})", *param)
+                ParamDef::Quote(subp) => write!(f, "Quote({:?})", param.args[*subp])
             },
         }
     }
@@ -195,12 +195,13 @@ impl Param {
         }
     }
 
-    //### smarter
     pub fn resolve(&self, ctx: &RunContext, age: f32) -> Param {
         match self {
-            Param::Const(_) => self.clone(),
+            Param::Const(val) => Param::newconst(*val),
             Param::Param(param) => match &param.def {
-                ParamDef::Quote(param) => *param.clone(),
+                ParamDef::Quote(subp) => {
+                    param.args[*subp].clone()
+                },
                 _ => Param::newconst(self.eval(ctx, age)),
             },
         }
