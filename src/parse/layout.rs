@@ -184,18 +184,19 @@ lazy_static! {
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 0.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(0.0),
                  };
                  let max = match pmap.get("max") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 1.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(1.0),
                  };
                  let duration = match pmap.get("duration") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 1.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(1.0),
                  };
-                 Ok(Param::new(ParamDef::Wave(shape, min, max, duration)))
+                 let pdef = ParamDef::Wave(shape, 0, 1, 2);
+                 Ok(Param::new(pdef).addchild(min).addchild(max).addchild(duration))
              } as BuildFuncParam)
         );
         
@@ -211,22 +212,23 @@ lazy_static! {
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 0.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(0.0),
                  };
                  let max = match pmap.get("max") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 1.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(1.0),
                  };
                  let period = match pmap.get("period") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 1.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(1.0),
                  };
                  let offset = match pmap.get("offset") {
-                     Some(val) => parse_for_number(&nod.params.items[*val])?,
-                     None => 0.0,
+                     Some(val) => parse_for_param(&nod.params.items[*val])?,
+                     None => Param::newconst(0.0),
                  };
-                 Ok(Param::new(ParamDef::WaveCycle(shape, min, max, period, offset)))
+                 let pdef = ParamDef::WaveCycle(shape, 0, 1, 2, 3);
+                 Ok(Param::new(pdef).addchild(min).addchild(max).addchild(period).addchild(offset))
              } as BuildFuncParam)
         );
         

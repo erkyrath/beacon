@@ -16,8 +16,8 @@ pub enum ParamDef {
     RandFlat(usize, usize),  // min, max
     RandNorm(usize, usize),  // mean, stddev
     Changing(usize, usize),  // start, velocity
-    Wave(WaveShape, f32, f32, f32), // shape, min, max, duration
-    WaveCycle(WaveShape, f32, f32, f32, f32), // shape, min, max, period, offset
+    Wave(WaveShape, usize, usize, usize), // shape, min, max, duration
+    WaveCycle(WaveShape, usize, usize, usize, usize), // shape, min, max, period, offset
 
     Quote(Box<Param>),
 }
@@ -43,8 +43,8 @@ impl fmt::Debug for Param {
                 ParamDef::RandFlat(min, max) => write!(f, "RandFlat(min={:?}, max={:?})", param.args[*min], param.args[*max]),
                 ParamDef::RandNorm(mean, stdev) => write!(f, "RandNorm(mean={:?}, stdev={:?})", param.args[*mean], param.args[*stdev]),
                 ParamDef::Changing(start, velocity) => write!(f, "Changing(start={:?}, velocity={:?})", param.args[*start], param.args[*velocity]),
-                ParamDef::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={}, max={}, duration={})", shape, min, max, duration),
-                ParamDef::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={}, offset={})", shape, min, max, period, offset),
+                ParamDef::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={:?}, max={:?}, duration={:?})", shape, param.args[*min], param.args[*max], param.args[*duration]),
+                ParamDef::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={:?}, max={:?}, period={:?}, offset={:?})", shape, param.args[*min], param.args[*max], param.args[*period], param.args[*offset]),
                 ParamDef::Quote(param) => write!(f, "Quote({:?})", *param)
             },
         }
@@ -98,9 +98,16 @@ impl Param {
                     start + age * velocity
                 },
                 ParamDef::Wave(shape, min, max, dur) => {
+                    let min = param.args[*min].eval(ctx, age);
+                    let max = param.args[*max].eval(ctx, age);
+                    let dur = param.args[*dur].eval(ctx, age);
                     shape.sample(age/dur) * (max-min) + min
                 },
                 ParamDef::WaveCycle(shape, min, max, period, offset) => {
+                    let min = param.args[*min].eval(ctx, age);
+                    let max = param.args[*max].eval(ctx, age);
+                    let period = param.args[*period].eval(ctx, age);
+                    let offset = param.args[*offset].eval(ctx, age);
                     shape.sample(((age-offset)/period).rem_euclid(1.0)) * (max-min) + min
                 },
                 ParamDef::Quote(_) => {
@@ -134,8 +141,14 @@ impl Param {
                         Some(start + age * velocity)
                     }
                 },
-                ParamDef::Wave(_shape, min, _max, _period) => Some(*min),
-                ParamDef::WaveCycle(_shape, min, _max, _period, _offset) => Some(*min),
+                ParamDef::Wave(_shape, min, _max, _period) => {
+                    let min = param.args[*min].min(ctx, age);
+                    min
+                },
+                ParamDef::WaveCycle(_shape, min, _max, _period, _offset) => {
+                    let min = param.args[*min].min(ctx, age);
+                    min
+                }
                 ParamDef::Quote(_) => {
                     panic!("eval Quote");
                 },
@@ -167,8 +180,14 @@ impl Param {
                         Some(start + age * velocity)
                     }
                 },
-                ParamDef::Wave(_shape, _min, max, _period) => Some(*max),
-                ParamDef::WaveCycle(_shape, _min, max, _period, _offset) => Some(*max),
+                ParamDef::Wave(_shape, _min, max, _period) => {
+                    let max = param.args[*max].max(ctx, age);
+                    max
+                },
+                ParamDef::WaveCycle(_shape, _min, max, _period, _offset) => {
+                    let max = param.args[*max].max(ctx, age);
+                    max
+                },
                 ParamDef::Quote(_) => {
                     panic!("eval Quote");
                 },
