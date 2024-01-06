@@ -125,9 +125,8 @@ impl Param {
                     Some((-1.5 * stdev / 0.522) + mean)
                 },
                 ParamDef::Changing(start, velocity) => {
-                    let start = param.args[*start].eval(ctx, age);
-                    let velocity = param.args[*velocity].eval(ctx, age);
-                    //### smarter
+                    let start = param.args[*start].min(ctx, age)?;
+                    let velocity = param.args[*velocity].min(ctx, age)?;
                     if velocity < 0.0 {
                         None
                     }
@@ -159,9 +158,8 @@ impl Param {
                     Some((1.5 * stdev / 0.522) + mean)
                 },
                 ParamDef::Changing(start, velocity) => {
-                    let start = param.args[*start].eval(ctx, age);
-                    let velocity = param.args[*velocity].eval(ctx, age);
-                    //### smarter
+                    let start = param.args[*start].max(ctx, age)?;
+                    let velocity = param.args[*velocity].max(ctx, age)?;
                     if velocity > 0.0 {
                         None
                     }
@@ -178,6 +176,7 @@ impl Param {
         }
     }
 
+    //### smarter
     pub fn resolve(&self, ctx: &RunContext, age: f32) -> Param {
         match self {
             Param::Const(_) => self.clone(),
