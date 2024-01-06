@@ -12,7 +12,7 @@ use crate::context::RunContext;
 
 #[derive(Clone)]
 pub enum ParamDef {
-    Constant(f32), //### lose this maybe
+    Constant(f32),           // (this is redundant, but an easy base case)
     RandFlat(usize, usize),  // min, max
     RandNorm(usize, usize),  // mean, stddev
     Changing(usize, usize),  // start, velocity
