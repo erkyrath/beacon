@@ -261,7 +261,7 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
             Err(format!("line {}: unexpected color", nod.linenum))
         },
         ParseTerm::Number(val) => {
-            Ok(Param::Constant(*val))
+            Ok(Param::newconst(*val))
         },
         ParseTerm::VarName(_val) => {
             Err(format!("line {}: param cannot be variable ref", nod.linenum))

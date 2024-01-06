@@ -60,8 +60,7 @@ impl Param {
         Param::Param(Box::new(eparam))
     }
     
-    //### lowercase
-    pub fn Constant(val: f32) -> Param {
+    pub fn newconst(val: f32) -> Param {
         Param::Const(val)
     }
     
@@ -152,7 +151,7 @@ impl Param {
             Param::Const(_) => self.clone(),
             Param::Param(param) => match &param.def {
                 ParamDef::Quote(param) => *param.clone(),
-                _ => Param::Constant(self.eval(ctx, age)),
+                _ => Param::newconst(self.eval(ctx, age)),
             },
         }
     }

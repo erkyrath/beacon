@@ -281,19 +281,19 @@ lazy_static! {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.0),
+                     None => Param::newconst(0.0),
                  };
                  let max = match pmap.get("max") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let pos = match pmap.get("pos") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.5),
+                     None => Param::newconst(0.5),
                  };
                  let width = match pmap.get("width") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let op = Op1Def::Wave(shape, min, max, pos, width);
                  Ok(BuildOp::new1(op))
@@ -313,19 +313,19 @@ lazy_static! {
                  let shape = parse_for_waveshape(&nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.0),
+                     None => Param::newconst(0.0),
                  };
                  let max = match pmap.get("max") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let pos = match pmap.get("pos") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.5),
+                     None => Param::newconst(0.5),
                  };
                  let period = match pmap.get("period") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let op = Op1Def::WaveCycle(shape, min, max, pos, period);
                  Ok(BuildOp::new1(op))
@@ -406,7 +406,7 @@ lazy_static! {
                  let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
                  let halflife = match pmap.get("halflife") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let op = Op1Def::Decay(halflife);
                  Ok(BuildOp::new1(op).addchild1(subop))
@@ -518,11 +518,11 @@ lazy_static! {
                  let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.0),
+                     None => Param::newconst(0.0),
                  };
                  let max = match pmap.get("max") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let op = Op1Def::Clamp(min, max);
                  Ok(BuildOp::new1(op).addchild1(subop))
@@ -539,7 +539,7 @@ lazy_static! {
                  let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
                  let offset = match pmap.get("offset") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.0),
+                     None => Param::newconst(0.0),
                  };
                  let op = Op1Def::Shift(offset);
                  Ok(BuildOp::new1(op).addchild1(subop))
@@ -565,11 +565,11 @@ lazy_static! {
                  };
                  let max = match pmap.get("max") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(1.0),
+                     None => Param::newconst(1.0),
                  };
                  let offset = match pmap.get("offset") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.0),
+                     None => Param::newconst(0.0),
                  };
                  let op = Op1Def::Noise(grain as usize, octaves as usize, offset, max);
                  Ok(BuildOp::new1(op))
@@ -810,7 +810,7 @@ lazy_static! {
                  let subopm = parse_for_op1(&nod.params.items[pmap["mask"]])?;
                  let threshold = match pmap.get("threshold") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.5),
+                     None => Param::newconst(0.5),
                  };
                  let op = Op3Def::Mask(threshold);
                  Ok(BuildOp::new3(op).addchild3(subop1).addchild3(subop2).addchild1(subopm))
@@ -827,7 +827,7 @@ lazy_static! {
                  let subop = parse_for_op3(&nod.params.items[pmap["_1"]])?;
                  let offset = match pmap.get("offset") {
                      Some(val) => parse_for_param(&nod.params.items[*val])?,
-                     None => Param::Constant(0.0),
+                     None => Param::newconst(0.0),
                  };
                  let op = Op3Def::Shift(offset);
                  Ok(BuildOp::new3(op).addchild3(subop))

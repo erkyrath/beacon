@@ -18,11 +18,11 @@ pub struct Pulser {
 impl Pulser {
     pub fn new() -> Pulser {
         Pulser {
-            interval: Param::Constant(1.0),
+            interval: Param::newconst(1.0),
             countlimit: None,
-            duration: Param::Constant(1.0),
-            pos: Param::Constant(0.5),
-            width: Param::Constant(0.5),
+            duration: Param::newconst(1.0),
+            pos: Param::newconst(0.5),
+            width: Param::newconst(0.5),
             spaceshape: WaveShape::Triangle,
             timeshape: WaveShape::SqrDecay,
         }
