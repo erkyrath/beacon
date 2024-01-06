@@ -164,9 +164,10 @@ lazy_static! {
                 OpLayoutParam::param("velocity", OpLayoutType::Number),
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
-                 let start = parse_for_number(&nod.params.items[pmap["start"]])?;
-                 let velocity = parse_for_number(&nod.params.items[pmap["velocity"]])?;
-                 Ok(Param::new(ParamDef::Changing(start, velocity)))
+                 let start = parse_for_param(&nod.params.items[pmap["start"]])?;
+                 let velocity = parse_for_param(&nod.params.items[pmap["velocity"]])?;
+                 let pdef = ParamDef::Changing(0, 1);
+                 Ok(Param::new(pdef).addchild(start).addchild(velocity))
              } as BuildFuncParam)
         );
         

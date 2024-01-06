@@ -12,10 +12,10 @@ use crate::context::RunContext;
 
 #[derive(Clone)]
 pub enum ParamDef {
-    Constant(f32),
+    Constant(f32), //### lose this maybe
     RandFlat(f32, f32),  // min, max
     RandNorm(f32, f32),  // mean, stddev
-    Changing(f32, f32),  // start, velocity
+    Changing(usize, usize),  // start, velocity
     Wave(WaveShape, f32, f32, f32), // shape, min, max, duration
     WaveCycle(WaveShape, f32, f32, f32, f32), // shape, min, max, period, offset
 
@@ -42,7 +42,7 @@ impl fmt::Debug for Param {
                 ParamDef::Constant(val) => write!(f, "Constant({})", val),
                 ParamDef::RandFlat(min, max) => write!(f, "RandFlat(min={}, max={})", min, max),
                 ParamDef::RandNorm(mean, stdev) => write!(f, "RandNorm(mean={}, stdev={})", mean, stdev),
-                ParamDef::Changing(start, velocity) => write!(f, "Changing(start={}, velocity={})", start, velocity),
+                ParamDef::Changing(start, velocity) => write!(f, "Changing(start={:?}, velocity={:?})", param.args[*start], param.args[*velocity]),
                 ParamDef::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={}, max={}, duration={})", shape, min, max, duration),
                 ParamDef::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={}, max={}, period={}, offset={})", shape, min, max, period, offset),
                 ParamDef::Quote(param) => write!(f, "Quote({:?})", *param)
@@ -63,6 +63,16 @@ impl Param {
     pub fn newconst(val: f32) -> Param {
         Param::Const(val)
     }
+
+    pub fn addchild(mut self, child: Param) -> Param {
+        if let Param::Param(ref mut param) = self {
+            param.args.push(child);
+        }
+        else {
+            panic!("cannot addchild to a Const");
+        }
+        self
+    }
     
     pub fn eval(&self, ctx: &RunContext, age: f32) -> f32 {
         match self {
@@ -79,6 +89,8 @@ impl Param {
                     (val * stdev / 0.522) + mean
                 },
                 ParamDef::Changing(start, velocity) => {
+                    let start = param.args[*start].eval(ctx, age);
+                    let velocity = param.args[*velocity].eval(ctx, age);
                     start + age * velocity
                 },
                 ParamDef::Wave(shape, min, max, dur) => {
@@ -94,7 +106,7 @@ impl Param {
         }
     }
 
-    pub fn min(&self, _ctx: &RunContext, age: f32) -> Option<f32> {
+    pub fn min(&self, ctx: &RunContext, age: f32) -> Option<f32> {
         match self {
             Param::Const(val) => Some(*val),
             Param::Param(param) => match &param.def {
@@ -104,7 +116,10 @@ impl Param {
                     Some((-1.5 * stdev / 0.522) + mean)
                 },
                 ParamDef::Changing(start, velocity) => {
-                    if *velocity < 0.0 {
+                    let start = param.args[*start].eval(ctx, age);
+                    let velocity = param.args[*velocity].eval(ctx, age);
+                    //### smarter
+                    if velocity < 0.0 {
                         None
                     }
                     else {
@@ -120,7 +135,7 @@ impl Param {
         }
     }
 
-    pub fn max(&self, _ctx: &RunContext, age: f32) -> Option<f32> {
+    pub fn max(&self, ctx: &RunContext, age: f32) -> Option<f32> {
         match self {
             Param::Const(val) => Some(*val),
             Param::Param(param) => match &param.def {
@@ -130,7 +145,10 @@ impl Param {
                     Some((1.5 * stdev / 0.522) + mean)
                 },
                 ParamDef::Changing(start, velocity) => {
-                    if *velocity > 0.0 {
+                    let start = param.args[*start].eval(ctx, age);
+                    let velocity = param.args[*velocity].eval(ctx, age);
+                    //### smarter
+                    if velocity > 0.0 {
                         None
                     }
                     else {
