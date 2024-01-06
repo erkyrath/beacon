@@ -148,7 +148,8 @@ impl Op3Def {
                 format!("Gradient({})", stopstrs.join(", "))
             },
             Op3Def::PGradient(stops) => {
-                format!("PGradient({:?})", stops)
+                let stopstrs = stops.iter().map(|stop| format!("{}:{}", stop.pos, stop.color.as_hex())).collect::<Vec<_>>();
+                format!("PGradient({})", stopstrs.join(", "))
             },
             Op3Def::MulS() => {
                 format!("MulS()")
