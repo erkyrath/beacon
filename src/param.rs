@@ -200,7 +200,16 @@ impl Param {
             Param::Const(val) => Param::newconst(*val),
             Param::Param(param) => match &param.def {
                 ParamDef::Quote(subp) => {
-                    param.args[*subp].clone()
+                    match &param.args[*subp] {
+                        Param::Const(val) => Param::newconst(*val),
+                        Param::Param(subp) => {
+                            let newp = EParam {
+                                def: subp.def.clone(),
+                                args: subp.args.iter().map(|arg| arg.resolve(ctx, age)).collect(),
+                            };
+                            Param::Param(Box::new(newp))
+                        },
+                    }
                 },
                 _ => Param::newconst(self.eval(ctx, age)),
             },
