@@ -17,7 +17,7 @@ impl fmt::Display for ParseTerm {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ParseTerm::Number(val) => write!(f, "{}", *val),
-            ParseTerm::Color(pix) => write!(f, "${:02x}{:02x}{:02x}", (pix.r*255.0) as u8, (pix.g*255.0) as u8, (pix.b*255.0) as u8),
+            ParseTerm::Color(pix) => write!(f, "{}", pix.as_hex()),
             ParseTerm::Ident(val) => write!(f, "{}", val),
             ParseTerm::VarName(val) => write!(f, "'{}", val),
         }
