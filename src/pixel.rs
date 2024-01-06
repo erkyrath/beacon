@@ -20,7 +20,7 @@ impl<T: Copy> Pix<T> {
 
 impl Pix<f32> {
     pub fn as_hex(&self) -> String {
-        format!("${:02x}{:02x}{:02x}", (self.r*255.0) as u8, (self.g*255.0) as u8, (self.b*255.0) as u8)
+        format!("${:02X}{:02X}{:02X}", (self.r*255.0) as u8, (self.g*255.0) as u8, (self.b*255.0) as u8)
     }
     
     pub fn lerp(&self, other: &Pix<f32>, pos: f32) -> Pix<f32> {

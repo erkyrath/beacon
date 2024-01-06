@@ -144,7 +144,8 @@ impl Op3Def {
                 format!("HSV()")
             },
             Op3Def::Gradient(stops) => {
-                format!("Gradient({:?})", stops)
+                let stopstrs = stops.iter().map(|stop| stop.as_hex()).collect::<Vec<_>>();
+                format!("Gradient({})", stopstrs.join(", "))
             },
             Op3Def::PGradient(stops) => {
                 format!("PGradient({:?})", stops)
