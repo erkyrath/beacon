@@ -7,7 +7,7 @@ use crate::op::GradStop;
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
 use crate::pulser::Pulser;
-use crate::param::Param;
+use crate::param::{Param,ParamDef};
 use crate::parse::tree::{ParseTerm, ParseNode};
 use crate::parse::BuildOp;
 use crate::parse::{parse_for_op1, parse_for_op3, parse_for_number, parse_for_color, parse_for_waveshape, parse_for_param, parse_for_gradstop};
@@ -121,7 +121,7 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let val = parse_for_number(&nod.params.items[pmap["_1"]])?;
-                 Ok(Param::Constant(val))
+                 Ok(Param::new(ParamDef::Constant(val)))
              } as BuildFuncParam)
         );
 
@@ -134,7 +134,7 @@ lazy_static! {
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let min = parse_for_number(&nod.params.items[pmap["min"]])?;
                  let max = parse_for_number(&nod.params.items[pmap["max"]])?;
-                 Ok(Param::RandFlat(min, max))
+                 Ok(Param::new(ParamDef::RandFlat(min, max)))
              } as BuildFuncParam)
         );
         
@@ -153,7 +153,7 @@ lazy_static! {
                      Some(val) => parse_for_number(&nod.params.items[*val])?,
                      None => 0.25,
                  };
-                 Ok(Param::RandNorm(mean, stdev))
+                 Ok(Param::new(ParamDef::RandNorm(mean, stdev)))
              } as BuildFuncParam)
         );
         
@@ -166,7 +166,7 @@ lazy_static! {
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let start = parse_for_number(&nod.params.items[pmap["start"]])?;
                  let velocity = parse_for_number(&nod.params.items[pmap["velocity"]])?;
-                 Ok(Param::Changing(start, velocity))
+                 Ok(Param::new(ParamDef::Changing(start, velocity)))
              } as BuildFuncParam)
         );
         
@@ -192,7 +192,7 @@ lazy_static! {
                      Some(val) => parse_for_number(&nod.params.items[*val])?,
                      None => 1.0,
                  };
-                 Ok(Param::Wave(shape, min, max, duration))
+                 Ok(Param::new(ParamDef::Wave(shape, min, max, duration)))
              } as BuildFuncParam)
         );
         
@@ -223,7 +223,7 @@ lazy_static! {
                      Some(val) => parse_for_number(&nod.params.items[*val])?,
                      None => 0.0,
                  };
-                 Ok(Param::WaveCycle(shape, min, max, period, offset))
+                 Ok(Param::new(ParamDef::WaveCycle(shape, min, max, period, offset)))
              } as BuildFuncParam)
         );
         
@@ -234,7 +234,7 @@ lazy_static! {
             ],
              |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let val = parse_for_param(&nod.params.items[pmap["_1"]])?;
-                 Ok(Param::Quote(Box::new(val)))
+                 Ok(Param::new(ParamDef::Quote(Box::new(val))))
              } as BuildFuncParam)
         );
 
