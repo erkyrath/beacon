@@ -59,10 +59,10 @@ impl OpLayoutParam {
     }
 }
 
-type BuildFuncParam = fn(&ParseContext, &ParseNode, &HashMap<String, usize>)->Result<Param, String>;
-type BuildFuncGradStop = fn(&ParseContext, &ParseNode, &HashMap<String, usize>)->Result<GradStop, String>;
-type BuildFuncOp1 = fn(&ParseContext, &ParseNode, &HashMap<String, usize>)->Result<BuildOp, String>;
-type BuildFuncOp3 = fn(&ParseContext, &ParseNode, &HashMap<String, usize>)->Result<BuildOp, String>;
+type BuildFuncParam = fn(&mut ParseContext, &ParseNode, &HashMap<String, usize>)->Result<Param, String>;
+type BuildFuncGradStop = fn(&mut ParseContext, &ParseNode, &HashMap<String, usize>)->Result<GradStop, String>;
+type BuildFuncOp1 = fn(&mut ParseContext, &ParseNode, &HashMap<String, usize>)->Result<BuildOp, String>;
+type BuildFuncOp3 = fn(&mut ParseContext, &ParseNode, &HashMap<String, usize>)->Result<BuildOp, String>;
 
 pub fn get_waveshape(val: &str) -> Option<&WaveShape> {
     return WAVESHAPELAYOUT.get(val.to_lowercase().as_str());
@@ -90,7 +90,7 @@ lazy_static! {
             OpLayoutParam::param("pos", OpLayoutType::Number),
             OpLayoutParam::param("color", OpLayoutType::Color),
         ],
-         |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<GradStop, String> {
+         |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<GradStop, String> {
              let pos = parse_for_number(parsectx, &nod.params.items[pmap["pos"]])?;
              let color = parse_for_color(parsectx, &nod.params.items[pmap["color"]])?;
              Ok(GradStop { pos:pos, color:color })
@@ -120,7 +120,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let val = parse_for_number(parsectx, &nod.params.items[pmap["_1"]])?;
                  Ok(Param::new(ParamDef::Constant(val)))
              } as BuildFuncParam)
@@ -132,7 +132,7 @@ lazy_static! {
                 OpLayoutParam::param("min", OpLayoutType::Number),
                 OpLayoutParam::param("max", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let min = parse_for_param(parsectx, &nod.params.items[pmap["min"]])?;
                  let max = parse_for_param(parsectx, &nod.params.items[pmap["max"]])?;
                  let pdef = ParamDef::RandFlat(0, 1);
@@ -146,7 +146,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("mean", OpLayoutType::Number),
                 OpLayoutParam::param_optional("stdev", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let mean = match pmap.get("mean") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
                      None => Param::newconst(0.5),
@@ -166,7 +166,7 @@ lazy_static! {
                 OpLayoutParam::param("start", OpLayoutType::Number),
                 OpLayoutParam::param("velocity", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let start = parse_for_param(parsectx, &nod.params.items[pmap["start"]])?;
                  let velocity = parse_for_param(parsectx, &nod.params.items[pmap["velocity"]])?;
                  let pdef = ParamDef::Changing(0, 1);
@@ -182,7 +182,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("max", OpLayoutType::Number),
                 OpLayoutParam::param_optional("duration", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(parsectx, &nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -210,7 +210,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("period", OpLayoutType::Number),
                 OpLayoutParam::param_optional("offset", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let shape = parse_for_waveshape(parsectx, &nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -238,7 +238,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
                  let val = parse_for_param(parsectx, &nod.params.items[pmap["_1"]])?;
                  let pdef = ParamDef::Quote(0);
                  Ok(Param::new(pdef).addchild(val))
@@ -256,7 +256,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Number),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let val = parse_for_number(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op1Def::Constant(val);
                  Ok(BuildOp::new1(op))
@@ -268,7 +268,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let val = parse_for_param(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op1Def::Param(val);
                  Ok(BuildOp::new1(op))
@@ -284,7 +284,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("pos", OpLayoutType::Param),
                 OpLayoutParam::param_optional("width", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let shape = parse_for_waveshape(parsectx, &nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -316,7 +316,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("pos", OpLayoutType::Param),
                 OpLayoutParam::param_optional("period", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let shape = parse_for_waveshape(parsectx, &nod.params.items[pmap["shape"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -344,7 +344,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op1Def::Invert();
                  Ok(BuildOp::new1(op).addchild1(subop))
@@ -356,7 +356,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op1Def::Brightness();
                  Ok(BuildOp::new1(op).addchild3(subop))
@@ -374,7 +374,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("spaceshape", OpLayoutType::Wave),
                 OpLayoutParam::param_optional("timeshape", OpLayoutType::Wave),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let mut pulser = Pulser::new();
                  if let Some(val) = pmap.get("interval") {
                      pulser.interval = parse_for_param(parsectx, &nod.params.items[*val])?;
@@ -409,7 +409,7 @@ lazy_static! {
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
                 OpLayoutParam::param_optional("halflife", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                  let halflife = match pmap.get("halflife") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -425,7 +425,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op1Def::TimeDelta();
                  Ok(BuildOp::new1(op).addchild1(subop))
@@ -437,7 +437,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
                 OpLayoutParam::param_repeating("stop", OpLayoutType::Number),
-            ], |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                 let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                 let mut stops: Vec<f32> = Vec::new();
                 let mut ix = 0;
@@ -463,7 +463,7 @@ lazy_static! {
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
                 OpLayoutParam::param("_2", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop1 = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                  let subop2 = parse_for_op1(parsectx, &nod.params.items[pmap["_2"]])?;
                  let op = Op1Def::Mul();
@@ -476,7 +476,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op1Def::Sum();
                  let mut bop = BuildOp::new1(op);
                  for ix in 0..pmap.len() {
@@ -493,7 +493,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op1Def::Mean();
                  let mut bop = BuildOp::new1(op);
                  for ix in 0..pmap.len() {
@@ -510,7 +510,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op1Def::Min();
                  let mut bop = BuildOp::new1(op);
                  for ix in 0..pmap.len() {
@@ -527,7 +527,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op1Def::Max();
                  let mut bop = BuildOp::new1(op);
                  for ix in 0..pmap.len() {
@@ -546,7 +546,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("min", OpLayoutType::Param),
                 OpLayoutParam::param_optional("max", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                  let min = match pmap.get("min") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -567,7 +567,7 @@ lazy_static! {
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
                 OpLayoutParam::param_optional("offset", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                  let offset = match pmap.get("offset") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
@@ -586,7 +586,7 @@ lazy_static! {
                 OpLayoutParam::param_optional("offset", OpLayoutType::Param),
                 OpLayoutParam::param_optional("max", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let grain = match pmap.get("grain") {
                      Some(val) => parse_for_number(parsectx, &nod.params.items[*val])?,
                      None => 32.0,
@@ -619,7 +619,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Color),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let pix = parse_for_color(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op3Def::Constant(pix);
                  Ok(BuildOp::new3(op))
@@ -631,7 +631,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
                  let op = Op3Def::Invert();
                  Ok(BuildOp::new3(op).addchild3(subop))
@@ -642,7 +642,7 @@ lazy_static! {
             "grey",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
-            ], |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                 let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                 let op = Op3Def::Grey();
                 Ok(BuildOp::new3(op).addchild1(subop))
@@ -655,7 +655,7 @@ lazy_static! {
                 OpLayoutParam::param("r", OpLayoutType::Op1),
                 OpLayoutParam::param("g", OpLayoutType::Op1),
                 OpLayoutParam::param("b", OpLayoutType::Op1),
-            ], |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                 let subop1 = parse_for_op1(parsectx, &nod.params.items[pmap["r"]])?;
                 let subop2 = parse_for_op1(parsectx, &nod.params.items[pmap["g"]])?;
                 let subop3 = parse_for_op1(parsectx, &nod.params.items[pmap["b"]])?;
@@ -670,7 +670,7 @@ lazy_static! {
                 OpLayoutParam::param("h", OpLayoutType::Op1),
                 OpLayoutParam::param("s", OpLayoutType::Op1),
                 OpLayoutParam::param("v", OpLayoutType::Op1),
-            ], |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                 let subop1 = parse_for_op1(parsectx, &nod.params.items[pmap["h"]])?;
                 let subop2 = parse_for_op1(parsectx, &nod.params.items[pmap["s"]])?;
                 let subop3 = parse_for_op1(parsectx, &nod.params.items[pmap["v"]])?;
@@ -684,7 +684,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
                 OpLayoutParam::param_repeating("stop", OpLayoutType::Color),
-            ], |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                 let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                 let mut stops: Vec<Pix<f32>> = Vec::new();
                 let mut ix = 0;
@@ -709,7 +709,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
                 OpLayoutParam::param_repeating("stop", OpLayoutType::GradStop),
-            ], |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                 let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
                 let mut stops: Vec<GradStop> = Vec::new();
                 let mut ix = 0;
@@ -736,7 +736,7 @@ lazy_static! {
                 OpLayoutParam::param("_1", OpLayoutType::Op3),
                 OpLayoutParam::param("_2", OpLayoutType::Op1),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop1 = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
                  let subop2 = parse_for_op1(parsectx, &nod.params.items[pmap["_2"]])?;
                  let op = Op3Def::MulS();
@@ -749,7 +749,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op3Def::Sum();
                  let mut bop = BuildOp::new3(op);
                  for ix in 0..pmap.len() {
@@ -766,7 +766,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op3Def::Mean();
                  let mut bop = BuildOp::new3(op);
                  for ix in 0..pmap.len() {
@@ -783,7 +783,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op3Def::Min();
                  let mut bop = BuildOp::new3(op);
                  for ix in 0..pmap.len() {
@@ -800,7 +800,7 @@ lazy_static! {
             (vec![
                 OpLayoutParam::param_repeating("_", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let op = Op3Def::Max();
                  let mut bop = BuildOp::new3(op);
                  for ix in 0..pmap.len() {
@@ -819,7 +819,7 @@ lazy_static! {
                 OpLayoutParam::param("_1", OpLayoutType::Op3),
                 OpLayoutParam::param("_2", OpLayoutType::Op3),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop1 = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
                  let subop2 = parse_for_op3(parsectx, &nod.params.items[pmap["_2"]])?;
                  let subopm = parse_for_op1(parsectx, &nod.params.items[pmap["mask"]])?;
@@ -836,7 +836,7 @@ lazy_static! {
                 OpLayoutParam::param("_2", OpLayoutType::Op3),
                 OpLayoutParam::param_optional("threshold", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop1 = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
                  let subop2 = parse_for_op3(parsectx, &nod.params.items[pmap["_2"]])?;
                  let subopm = parse_for_op1(parsectx, &nod.params.items[pmap["mask"]])?;
@@ -855,7 +855,7 @@ lazy_static! {
                 OpLayoutParam::param("_1", OpLayoutType::Op3),
                 OpLayoutParam::param_optional("offset", OpLayoutType::Param),
             ],
-             |parsectx: &ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
                  let subop = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
                  let offset = match pmap.get("offset") {
                      Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,

@@ -159,7 +159,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     let itemls = tree::parse_tree(filename)?;
 
     let mut script = Script::new();
-    let parsectx = ParseContext::new();
+    let mut parsectx = ParseContext::new();
 
     for item in &itemls.items {
         verify_wellformed(&item, 0)?;
@@ -169,7 +169,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
 
     for item in &itemls.items {
         //### this gives a bad error if a bad pulser is the root
-        match parse_for_op3(&parsectx, item) {
+        match parse_for_op3(&mut parsectx, item) {
             Ok(op3) => {
                 //println!("got op3 (name {:?}) {:?}", item.key, op3);
                 let scix = op3.build(&mut script, &varmap)?;
@@ -181,7 +181,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
                 }
             },
             Err(err3) => {
-                match parse_for_op1(&parsectx, item) {
+                match parse_for_op1(&mut parsectx, item) {
                     Ok(op1) => {
                         //println!("got op1 (name {:?}) {:?}", item.key, op1);
                         let scix = op1.build(&mut script, &varmap)?;
@@ -235,7 +235,7 @@ fn verify_wellformed(nod: &ParseNode, depth: usize) -> Result<(), String> {
     Ok(())
 }
 
-fn parse_for_number(_parsectx: &ParseContext, nod: &ParseNode) -> Result<f32, String> {
+fn parse_for_number(mut _parsectx: &ParseContext, nod: &ParseNode) -> Result<f32, String> {
     match &nod.term {
         ParseTerm::Number(val) => {
             Ok(*val)
@@ -244,7 +244,7 @@ fn parse_for_number(_parsectx: &ParseContext, nod: &ParseNode) -> Result<f32, St
     }
 }
 
-fn parse_for_color(_parsectx: &ParseContext, nod: &ParseNode) -> Result<Pix<f32>, String> {
+fn parse_for_color(mut _parsectx: &ParseContext, nod: &ParseNode) -> Result<Pix<f32>, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
             Ok(pix.clone())
@@ -253,7 +253,7 @@ fn parse_for_color(_parsectx: &ParseContext, nod: &ParseNode) -> Result<Pix<f32>
     }
 }
 
-fn parse_for_waveshape(_parsectx: &ParseContext, nod: &ParseNode) -> Result<WaveShape, String> {
+fn parse_for_waveshape(mut _parsectx: &ParseContext, nod: &ParseNode) -> Result<WaveShape, String> {
     match &nod.term {
         ParseTerm::Ident(val) => {
             verify_childless(nod)?;
@@ -266,7 +266,7 @@ fn parse_for_waveshape(_parsectx: &ParseContext, nod: &ParseNode) -> Result<Wave
     }
 }
 
-fn parse_for_param(parsectx: &ParseContext, nod: &ParseNode) -> Result<Param, String> {
+fn parse_for_param(parsectx: &mut ParseContext, nod: &ParseNode) -> Result<Param, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: unexpected color", nod.linenum))
@@ -287,7 +287,7 @@ fn parse_for_param(parsectx: &ParseContext, nod: &ParseNode) -> Result<Param, St
     }
 }
 
-fn parse_for_gradstop(parsectx: &ParseContext, nod: &ParseNode) -> Result<GradStop, String> {
+fn parse_for_gradstop(parsectx: &mut ParseContext, nod: &ParseNode) -> Result<GradStop, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: stop must include both color and number", nod.linenum))
@@ -307,7 +307,7 @@ fn parse_for_gradstop(parsectx: &ParseContext, nod: &ParseNode) -> Result<GradSt
     }
 }
 
-fn parse_for_op1(parsectx: &ParseContext, nod: &ParseNode) -> Result<BuildOp, String> {
+fn parse_for_op1(parsectx: &mut ParseContext, nod: &ParseNode) -> Result<BuildOp, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: unexpected color", nod.linenum))
@@ -330,7 +330,7 @@ fn parse_for_op1(parsectx: &ParseContext, nod: &ParseNode) -> Result<BuildOp, St
     }
 }
 
-fn parse_for_op3(parsectx: &ParseContext, nod: &ParseNode) -> Result<BuildOp, String> {
+fn parse_for_op3(parsectx: &mut ParseContext, nod: &ParseNode) -> Result<BuildOp, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
             let op = Op3Def::Constant(pix.clone());
