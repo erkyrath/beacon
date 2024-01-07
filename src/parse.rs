@@ -18,6 +18,16 @@ use crate::parse::layout::{get_waveshape, get_param_layout, get_gradstop_layout,
 
 type VarMapType = HashMap<String, ScriptIndex>;
 
+pub struct ParseContext {
+    _dummy: usize,
+}
+
+impl ParseContext {
+    pub fn new() -> ParseContext {
+        ParseContext { _dummy: 0 }
+    }
+}
+
 #[derive(Clone)]
 enum BuildOpDef {
     Op1(Op1Def),
@@ -149,6 +159,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
     let itemls = tree::parse_tree(filename)?;
 
     let mut script = Script::new();
+    let parsectx = ParseContext::new();
 
     for item in &itemls.items {
         verify_wellformed(&item, 0)?;
@@ -158,7 +169,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
 
     for item in &itemls.items {
         //### this gives a bad error if a bad pulser is the root
-        match parse_for_op3(item) {
+        match parse_for_op3(&parsectx, item) {
             Ok(op3) => {
                 //println!("got op3 (name {:?}) {:?}", item.key, op3);
                 let scix = op3.build(&mut script, &varmap)?;
@@ -170,7 +181,7 @@ pub fn parse_script(filename: &str) -> Result<Script, String> {
                 }
             },
             Err(err3) => {
-                match parse_for_op1(item) {
+                match parse_for_op1(&parsectx, item) {
                     Ok(op1) => {
                         //println!("got op1 (name {:?}) {:?}", item.key, op1);
                         let scix = op1.build(&mut script, &varmap)?;
@@ -224,7 +235,7 @@ fn verify_wellformed(nod: &ParseNode, depth: usize) -> Result<(), String> {
     Ok(())
 }
 
-fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {
+fn parse_for_number(_parsectx: &ParseContext, nod: &ParseNode) -> Result<f32, String> {
     match &nod.term {
         ParseTerm::Number(val) => {
             Ok(*val)
@@ -233,7 +244,7 @@ fn parse_for_number(nod: &ParseNode) -> Result<f32, String> {
     }
 }
 
-fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
+fn parse_for_color(_parsectx: &ParseContext, nod: &ParseNode) -> Result<Pix<f32>, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
             Ok(pix.clone())
@@ -242,7 +253,7 @@ fn parse_for_color(nod: &ParseNode) -> Result<Pix<f32>, String> {
     }
 }
 
-fn parse_for_waveshape(nod: &ParseNode) -> Result<WaveShape, String> {
+fn parse_for_waveshape(_parsectx: &ParseContext, nod: &ParseNode) -> Result<WaveShape, String> {
     match &nod.term {
         ParseTerm::Ident(val) => {
             verify_childless(nod)?;
@@ -255,7 +266,7 @@ fn parse_for_waveshape(nod: &ParseNode) -> Result<WaveShape, String> {
     }
 }
 
-fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
+fn parse_for_param(parsectx: &ParseContext, nod: &ParseNode) -> Result<Param, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: unexpected color", nod.linenum))
@@ -270,13 +281,13 @@ fn parse_for_param(nod: &ParseNode) -> Result<Param, String> {
             let (params, buildfunc) = get_param_layout(val)
                 .ok_or_else(|| format!("line {}: param not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
-            return buildfunc(nod, &pmap);
+            return buildfunc(parsectx, nod, &pmap);
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
 }
 
-fn parse_for_gradstop(nod: &ParseNode) -> Result<GradStop, String> {
+fn parse_for_gradstop(parsectx: &ParseContext, nod: &ParseNode) -> Result<GradStop, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: stop must include both color and number", nod.linenum))
@@ -291,12 +302,12 @@ fn parse_for_gradstop(nod: &ParseNode) -> Result<GradStop, String> {
             //### val?
             let (params, buildfunc) = get_gradstop_layout();
             let pmap = match_children(nod, params)?;
-            return buildfunc(nod, &pmap);
+            return buildfunc(parsectx, nod, &pmap);
         },
     }
 }
 
-fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp, String> {
+fn parse_for_op1(parsectx: &ParseContext, nod: &ParseNode) -> Result<BuildOp, String> {
     match &nod.term {
         ParseTerm::Color(_pix) => {
             Err(format!("line {}: unexpected color", nod.linenum))
@@ -313,13 +324,13 @@ fn parse_for_op1(nod: &ParseNode) -> Result<BuildOp, String> {
             let (params, buildfunc) = get_op1_layout(val)
                 .ok_or_else(|| format!("line {}: op1 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
-            return buildfunc(nod, &pmap);
+            return buildfunc(parsectx, nod, &pmap);
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
 }
 
-fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp, String> {
+fn parse_for_op3(parsectx: &ParseContext, nod: &ParseNode) -> Result<BuildOp, String> {
     match &nod.term {
         ParseTerm::Color(pix) => {
             let op = Op3Def::Constant(pix.clone());
@@ -338,7 +349,7 @@ fn parse_for_op3(nod: &ParseNode) -> Result<BuildOp, String> {
             let (params, buildfunc) = get_op3_layout(val)
                 .ok_or_else(|| format!("line {}: op3 not recognized: {}", nod.linenum, val))?;
             let pmap = match_children(nod, params)?;
-            return buildfunc(nod, &pmap);
+            return buildfunc(parsectx, nod, &pmap);
         },
         //_ => Err(format!("unimplemented at line {}", nod.linenum)),
     }
