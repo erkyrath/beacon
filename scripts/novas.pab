@@ -4,7 +4,7 @@ drop1=pulser:
   timeshape = sqrdecay
   spaceshape = sine
   width = quote: changing: 0.1, 0.3
-  duration = 4.0
+  duration = randflat: 4, 6
 
 drop2=pulser:
   interval = randnorm: 1.5, 0.2
@@ -12,7 +12,7 @@ drop2=pulser:
   timeshape = sqrdecay
   spaceshape = sine
   width = quote: changing: 0.1, 0.3
-  duration = 6.0
+  duration = randflat: 4, 6
 
 max
   muls
