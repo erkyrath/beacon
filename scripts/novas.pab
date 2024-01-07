@@ -1,0 +1,43 @@
+drop1=pulser:
+  interval = randnorm: 1.5, 0.2
+  pos = randflat: 0, 1
+  timeshape = sqrdecay
+  spaceshape = sine
+  width = quote: changing: 0.1, 0.3
+  duration = 4.0
+
+drop2=pulser:
+  interval = randnorm: 1.5, 0.2
+  pos = randflat: 0, 1
+  timeshape = sqrdecay
+  spaceshape = sine
+  width = quote: changing: 0.1, 0.3
+  duration = 6.0
+
+max
+  muls
+    lerp
+      _1=$F04
+      _2=$FFF
+      mask=gradient:
+        stop=0.0
+        stop=0.05
+        stop=0.1
+        stop=0.3
+        stop=0.55
+        stop=1.0
+        'drop1
+    'drop1
+  muls
+    lerp
+      _1=$80F
+      _2=$FFF
+      mask=gradient:
+        stop=0.0
+        stop=0.05
+        stop=0.1
+        stop=0.3
+        stop=0.55
+        stop=1.0
+        'drop2
+    'drop2
