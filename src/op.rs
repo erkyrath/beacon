@@ -20,6 +20,7 @@ pub enum Op1Def {
     Decay(Param), // halflife; op1
     TimeDelta(), // op1
     Brightness(), // op3
+    Gradient(Vec<f32>), // stops; op1
     Mul(), // op1, op1
     Sum(), // op1...
     Mean(), // op1...
@@ -95,6 +96,10 @@ impl Op1Def {
             },
             Op1Def::Brightness() => {
                 format!("Brightness()")
+            },
+            Op1Def::Gradient(stops) => {
+                let stopstrs = stops.iter().map(|stop| stop.to_string()).collect::<Vec<_>>();
+                format!("Gradient({})", stopstrs.join(", "))
             },
             Op1Def::Mul() => {
                 format!("Mul()")
@@ -380,6 +385,41 @@ impl Op1Ctx {
                 }
                 else {
                     panic!("Op1 state mismatch: TimeDelta");
+                }
+            }
+
+            Op1Def::Gradient(stops) => {
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                let count = stops.len();
+                if count == 0 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = 0.0;
+                    }
+                }
+                else if count == 1 {
+                    for ix in 0..buf.len() {
+                        buf[ix] = stops[0];
+                    }
+                }
+                else {
+                    for ix in 0..buf.len() {
+                        if obuf[ix] < 0.0 {
+                            buf[ix] = stops[0];
+                        }
+                        else {
+                            let val = obuf[ix] * ((count-1) as f32);
+                            let seg = val as usize;
+                            let frac = val - (seg as f32);
+                            if seg >= (count-1) {
+                                buf[ix] = stops[count-1];
+                            }
+                            else {
+                                buf[ix] = stops[seg] * (1.0-frac) + stops[seg+1] * frac;
+                            }
+                        }
+                    }
                 }
             }
 

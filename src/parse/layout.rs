@@ -432,6 +432,31 @@ lazy_static! {
         );
         
         map.insert(
+            "gradient",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param_repeating("stop", OpLayoutType::Number),
+            ], |nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+                let subop = parse_for_op1(&nod.params.items[pmap["_1"]])?;
+                let mut stops: Vec<f32> = Vec::new();
+                let mut ix = 0;
+                loop {
+                    ix += 1;
+                    let tempname = format!("stop{}", ix);
+                    if let Some(val) = pmap.get(&tempname) {
+                        let scal = parse_for_number(&nod.params.items[*val])?;
+                        stops.push(scal);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                let op = Op1Def::Gradient(stops);
+                Ok(BuildOp::new1(op).addchild1(subop))
+            } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "mul",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
