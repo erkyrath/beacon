@@ -25,7 +25,7 @@ pulse2=pulser:
   duration = 2
 
 sum
-  muls: $80F
+  muls: $A0F
     'pulse1
   muls: $0CF
     'pulse2
