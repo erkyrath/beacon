@@ -18,6 +18,7 @@ pub enum ParamDef {
     Changing(usize, usize),  // start, velocity
     Wave(WaveShape, usize, usize, usize), // shape, min, max, duration
     WaveCycle(WaveShape, usize, usize, usize, usize), // shape, min, max, period, offset
+    Sum(Vec<usize>),         // args...
 
     Quote(usize),   // quotedparam
 }
@@ -45,6 +46,7 @@ impl fmt::Debug for Param {
                 ParamDef::Changing(start, velocity) => write!(f, "Changing(start={:?}, velocity={:?})", param.args[*start], param.args[*velocity]),
                 ParamDef::Wave(shape, min, max, duration) => write!(f, "Wave(shape={:?}, min={:?}, max={:?}, duration={:?})", shape, param.args[*min], param.args[*max], param.args[*duration]),
                 ParamDef::WaveCycle(shape, min, max, period, offset) => write!(f, "WaveCycle(shape={:?}, min={:?}, max={:?}, period={:?}, offset={:?})", shape, param.args[*min], param.args[*max], param.args[*period], param.args[*offset]),
+                ParamDef::Sum(args) => write!(f, "Sum({})", args.iter().map(|subp| format!("{:?}", param.args[*subp])).collect::<Vec<_>>().join(", ")),
                 ParamDef::Quote(subp) => write!(f, "Quote({:?})", param.args[*subp])
             },
         }
@@ -110,6 +112,13 @@ impl Param {
                     let offset = param.args[*offset].eval(ctx, age);
                     shape.sample(((age-offset)/period).rem_euclid(1.0)) * (max-min) + min
                 },
+                ParamDef::Sum(args) => {
+                    let mut sum = 0.0;
+                    for ix in args {
+                        sum += param.args[*ix].eval(ctx, age);
+                    }
+                    sum
+                },
                 ParamDef::Quote(_) => {
                     panic!("eval Quote");
                 },
@@ -149,6 +158,13 @@ impl Param {
                     let min = param.args[*min].min(ctx, age);
                     min
                 }
+                ParamDef::Sum(args) => {
+                    let mut sum = 0.0;
+                    for ix in args {
+                        sum += param.args[*ix].min(ctx, age)?;
+                    }
+                    Some(sum)
+                },
                 ParamDef::Quote(_) => {
                     panic!("eval Quote");
                 },
@@ -187,6 +203,13 @@ impl Param {
                 ParamDef::WaveCycle(_shape, _min, max, _period, _offset) => {
                     let max = param.args[*max].max(ctx, age);
                     max
+                },
+                ParamDef::Sum(args) => {
+                    let mut sum = 0.0;
+                    for ix in args {
+                        sum += param.args[*ix].max(ctx, age)?;
+                    }
+                    Some(sum)
                 },
                 ParamDef::Quote(_) => {
                     panic!("eval Quote");

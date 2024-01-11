@@ -232,6 +232,23 @@ lazy_static! {
                  Ok(Param::new(pdef).addchild(min).addchild(max).addchild(period).addchild(offset))
              } as BuildFuncParam)
         );
+
+        map.insert(
+            "sum",
+            (vec![
+                OpLayoutParam::param_repeating("_", OpLayoutType::Op1),
+            ],
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<Param, String> {
+                 let pdef = ParamDef::Sum((0..pmap.len()).collect());
+                 let mut par = Param::new(pdef);
+                 for ix in 0..pmap.len() {
+                     let tempname = format!("_{}", 1+ix);
+                     let val = parse_for_param(parsectx, &nod.params.items[pmap[&tempname]])?;
+                     par = par.addchild(val);
+                 }
+                 Ok(par)
+             } as BuildFuncParam)
+        );
         
         map.insert(
             "quote",
