@@ -1,0 +1,35 @@
+pulse1=pulser:
+  interval = randflat: 0.8, 1.2
+  pos = quote
+    sum
+      randflat: 0.0, 0.8
+      quote: changing: 0, 0.2
+      quote
+        randnorm: 0, 0.005
+  timeshape = triangle
+  spaceshape = triangle
+  width = 0.15
+  duration = 2
+
+pulse2=pulser:
+  interval = randflat: 0.8, 1.2
+  pos = quote
+    sum
+      randflat: 0.2, 1.0
+      quote: changing: 0, -0.2
+      quote
+        randnorm: 0, 0.005
+  timeshape = triangle
+  spaceshape = triangle
+  width = 0.15
+  duration = 2
+
+sum
+  muls: $80F
+    'pulse1
+  muls: $0CF
+    'pulse2
+  muls: $00F
+    decay: halflife=1.5
+      max: 'pulse1, 'pulse2
+  
