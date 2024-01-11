@@ -154,7 +154,9 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
         .build()
         .map_err(|err| err.to_string())?;
 
-    let mut canvas = window.into_canvas().build()
+    let mut canvas = window.into_canvas()
+        .present_vsync()
+        .build()
         .map_err(|err| err.to_string())?;
     let tc = canvas.texture_creator();
     let mut texture = tc.create_texture_streaming(PixelFormatEnum::RGB24, pixsize as u32, 1)
