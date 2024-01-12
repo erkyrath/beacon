@@ -596,6 +596,28 @@ lazy_static! {
         );
         
         map.insert(
+            "shiftdecay",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op1),
+                OpLayoutParam::param_optional("offset", OpLayoutType::Param),
+                OpLayoutParam::param_optional("halflife", OpLayoutType::Param),
+            ],
+             |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+                 let subop = parse_for_op1(parsectx, &nod.params.items[pmap["_1"]])?;
+                 let offset = match pmap.get("offset") {
+                     Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
+                     None => Param::newconst(0.0),
+                 };
+                 let halflife = match pmap.get("halflife") {
+                     Some(val) => parse_for_param(parsectx, &nod.params.items[*val])?,
+                     None => Param::newconst(1.0),
+                 };
+                 let op = Op1Def::ShiftDecay(offset, halflife);
+                 Ok(BuildOp::new1(op).addchild1(subop))
+             } as BuildFuncOp1)
+        );
+        
+        map.insert(
             "noise",
             (vec![
                 OpLayoutParam::param_optional("grain", OpLayoutType::Number),

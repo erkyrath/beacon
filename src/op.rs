@@ -28,6 +28,7 @@ pub enum Op1Def {
     Max(), // op1...
     Clamp(Param, Param), // min, max; op1
     Shift(Param), // offset; op1
+    ShiftDecay(Param, Param), // offset, halflife; op1
     Noise(usize, usize, Param, Param), // grain, octaves, offset, max
 }
 
@@ -122,6 +123,9 @@ impl Op1Def {
             Op1Def::Shift(offset) => {
                 format!("Shift({:?})", offset)
             },
+            Op1Def::ShiftDecay(offset, halflife) => {
+                format!("ShiftDecay(offset={:?}, halflife={:?})", offset, halflife)
+            },
             Op1Def::Noise(grain, octaves, offset, max) => {
                 format!("Noise(grain={}, octaves={}, offset={:?}, max={:?})", grain, octaves, offset, max)
             },
@@ -180,7 +184,7 @@ impl Op3Def {
             Op3Def::Shift(offset) => {
                 format!("Shift({:?})", offset)
             },
-            //_ => "?Op1Def".to_string(),
+            //_ => "?Op3Def".to_string(),
         }
     }
 }
@@ -269,6 +273,7 @@ impl Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
             Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
+            Op1Def::ShiftDecay(_offset, _halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
             Op1Def::TimeDelta() => Op1State::TimeDelta(vec![0.0; ctx.size()]),
             Op1Def::Noise(grain, octaves, _offset, _max) => Op1State::Noise(NoiseState::new(*grain, *octaves, ctx)),
             _ => Op1State::NoState,
@@ -572,6 +577,33 @@ impl Op1Ctx {
                     let seg = pos.floor() as i32;
                     let frac = pos - (seg as f32);
                     buf[ix] = obuf[seg.rem_euclid(buflen) as usize] * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize] * frac;
+                }
+            }
+
+            Op1Def::ShiftDecay(offset, halflife) => {
+                let age = ctx.age() as f32;
+                let halflife = halflife.eval(ctx, age);
+                let decaymul = (2.0_f32).powf(-ctx.ticklen()/halflife);
+                let offset = offset.eval(ctx, age);
+                let buflen = buf.len() as i32;
+                let buflen32 = buf.len() as f32;
+                let obufnum = opref.get_type_ref(1, 0);
+                let obuf = ctx.op1s[obufnum].buf.borrow();
+                let mut state = ctx.op1s[bufnum].state.borrow_mut();
+                if let Op1State::Decay(historybuf) = &mut *state {
+                    assert!(buf.len() == obuf.len());
+                    assert!(buf.len() == historybuf.len());
+                    for ix in 0..buf.len() {
+                        let pos = ix as f32 - offset * buflen32;
+                        let seg = pos.floor() as i32;
+                        let frac = pos - (seg as f32);
+                        let lastval = historybuf[seg.rem_euclid(buflen) as usize] * (1.0-frac) + historybuf[(seg+1).rem_euclid(buflen) as usize] * frac;
+                        historybuf[ix] = buf[ix];
+                        buf[ix] = obuf[ix].max(lastval*decaymul);
+                    }
+                }
+                else {
+                    panic!("Op1 state mismatch: ShiftDecay");
                 }
             }
 
