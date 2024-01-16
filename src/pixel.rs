@@ -71,6 +71,9 @@ impl Pix<f32> {
     }
 
     pub fn from_hsv(hue: f32, sat: f32, value: f32) -> Pix<f32> {
+        if sat <= 0.0 {
+            return Pix::grey(value);
+        }
         let chr = value * sat;
         let hp = hue.rem_euclid(1.0) * 6.0;
         let xp = chr * (1.0 - (hp.rem_euclid(2.0) - 1.0).abs());
