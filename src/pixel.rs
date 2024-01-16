@@ -40,8 +40,24 @@ impl Pix<f32> {
         let m = self.r.min(self.g).min(self.b);
         let sat = (value - m) / value;
         if self.r <= m {
+            if self.g > self.b {
+                let hue = 2.0 + (self.b - m) / (self.g - m);
+                return (hue/6.0, sat, value);
+            }
+            else {
+                let hue = 4.0 - (self.g - m) / (self.b - m);
+                return (hue/6.0, sat, value);
+            }
         }
         else if self.g <= m {
+            if self.b > self.r {
+                let hue = 4.0 + (self.r - m) / (self.b - m);
+                return (hue/6.0, sat, value);
+            }
+            else {
+                let hue = 6.0 - (self.b - m) / (self.r - m);
+                return (hue/6.0, sat, value);
+            }
         }
         else if self.b <= m {
             if self.r >= self.g {
