@@ -577,7 +577,7 @@ impl Op1Ctx {
                     let pos = ix as f32 - offset * buflen32;
                     let seg = pos.floor() as i32;
                     let frac = pos - (seg as f32);
-                    buf[ix] = obuf[seg.rem_euclid(buflen) as usize] * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize] * frac;
+                    buf[ix] = obuf[seg.rem_euclid(buflen) as usize].lerp(&obuf[(seg+1).rem_euclid(buflen) as usize], &frac);
                 }
             }
 
@@ -599,7 +599,7 @@ impl Op1Ctx {
                         let seg = pos.floor() as i32;
                         let frac = pos - (seg as f32);
                         //### wrong
-                        let lastval = historybuf[seg.rem_euclid(buflen) as usize] * (1.0-frac) + historybuf[(seg+1).rem_euclid(buflen) as usize] * frac;
+                        let lastval = historybuf[seg.rem_euclid(buflen) as usize].lerp(&historybuf[(seg+1).rem_euclid(buflen) as usize], &frac);
                         historybuf[ix] = buf[ix];
                         buf[ix] = obuf[ix].max(lastval*decaymul);
                     }
@@ -627,7 +627,7 @@ impl Op1Ctx {
                             let seg = basepos.floor() as i32;
                             let frac = basepos - (seg as f32);
                             let smoothfrac = (frac*frac)*(3.0-2.0*frac);
-                            let val = state.seeds[oct][(seg.rem_euclid(grain)) as usize] * (1.0-smoothfrac) + state.seeds[oct][((seg+1).rem_euclid(grain)) as usize] * smoothfrac;
+                            let val = state.seeds[oct][(seg.rem_euclid(grain)) as usize].lerp(&state.seeds[oct][((seg+1).rem_euclid(grain)) as usize], &smoothfrac);
                             buf[ix] += val * omax;
                             omax /= 2.0;
                         }
@@ -955,9 +955,9 @@ impl Op3Ctx {
                     let pos = ix as f32 - offset * buflen32;
                     let seg = pos.floor() as i32;
                     let frac = pos - (seg as f32);
-                    buf[ix].r = obuf[seg.rem_euclid(buflen) as usize].r * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize].r * frac;
-                    buf[ix].g = obuf[seg.rem_euclid(buflen) as usize].g * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize].g * frac;
-                    buf[ix].b = obuf[seg.rem_euclid(buflen) as usize].b * (1.0-frac) + obuf[(seg+1).rem_euclid(buflen) as usize].b * frac;
+                    buf[ix].r = obuf[seg.rem_euclid(buflen) as usize].r.lerp(&obuf[(seg+1).rem_euclid(buflen) as usize].r, &frac);
+                    buf[ix].g = obuf[seg.rem_euclid(buflen) as usize].g.lerp(&obuf[(seg+1).rem_euclid(buflen) as usize].g, &frac);
+                    buf[ix].b = obuf[seg.rem_euclid(buflen) as usize].b.lerp(&obuf[(seg+1).rem_euclid(buflen) as usize].b, &frac);
                 }
             }
 
