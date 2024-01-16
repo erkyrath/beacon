@@ -39,40 +39,35 @@ impl Pix<f32> {
         }
         let m = self.r.min(self.g).min(self.b);
         let sat = (value - m) / value;
+        let hue: f32;
         if self.r <= m {
             if self.g > self.b {
-                let hue = 2.0 + (self.b - m) / (self.g - m);
-                return (hue/6.0, sat, value);
+                hue = 2.0 + (self.b - m) / (self.g - m);
             }
             else {
-                let hue = 4.0 - (self.g - m) / (self.b - m);
-                return (hue/6.0, sat, value);
+                hue = 4.0 - (self.g - m) / (self.b - m);
             }
         }
         else if self.g <= m {
             if self.b > self.r {
-                let hue = 4.0 + (self.r - m) / (self.b - m);
-                return (hue/6.0, sat, value);
+                hue = 4.0 + (self.r - m) / (self.b - m);
             }
             else {
-                let hue = 6.0 - (self.b - m) / (self.r - m);
-                return (hue/6.0, sat, value);
+                hue = 6.0 - (self.b - m) / (self.r - m);
             }
         }
         else if self.b <= m {
             if self.r >= self.g {
-                let hue = (self.g - m) / (self.r - m);
-                return (hue/6.0, sat, value);
+                hue = (self.g - m) / (self.r - m);
             }
             else {
-                let hue = 2.0 - (self.r - m) / (self.g - m);
-                return (hue/6.0, sat, value);
+                hue = 2.0 - (self.r - m) / (self.g - m);
             }
         }
         else {
             panic!("to_hsv math is wrong");
         }
-        (0.0, 0.0, 0.0) //###
+        (hue/6.0, sat, value)
     }
 
     pub fn from_hsv(hue: f32, sat: f32, value: f32) -> Pix<f32> {
