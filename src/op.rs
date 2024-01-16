@@ -598,7 +598,7 @@ impl Op1Ctx {
                         let pos = ix as f32 - offset * buflen32;
                         let seg = pos.floor() as i32;
                         let frac = pos - (seg as f32);
-                        //### wrong
+                        // There's a speed bias here which I don't understand
                         let lastval = historybuf[seg.rem_euclid(buflen) as usize].lerp(&historybuf[(seg+1).rem_euclid(buflen) as usize], &frac);
                         historybuf[ix] = buf[ix];
                         buf[ix] = obuf[ix].max(lastval*decaymul);
