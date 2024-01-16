@@ -15,6 +15,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
 
 mod pixel;
+mod lerp;
 mod op;
 mod script;
 mod parse;

@@ -1,3 +1,4 @@
+use crate::lerp::Lerp;
 
 #[derive(Default)]
 #[derive(Clone)]
@@ -25,9 +26,9 @@ impl Pix<f32> {
     
     pub fn lerp(&self, other: &Pix<f32>, pos: f32) -> Pix<f32> {
         Pix {
-            r: self.r * (1.0-pos) + other.r * pos,
-            g: self.g * (1.0-pos) + other.g * pos,
-            b: self.b * (1.0-pos) + other.b * pos,
+            r: self.r.lerp(other.r, pos),
+            g: self.g.lerp(other.g, pos),
+            b: self.b.lerp(other.b, pos),
         }
     }
 
