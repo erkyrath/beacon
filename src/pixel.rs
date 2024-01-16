@@ -32,6 +32,33 @@ impl Pix<f32> {
         }
     }
 
+    pub fn to_hsv(&self) -> (f32, f32, f32) {
+        let value = self.r.max(self.g).max(self.b);
+        if value <= 0.0 {
+            return (0.0, 0.0, 0.0);
+        }
+        let m = self.r.min(self.g).min(self.b);
+        let sat = (value - m) / value;
+        if self.r <= m {
+        }
+        else if self.g <= m {
+        }
+        else if self.b <= m {
+            if self.r >= self.g {
+                let hue = (self.g - m) / (self.r - m);
+                return (hue/6.0, sat, value);
+            }
+            else {
+                let hue = 2.0 - (self.r - m) / (self.g - m);
+                return (hue/6.0, sat, value);
+            }
+        }
+        else {
+            panic!("to_hsv math is wrong");
+        }
+        (0.0, 0.0, 0.0) //###
+    }
+
     pub fn from_hsv(hue: f32, sat: f32, value: f32) -> Pix<f32> {
         let chr = value * sat;
         let hp = hue.rem_euclid(1.0) * 6.0;

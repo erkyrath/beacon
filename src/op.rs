@@ -40,6 +40,8 @@ pub enum Op3Def {
     Grey(), // op1
     RGB(), // op1, op1, op1
     HSV(), // op1, op1, op1
+    HSVToRGB(), // op3
+    RGBToHSV(), // op3
     Gradient(Vec<Pix<f32>>), // stops; op1
     PGradient(Vec<GradStop>), // stops; op1
     MulS(), // op3, op1
@@ -152,6 +154,12 @@ impl Op3Def {
             },
             Op3Def::HSV() => {
                 format!("HSV()")
+            },
+            Op3Def::HSVToRGB() => {
+                format!("HSVToRGB()")
+            },
+            Op3Def::RGBToHSV() => {
+                format!("RGBToHSV()")
             },
             Op3Def::Gradient(stops) => {
                 let stopstrs = stops.iter().map(|stop| stop.as_hex()).collect::<Vec<_>>();
@@ -693,6 +701,26 @@ impl Op3Ctx {
                 assert!(buf.len() == obuf3.len());
                 for ix in 0..buf.len() {
                     buf[ix] = Pix::from_hsv(obuf1[ix], obuf2[ix], obuf3[ix]);
+                }
+            }
+
+            Op3Def::RGBToHSV() => {
+                let obufnum = opref.get_type_ref(3, 0);
+                let obuf = ctx.op3s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    let (hue, sat, value) = obuf[ix].to_hsv();
+                    buf[ix] = Pix::new(hue, sat, value);
+                }
+            }
+
+            Op3Def::HSVToRGB() => {
+                let obufnum = opref.get_type_ref(3, 0);
+                let obuf = ctx.op3s[obufnum].buf.borrow();
+                assert!(buf.len() == obuf.len());
+                for ix in 0..buf.len() {
+                    let (hue, sat, value) = (obuf[ix].r, obuf[ix].g, obuf[ix].b);
+                    buf[ix] = Pix::from_hsv(hue, sat, value);
                 }
             }
 

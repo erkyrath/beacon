@@ -719,6 +719,28 @@ lazy_static! {
         );
         
         map.insert(
+            "hsvtorgb",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+                let subop = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
+                let op = Op3Def::HSVToRGB();
+                Ok(BuildOp::new3(op).addchild3(subop))
+            } as BuildFuncOp3)
+        );
+        
+        map.insert(
+            "rgbtohsv",
+            (vec![
+                OpLayoutParam::param("_1", OpLayoutType::Op3),
+            ], |parsectx: &mut ParseContext, nod: &ParseNode, pmap: &HashMap<String, usize>| -> Result<BuildOp, String> {
+                let subop = parse_for_op3(parsectx, &nod.params.items[pmap["_1"]])?;
+                let op = Op3Def::RGBToHSV();
+                Ok(BuildOp::new3(op).addchild3(subop))
+            } as BuildFuncOp3)
+        );
+        
+        map.insert(
             "gradient",
             (vec![
                 OpLayoutParam::param("_1", OpLayoutType::Op1),
