@@ -28,3 +28,8 @@ By default this simulates a strip of 160 LEDs. For a higher density, try
 ```
 cargo run scripts/portal.pab --size 320
 ```
+
+## The language
+
+I made this for my own amusement. Should I document the language structure?
+Of course! Will I? Eh, maybe.
