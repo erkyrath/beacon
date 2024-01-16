@@ -26,9 +26,9 @@ impl Pix<f32> {
     
     pub fn lerp(&self, other: &Pix<f32>, pos: f32) -> Pix<f32> {
         Pix {
-            r: self.r.lerp(other.r, pos),
-            g: self.g.lerp(other.g, pos),
-            b: self.b.lerp(other.b, pos),
+            r: self.r.lerp(&other.r, &pos),
+            g: self.g.lerp(&other.g, &pos),
+            b: self.b.lerp(&other.b, &pos),
         }
     }
 

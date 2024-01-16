@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use rand::Rng;
 
 use crate::context::RunContext;
+use crate::lerp::Lerp;
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
 use crate::param::Param;
@@ -421,7 +422,7 @@ impl Op1Ctx {
                                 buf[ix] = stops[count-1];
                             }
                             else {
-                                buf[ix] = stops[seg] * (1.0-frac) + stops[seg+1] * frac;
+                                buf[ix] = stops[seg].lerp(&stops[seg+1], &frac);
                             }
                         }
                     }
@@ -597,6 +598,7 @@ impl Op1Ctx {
                         let pos = ix as f32 - offset * buflen32;
                         let seg = pos.floor() as i32;
                         let frac = pos - (seg as f32);
+                        //### wrong
                         let lastval = historybuf[seg.rem_euclid(buflen) as usize] * (1.0-frac) + historybuf[(seg+1).rem_euclid(buflen) as usize] * frac;
                         historybuf[ix] = buf[ix];
                         buf[ix] = obuf[ix].max(lastval*decaymul);
