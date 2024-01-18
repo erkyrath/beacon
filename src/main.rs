@@ -38,6 +38,9 @@ pub struct AppOptions {
     #[options(long="size", help = "pixel count (default 160)")]
     size: Option<usize>,
 
+    #[options(long="fps", help = "frames per second (default 60)")]
+    fps: Option<u32>,
+
     #[options(long="dump", help = "dump script to stdout")]
     dump: bool,
 
@@ -84,6 +87,8 @@ fn main() {
         },
     }
 
+    let fps = opts.fps.unwrap_or(60);
+
     if opts.dump {
         script.dump();
         let res = script.consistency_check();
@@ -109,7 +114,7 @@ fn main() {
     else {
         let winwidth = opts.winwidth.unwrap_or(800);
         let winheight = opts.winheight.unwrap_or(100);
-        let res = run_sdl(script, pixsize, filename, opts.watchfile, opts.showpower, winwidth, winheight);
+        let res = run_sdl(script, pixsize, fps, filename, opts.watchfile, opts.showpower, winwidth, winheight);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -131,8 +136,10 @@ fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, Strin
     Ok(count)
 }
 
-fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
+fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     script.consistency_check()?;
+
+    let ticktime = 1_000_000_000u32 / fps;
     
     let margin: u32 = 16;
     let copyrect = sdl2::rect::Rect::new(0, margin as i32, winwidth, winheight);
@@ -150,7 +157,8 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
             .map_err(|err| err.to_string())?;
     }
 
-    let window = video_subsystem.window(format!("beacon: {}", filename).as_str(), winwidth, winheight+2*margin)
+    let wintitle = format!("beacon: {} ({}p)", filename, pixsize);
+    let window = video_subsystem.window(wintitle.as_str(), winwidth, winheight+2*margin)
         .position_centered()
         .build()
         .map_err(|err| err.to_string())?;
@@ -257,7 +265,7 @@ fn run_sdl(script: Script, pixsize: usize, filename: &str, watchfile: bool, show
         }
 
         canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        ::std::thread::sleep(Duration::new(0, ticktime));
         
     }
 }
