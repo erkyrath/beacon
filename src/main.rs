@@ -6,6 +6,8 @@ extern crate sdl2;
 #[macro_use]
 extern crate lazy_static;
 
+use std::fs::File;
+use std::io::BufWriter;
 use std::time::Instant;
 use std::time::Duration;
 use std::time::SystemTime;
@@ -137,6 +139,52 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
     }
     
     Ok(count)
+}
+
+fn run_write(script: Script, pixsize: usize, fps: u32, frames: u32) -> Result<(), String> {
+    let filename = "tmp/p_%.png";
+    let mut ctx = RunContext::new(script, pixsize, Some(fps));
+
+    for count in 0..frames {
+        ctx.tick();
+        
+        let mut buffer: Vec<u8> = vec![0; 4*pixsize];
+        ctx.applybuf(|pixbuf| {
+            match pixbuf {
+                PixBuffer::Buf1(buf) => {
+                    for xpos in 0..pixsize {
+                        let offset = (xpos as usize) * 4;
+                        buffer[offset] = (buf[xpos] * 255.0) as u8;
+                        buffer[offset+1] = buffer[offset];
+                        buffer[offset+2] = buffer[offset];
+                        buffer[offset+3] = 255;
+                    }
+                },
+                PixBuffer::Buf3(buf) => {
+                    for xpos in 0..pixsize {
+                        let offset = (xpos as usize) * 4;
+                        buffer[offset] = (buf[xpos].r * 255.0) as u8;
+                        buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
+                        buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
+                        buffer[offset+3] = 255;
+                    }
+                }
+            }
+        });
+        
+        let tempfile = filename.replace("%", &format!("{:04}", count).to_string());
+        let file = File::create(tempfile)
+            .map_err(|err| err.to_string())?;
+        let ref mut fwriter = BufWriter::new(file);
+        let mut encoder = png::Encoder::new(fwriter, pixsize as u32, 1);
+        encoder.set_color(png::ColorType::Rgba);
+        encoder.set_depth(png::BitDepth::Eight);
+        let mut writer = encoder.write_header().unwrap();
+        writer.write_image_data(&buffer)
+            .map_err(|err| err.to_string())?;
+    }
+
+    Ok(())
 }
 
 fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
