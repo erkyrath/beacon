@@ -47,6 +47,9 @@ pub struct AppOptions {
     #[options(long="dump", help = "dump script to stdout")]
     dump: bool,
 
+    #[options(long="file", help = "run script headless and write to a file (\"file%.png\")")]
+    writefile: Option<String>,
+
     #[options(long="spin", help = "run script headless and measure speed")]
     spin: bool,
 
@@ -102,6 +105,18 @@ fn main() {
             Ok(()) => {},
         }
     }
+    else if let Some(filename) = &opts.writefile {
+        let frames = 8;
+        let res = run_writefile(filename, script, pixsize, fps, frames);
+        match res {
+            Err(msg) => {
+                println!("{msg}");
+            },
+            Ok(()) => {
+                println!("wrote {} images", frames);
+            },
+        }
+    }
     else if opts.spin {
         let dur: f64 = 0.1;
         let res = run_spin(script, pixsize, fps, dur);
@@ -141,8 +156,7 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
     Ok(count)
 }
 
-fn run_write(script: Script, pixsize: usize, fps: u32, frames: u32) -> Result<(), String> {
-    let filename = "tmp/p_%.png";
+fn run_writefile(filename: &str, script: Script, pixsize: usize, fps: u32, frames: u32) -> Result<(), String> {
     let mut ctx = RunContext::new(script, pixsize, Some(fps));
 
     for count in 0..frames {
