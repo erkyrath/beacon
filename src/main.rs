@@ -6,6 +6,7 @@ extern crate sdl2;
 #[macro_use]
 extern crate lazy_static;
 
+use std::time::Instant;
 use std::time::Duration;
 use std::time::SystemTime;
 
@@ -124,11 +125,13 @@ fn main() {
 fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
     let mut ctx = RunContext::new(script, pixsize, Some(fps));
     let mut count = 0;
+    let start = Instant::now();
     
     loop {
         ctx.tick();
         count += 1;
-        if ctx.age() > seconds {
+        let dur = start.elapsed();
+        if dur.as_secs_f64() > seconds {
             break;
         }
     }
