@@ -107,7 +107,8 @@ fn main() {
     }
     else if let Some(filename) = &opts.writefile {
         let frames = 8;
-        let res = run_writefile(filename, script, pixsize, fps, frames);
+        let pixheight = opts.winheight.unwrap_or(4) as usize;
+        let res = run_writefile(filename, script, pixsize, pixheight, fps, frames);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -156,31 +157,35 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
     Ok(count)
 }
 
-fn run_writefile(filename: &str, script: Script, pixsize: usize, fps: u32, frames: u32) -> Result<(), String> {
+fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usize, fps: u32, frames: u32) -> Result<(), String> {
     let mut ctx = RunContext::new(script, pixsize, Some(fps));
 
     for count in 0..frames {
         ctx.tick();
         
-        let mut buffer: Vec<u8> = vec![0; 4*pixsize];
+        let mut buffer: Vec<u8> = vec![0; 4*pixsize*pixheight];
         ctx.applybuf(|pixbuf| {
             match pixbuf {
                 PixBuffer::Buf1(buf) => {
-                    for xpos in 0..pixsize {
-                        let offset = (xpos as usize) * 4;
-                        buffer[offset] = (buf[xpos] * 255.0) as u8;
-                        buffer[offset+1] = buffer[offset];
-                        buffer[offset+2] = buffer[offset];
-                        buffer[offset+3] = 255;
+                    for ypos in 0..pixheight {
+                        for xpos in 0..pixsize {
+                            let offset = ypos * pixsize * 4 + xpos * 4;
+                            buffer[offset] = (buf[xpos] * 255.0) as u8;
+                            buffer[offset+1] = buffer[offset];
+                            buffer[offset+2] = buffer[offset];
+                            buffer[offset+3] = 255;
+                        }
                     }
                 },
                 PixBuffer::Buf3(buf) => {
-                    for xpos in 0..pixsize {
-                        let offset = (xpos as usize) * 4;
-                        buffer[offset] = (buf[xpos].r * 255.0) as u8;
-                        buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
-                        buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
-                        buffer[offset+3] = 255;
+                    for ypos in 0..pixheight {
+                        for xpos in 0..pixsize {
+                            let offset = ypos * pixsize * 4 + xpos * 4;
+                            buffer[offset] = (buf[xpos].r * 255.0) as u8;
+                            buffer[offset+1] = (buf[xpos].g * 255.0) as u8;
+                            buffer[offset+2] = (buf[xpos].b * 255.0) as u8;
+                            buffer[offset+3] = 255;
+                        }
                     }
                 }
             }
@@ -190,7 +195,7 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, fps: u32, frame
         let file = File::create(tempfile)
             .map_err(|err| err.to_string())?;
         let ref mut fwriter = BufWriter::new(file);
-        let mut encoder = png::Encoder::new(fwriter, pixsize as u32, 1);
+        let mut encoder = png::Encoder::new(fwriter, pixsize as u32, pixheight as u32);
         encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
