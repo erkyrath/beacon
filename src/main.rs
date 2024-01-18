@@ -65,6 +65,12 @@ pub struct AppOptions {
     #[options(long="height", help = "display window height")]
     winheight: Option<u32>,
 
+    #[options(long="count", help = "frame count (for --file)")]
+    framecount: Option<usize>,
+
+    #[options(long="skip", help = "frame skip (for --file)")]
+    frameskip: Option<usize>,
+
 }
 
 fn main() {
@@ -106,15 +112,16 @@ fn main() {
         }
     }
     else if let Some(filename) = &opts.writefile {
-        let frames = 8;
+        let framecount = opts.framecount.unwrap_or(16);
+        let frameskip = opts.frameskip.unwrap_or(0);
         let pixheight = opts.winheight.unwrap_or(4) as usize;
-        let res = run_writefile(filename, script, pixsize, pixheight, fps, frames);
+        let res = run_writefile(filename, script, pixsize, pixheight, fps, framecount, frameskip);
         match res {
             Err(msg) => {
                 println!("{msg}");
             },
             Ok(()) => {
-                println!("wrote {} images", frames);
+                println!("wrote {} images", framecount);
             },
         }
     }
@@ -157,10 +164,14 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
     Ok(count)
 }
 
-fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usize, fps: u32, frames: u32) -> Result<(), String> {
+fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
     let mut ctx = RunContext::new(script, pixsize, Some(fps));
 
-    for count in 0..frames {
+    for _ in 0..frameskip {
+        ctx.tick();
+    }
+
+    for count in 0..framecount {
         ctx.tick();
         
         let mut buffer: Vec<u8> = vec![0; 4*pixsize*pixheight];
