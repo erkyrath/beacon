@@ -101,7 +101,7 @@ fn main() {
     }
     else if opts.spin {
         let dur: f64 = 0.1;
-        let res = run_spin(script, pixsize, dur);
+        let res = run_spin(script, pixsize, fps, dur);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -121,8 +121,8 @@ fn main() {
     }
 }
 
-fn run_spin(script: Script, pixsize: usize, seconds: f64) -> Result<usize, String> {
-    let mut ctx = RunContext::new(script, pixsize);
+fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
+    let mut ctx = RunContext::new(script, pixsize, Some(fps));
     let mut count = 0;
     
     loop {
@@ -177,7 +177,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = RunContext::new(script, pixsize);
+    let mut ctx = RunContext::new(script, pixsize, None);
     let mut pause = false;
         
     'running: loop {
@@ -191,7 +191,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
                 watchtime = newtime;
                 match parse::parse_script(&filename) {
                     Ok(newscript) => {
-                        ctx = RunContext::new(newscript, pixsize);
+                        ctx = RunContext::new(newscript, pixsize, None);
                     },
                     Err(msg) => {
                         println!("{msg}");

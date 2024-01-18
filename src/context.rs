@@ -18,8 +18,10 @@ pub enum PixBuffer<'a> {
 pub struct RunContext {
     pub script: Script,
     pub size: usize,
+    pub fixtick: Option<u32>,
     
     birth: Instant,
+    tickcount: usize,
     age: f64,
     ticklen: f32,
     
@@ -30,14 +32,18 @@ pub struct RunContext {
 }
 
 impl RunContext {
-    pub fn new(script: Script, size: usize) -> RunContext {
+    pub fn new(script: Script, size: usize, fixtick: Option<u32>) -> RunContext {
         // Gotta create this with some temporary values and then fill them in.
         let mut ctx = RunContext {
             script: Script::new(),
             size: size,
+            fixtick: fixtick,
+            
             birth: Instant::now(),
+            tickcount: 0,
             age: 0.0,
             ticklen: 0.0,
+            
             rng: Rc::new(RefCell::new(SmallRng::from_entropy())),
             op1s: Vec::default(),
             op3s: Vec::default(),
@@ -106,10 +112,17 @@ impl RunContext {
     }
 
     pub fn tick(&mut self) {
-        let dur = self.birth.elapsed();
-        let newage = dur.as_secs_f64();
+        let newage: f64;
+        if let Some(fps) = &self.fixtick {
+            newage = self.tickcount as f64 / *fps as f64;
+        }
+        else {
+            let dur = self.birth.elapsed();
+            newage = dur.as_secs_f64();
+        }
         self.ticklen = (newage - self.age) as f32;
         self.age = newage;
+        self.tickcount += 1;
 
         for ix in (0..self.script.order.len()).rev() {
             match self.script.order[ix] {
