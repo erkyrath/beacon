@@ -195,6 +195,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
                 match parse::parse_script(&filename) {
                     Ok(newscript) => {
                         ctx = RunContext::new(newscript, pixsize, None);
+                        powertime = 0.0;
                     },
                     Err(msg) => {
                         println!("{msg}");
