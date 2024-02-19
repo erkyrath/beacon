@@ -48,6 +48,9 @@ pub struct AppOptions {
     #[options(long="file", help = "run script headless and write to a file (\"file%.png\")")]
     writefile: Option<String>,
 
+    #[options(long="led", help = "display on connected LEDs")]
+    led: bool,
+
     #[options(long="spin", help = "run script headless and measure speed")]
     spin: bool,
 
@@ -135,6 +138,12 @@ fn main() {
             },
         }
     }
+    else if opts.led {
+        let res = run_leds(script);
+        if let Err(msg) = res {
+            println!("{msg}");
+        }
+    }
     else {
         let winwidth = opts.winwidth.unwrap_or(800);
         let winheight = opts.winheight.unwrap_or(100);
@@ -217,6 +226,12 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usiz
         writer.write_image_data(&buffer)
             .map_err(|err| err.to_string())?;
     }
+
+    Ok(())
+}
+
+fn run_leds(_script: Script) -> Result<(), String> {
+    //### let driver = apa102_spi::Apa102::new();
 
     Ok(())
 }
