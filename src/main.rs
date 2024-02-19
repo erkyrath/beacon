@@ -164,6 +164,12 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
     Ok(count)
 }
 
+#[cfg(not(feature = "png"))]
+fn run_writefile(_filename: &str, _script: Script, _pixsize: usize, _pixheight: usize, _fps: u32, _framecount: usize, _frameskip: usize) -> Result<(), String> {
+    return Err("png feature not available".to_string());
+}
+
+#[cfg(feature = "png")]
 fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
     let mut ctx = RunContext::new(script, pixsize, Some(fps));
 

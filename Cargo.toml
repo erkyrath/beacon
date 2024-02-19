@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 gumdrop = "0.8.1"
-png = "0.17.11"
+png = { version = "0.17.11", optional = true }
 sdl2 = "0.36.0"
 lazy_static = "1.4.0"
 rand = { version = "0.8.5", features = ["small_rng"] }
