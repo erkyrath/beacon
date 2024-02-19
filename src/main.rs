@@ -2,7 +2,10 @@
 #![allow(unused_imports)]
 
 use gumdrop::Options;
+
+#[cfg(feature = "sdl2")]
 extern crate sdl2; 
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -11,11 +14,6 @@ use std::io::BufWriter;
 use std::time::Instant;
 use std::time::Duration;
 use std::time::SystemTime;
-
-use sdl2::pixels::Color;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::pixels::PixelFormatEnum;
 
 mod pixel;
 mod lerp;
@@ -223,7 +221,18 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usiz
     Ok(())
 }
 
+#[cfg(not(feature = "sdl2"))]
+fn run_sdl(_script: Script, _pixsize: usize, _fps: u32, _filename: &str, _watchfile: bool, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
+    return Err("sdl2 feature not available".to_string());
+}
+
+#[cfg(feature = "sdl2")]
 fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
+    use sdl2::pixels::Color;
+    use sdl2::event::Event;
+    use sdl2::keyboard::Keycode;
+    use sdl2::pixels::PixelFormatEnum;
+    
     script.consistency_check()?;
 
     let ticktime = 1_000_000_000u32 / fps;
