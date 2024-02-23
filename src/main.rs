@@ -231,6 +231,20 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usiz
 }
 
 fn run_leds(_script: Script) -> Result<(), String> {
+    use rppal::spi::{Bus, SlaveSelect, Spi};
+    let info = rppal::system::DeviceInfo::new().unwrap();
+    println!("### info {:?}", info);
+
+    let spi = Spi::new(
+        Bus::Spi0,
+        SlaveSelect::Ss0,
+        20_000_000,
+        rppal::spi::Mode::Mode0,
+    );
+
+    println!("### spi {:?}", spi);
+
+
     //### let driver = apa102_spi::Apa102::new();
 
     Ok(())
