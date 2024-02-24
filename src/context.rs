@@ -1,4 +1,3 @@
-use std::time::Instant;
 use std::rc::Rc;
 use std::cell::RefCell;
 use rand::rngs::SmallRng;
