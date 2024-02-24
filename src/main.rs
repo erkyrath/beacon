@@ -169,6 +169,9 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
         if dur.as_secs_f64() > seconds {
             break;
         }
+        if ctx.done() {
+            return Err("script ended before time".to_string());
+        }
     }
     
     Ok(count)
@@ -189,6 +192,9 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usiz
 
     for count in 0..framecount {
         ctx.tick();
+        if ctx.done() {
+            break;
+        }
         
         let mut buffer: Vec<u8> = vec![0; 4*pixsize*pixheight];
         ctx.applybuf(|pixbuf| {
@@ -239,7 +245,6 @@ fn run_leds(_script: Script, _pixsize: usize, _fps: u32) -> Result<(), String> {
 }
 
 #[cfg(feature = "rpi")]
-#[allow(unreachable_code)]
 fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     use rppal::spi::{Bus, SlaveSelect, Spi};
     use smart_leds_trait::{RGB8, SmartLedsWrite};
@@ -288,6 +293,10 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
         //### apply gamma and brightness limiter?
         driver.write(buffer)
             .map_err(|err| err.to_string())?;
+
+        if ctx.done() {
+            break;
+        }
         
         ::std::thread::sleep(Duration::new(0, ticktime));
     }
@@ -423,6 +432,10 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
         })?;
         canvas.clear();
         canvas.copy(&texture, None, Some(copyrect))?;
+
+        if ctx.done() {
+            break Ok(())
+        }
 
         for event in event_pump.poll_iter() {
             match event {
