@@ -6,6 +6,8 @@ pub enum PixBuffer<'a> {
 }
 
 pub trait Runner {
+    //fn build(size: usize, fixtick: Option<u32>) -> Self;
+    
     fn applybuf<F>(&self, func: F)
     where F: FnMut(PixBuffer);
 }
