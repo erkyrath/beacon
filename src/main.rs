@@ -239,6 +239,7 @@ fn run_leds(_script: Script, _pixsize: usize, _fps: u32) -> Result<(), String> {
 #[allow(unreachable_code)]
 fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     use rppal::spi::{Bus, SlaveSelect, Spi};
+    use smart_leds_trait::{RGB8, SmartLedsWrite};
 
     let ticktime = 1_000_000_000u32 / fps;
     
@@ -256,11 +257,33 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
         .map_err(|err| err.to_string())?;
     println!("### spi {:?}", spi);
 
-    let driver = apa102_spi::Apa102::new(spi);
+    let mut driver = apa102_spi::Apa102::new(spi);
 
     let mut ctx = RunContext::new(script, pixsize, None);
+    
     loop {
         ctx.tick();
+
+        let mut buffer: Vec<RGB8> = vec![RGB8::default(); pixsize];
+        
+        ctx.applybuf(|pixbuf| {
+            match pixbuf {
+                PixBuffer::Buf1(buf) => {
+                    for xpos in 0..pixsize {
+                        buffer[xpos] = RGB8::new((buf[xpos] * 255.0) as u8, (buf[xpos] * 255.0) as u8, (buf[xpos] * 255.0) as u8);
+                    }
+                },
+                PixBuffer::Buf3(buf) => {
+                    for xpos in 0..pixsize {
+                        buffer[xpos] = RGB8::new((buf[xpos].r * 255.0) as u8, (buf[xpos].g * 255.0) as u8, (buf[xpos].b * 255.0) as u8);
+                    }
+                },
+            };
+        });
+
+        driver.write(buffer)
+            .map_err(|err| err.to_string())?;
+        
         ::std::thread::sleep(Duration::new(0, ticktime));
     }
 
