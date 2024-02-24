@@ -5,10 +5,14 @@ pub enum PixBuffer<'a> {
     Buf3(&'a [Pix<f32>]),
 }
 
+pub trait Runner {
+    fn build(&self, size: usize, fixtick: Option<u32>) -> impl RunContext;
+}
+
 pub trait RunContext {
-    //fn build(size: usize, fixtick: Option<u32>) -> Self;
-    
     fn applybuf<F>(&self, func: F)
     where F: FnMut(PixBuffer);
+
+    fn done(&self) -> bool;
 }
 
