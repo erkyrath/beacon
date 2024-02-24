@@ -236,6 +236,7 @@ fn run_leds(_script: Script, _pixsize: usize, _fps: u32) -> Result<(), String> {
 }
 
 #[cfg(feature = "rpi")]
+#[allow(unreachable_code)]
 fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     use rppal::spi::{Bus, SlaveSelect, Spi};
 
@@ -250,8 +251,8 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
         Bus::Spi0,
         SlaveSelect::Ss0,
         20_000_000,
-        //rppal::spi::Mode::Mode0
-        apa102_spi::MODE)
+        // Mode0: IdleLow (CPOL0), CaptureOnFirstTransition (CPHA0)
+        rppal::spi::Mode::Mode0)
         .map_err(|err| err.to_string())?;
     println!("### spi {:?}", spi);
 
@@ -263,7 +264,6 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
         ::std::thread::sleep(Duration::new(0, ticktime));
     }
 
-    #[allow(unreachable_code)]
     driver.free();
     Ok(())
 }
