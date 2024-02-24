@@ -5,7 +5,7 @@ use rand::SeedableRng;
 
 use crate::pixel::Pix;
 use crate::clock::CtxClock;
-use crate::runner::PixBuffer;
+use crate::runner::{Runner, PixBuffer};
 use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
@@ -70,20 +70,6 @@ impl RunContext {
     pub fn ticklen(&self) -> f32 {
         self.clock.ticklen
     }
-
-    pub fn applybuf<F>(&self, mut func: F)
-    where F: FnMut(PixBuffer) {
-        match &self.script.order[0] {
-            ScriptIndex::Op1(val) => {
-                let buf = self.op1s[*val].buf.borrow();
-                func(PixBuffer::Buf1(&buf));
-            },
-            ScriptIndex::Op3(val) => {
-                let buf = self.op3s[*val].buf.borrow();
-                func(PixBuffer::Buf3(&buf));
-            },
-        }
-    }
     
     pub fn applybuf1<F>(&self, val: usize, mut func: F)
     where F: FnMut(&[f32]) {
@@ -109,6 +95,22 @@ impl RunContext {
                     Op3Ctx::tickop(self, val);
                 },
             }
+        }
+    }
+}
+
+impl Runner for RunContext {
+    fn applybuf<F>(&self, mut func: F)
+    where F: FnMut(PixBuffer) {
+        match &self.script.order[0] {
+            ScriptIndex::Op1(val) => {
+                let buf = self.op1s[*val].buf.borrow();
+                func(PixBuffer::Buf1(&buf));
+            },
+            ScriptIndex::Op3(val) => {
+                let buf = self.op3s[*val].buf.borrow();
+                func(PixBuffer::Buf3(&buf));
+            },
         }
     }
 }
