@@ -5,7 +5,7 @@ use rand::SeedableRng;
 
 use crate::pixel::Pix;
 use crate::clock::CtxClock;
-use crate::runner::{Runner, PixBuffer};
+use crate::runner::{RunContext, PixBuffer};
 use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
@@ -99,7 +99,7 @@ impl ScriptContext {
     }
 }
 
-impl Runner for ScriptContext {
+impl RunContext for ScriptContext {
     fn applybuf<F>(&self, mut func: F)
     where F: FnMut(PixBuffer) {
         match &self.script.order[0] {

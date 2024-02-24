@@ -28,7 +28,7 @@ mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
-use runner::{Runner, PixBuffer};
+use runner::{RunContext, PixBuffer};
 use context::ScriptContext;
 
 #[derive(Options, Debug)]
