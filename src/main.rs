@@ -139,7 +139,7 @@ fn main() {
         }
     }
     else if opts.led {
-        let res = run_leds(script);
+        let res = run_leds(script, pixsize, fps);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -230,23 +230,41 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usiz
     Ok(())
 }
 
-fn run_leds(_script: Script) -> Result<(), String> {
+#[cfg(not(feature = "rpi"))]
+fn run_leds(_script: Script, _pixsize: usize, _fps: u32) -> Result<(), String> {
+    return Err("rpi feature not available".to_string());
+}
+
+#[cfg(feature = "rpi")]
+fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     use rppal::spi::{Bus, SlaveSelect, Spi};
-    let info = rppal::system::DeviceInfo::new().unwrap();
+
+    let ticktime = 1_000_000_000u32 / fps;
+    
+    //###
+    let info = rppal::system::DeviceInfo::new()
+        .map_err(|err| err.to_string())?;
     println!("### info {:?}", info);
 
     let spi = Spi::new(
         Bus::Spi0,
         SlaveSelect::Ss0,
         20_000_000,
-        rppal::spi::Mode::Mode0,
-    );
-
+        //rppal::spi::Mode::Mode0
+        apa102_spi::MODE)
+        .map_err(|err| err.to_string())?;
     println!("### spi {:?}", spi);
 
+    let driver = apa102_spi::Apa102::new(spi);
 
-    //### let driver = apa102_spi::Apa102::new();
+    let mut ctx = RunContext::new(script, pixsize, None);
+    loop {
+        ctx.tick();
+        ::std::thread::sleep(Duration::new(0, ticktime));
+    }
 
+    #[allow(unreachable_code)]
+    driver.free();
     Ok(())
 }
 
