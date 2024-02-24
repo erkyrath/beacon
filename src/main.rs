@@ -282,6 +282,7 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
             };
         });
 
+        //### apply gamma and brightness limiter?
         driver.write(buffer)
             .map_err(|err| err.to_string())?;
         
