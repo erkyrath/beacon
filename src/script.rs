@@ -13,11 +13,13 @@ pub enum ScriptIndex {
     Op3(usize),
 }
 
+#[derive(Clone)]
 pub struct Op1DefRef {
     pub op: Op1Def,
     pub bufs: Vec<ScriptIndex>,
 }
 
+#[derive(Clone)]
 pub struct Op3DefRef {
     pub op: Op3Def,
     pub bufs: Vec<ScriptIndex>,
@@ -61,6 +63,7 @@ impl Op3DefRef {
     }
 }
 
+#[derive(Clone)]
 pub struct Script {
     pub order: Vec<ScriptIndex>, // 0 is root
     pub op1s: Vec<Op1DefRef>,
