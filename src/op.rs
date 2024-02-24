@@ -2,7 +2,7 @@ use std::fmt;
 use std::cell::RefCell;
 use rand::Rng;
 
-use crate::context::RunContext;
+use crate::context::ScriptContext;
 use crate::lerp::Lerp;
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
@@ -244,7 +244,7 @@ pub struct GradStop {
 }
 
 impl NoiseState {
-    pub fn new(grain: usize, octaves: usize, ctx: &mut RunContext) -> NoiseState {
+    pub fn new(grain: usize, octaves: usize, ctx: &mut ScriptContext) -> NoiseState {
         let mut res = NoiseState {
             seeds: Vec::default(),
             fudgemax: 1.0,
@@ -278,7 +278,7 @@ impl NoiseState {
 }
 
 impl Op1State {
-    pub fn new_for(op: &Op1Def, ctx: &mut RunContext) -> Op1State {
+    pub fn new_for(op: &Op1Def, ctx: &mut ScriptContext) -> Op1State {
         match op {
             Op1Def::Pulser(_pulser) => Op1State::Pulser(PulserState::new()),
             Op1Def::Decay(_halflife) => Op1State::Decay(vec![0.0; ctx.size()]),
@@ -291,7 +291,7 @@ impl Op1State {
 }
 
 impl Op3State {
-    pub fn new_for(op: &Op3Def, _ctx: &mut RunContext) -> Op3State {
+    pub fn new_for(op: &Op3Def, _ctx: &mut ScriptContext) -> Op3State {
         match op {
             _ => Op3State::NoState,
         }
@@ -299,7 +299,7 @@ impl Op3State {
 }
 
 impl Op1Ctx {
-    pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
+    pub fn tickop(ctx: &mut ScriptContext, bufnum: usize) {
         let opref = &ctx.script.op1s[bufnum];
         let mut buf = ctx.op1s[bufnum].buf.borrow_mut();
         match &opref.op {
@@ -654,7 +654,7 @@ impl Op1Ctx {
 }
 
 impl Op3Ctx {
-    pub fn tickop(ctx: &mut RunContext, bufnum: usize) {
+    pub fn tickop(ctx: &mut ScriptContext, bufnum: usize) {
         let opref = &ctx.script.op3s[bufnum];
         //let mut _state = ctx.op3s[bufnum].state.borrow_mut();
         let mut buf = ctx.op3s[bufnum].buf.borrow_mut();

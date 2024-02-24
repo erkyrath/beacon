@@ -11,7 +11,7 @@ use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
 
-pub struct RunContext {
+pub struct ScriptContext {
     pub script: Script,
     pub size: usize,
     pub clock: CtxClock,
@@ -22,10 +22,10 @@ pub struct RunContext {
     pub op3s: Vec<Op3Ctx>,
 }
 
-impl RunContext {
-    pub fn new(script: Script, size: usize, fixtick: Option<u32>) -> RunContext {
+impl ScriptContext {
+    pub fn new(script: Script, size: usize, fixtick: Option<u32>) -> ScriptContext {
         // Gotta create this with some temporary values and then fill them in.
-        let mut ctx = RunContext {
+        let mut ctx = ScriptContext {
             script: Script::new(),
             size: size,
             clock: CtxClock::new(fixtick),
@@ -99,7 +99,7 @@ impl RunContext {
     }
 }
 
-impl Runner for RunContext {
+impl Runner for ScriptContext {
     fn applybuf<F>(&self, mut func: F)
     where F: FnMut(PixBuffer) {
         match &self.script.order[0] {

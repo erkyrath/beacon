@@ -29,7 +29,7 @@ mod pulser;
 
 use script::{Script, ScriptIndex};
 use runner::{Runner, PixBuffer};
-use context::RunContext;
+use context::ScriptContext;
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
@@ -158,7 +158,7 @@ fn main() {
 }
 
 fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
-    let mut ctx = RunContext::new(script, pixsize, Some(fps));
+    let mut ctx = ScriptContext::new(script, pixsize, Some(fps));
     let mut count = 0;
     let start = Instant::now();
     
@@ -181,7 +181,7 @@ fn run_writefile(_filename: &str, _script: Script, _pixsize: usize, _pixheight: 
 
 #[cfg(feature = "png")]
 fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
-    let mut ctx = RunContext::new(script, pixsize, Some(fps));
+    let mut ctx = ScriptContext::new(script, pixsize, Some(fps));
 
     for _ in 0..frameskip {
         ctx.tick();
@@ -263,7 +263,7 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     let mut driver = apa102_spi::Apa102::new(spi);
     //### might need to change default BGR
 
-    let mut ctx = RunContext::new(script, pixsize, None);
+    let mut ctx = ScriptContext::new(script, pixsize, None);
     
     loop {
         ctx.tick();
@@ -348,7 +348,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = RunContext::new(script, pixsize, None);
+    let mut ctx = ScriptContext::new(script, pixsize, None);
     let mut pause = false;
         
     'running: loop {
@@ -362,7 +362,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
                 watchtime = newtime;
                 match parse::parse_script(&filename) {
                     Ok(newscript) => {
-                        ctx = RunContext::new(newscript, pixsize, None);
+                        ctx = ScriptContext::new(newscript, pixsize, None);
                         powertime = 0.0;
                     },
                     Err(msg) => {

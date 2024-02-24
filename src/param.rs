@@ -2,7 +2,7 @@ use std::fmt;
 use rand::Rng;
 
 use crate::waves::WaveShape;
-use crate::context::RunContext;
+use crate::context::ScriptContext;
 
 // To think about:
 // Params containing params? RandFlat(0, Changing())
@@ -76,7 +76,7 @@ impl Param {
         self
     }
     
-    pub fn eval(&self, ctx: &RunContext, age: f32) -> f32 {
+    pub fn eval(&self, ctx: &ScriptContext, age: f32) -> f32 {
         match self {
             Param::Const(val) => *val,
             Param::Param(param) => match &param.def {
@@ -126,7 +126,7 @@ impl Param {
         }
     }
 
-    pub fn min(&self, ctx: &RunContext, age: f32) -> Option<f32> {
+    pub fn min(&self, ctx: &ScriptContext, age: f32) -> Option<f32> {
         match self {
             Param::Const(val) => Some(*val),
             Param::Param(param) => match &param.def {
@@ -172,7 +172,7 @@ impl Param {
         }
     }
 
-    pub fn max(&self, ctx: &RunContext, age: f32) -> Option<f32> {
+    pub fn max(&self, ctx: &ScriptContext, age: f32) -> Option<f32> {
         match self {
             Param::Const(val) => Some(*val),
             Param::Param(param) => match &param.def {
@@ -218,7 +218,7 @@ impl Param {
         }
     }
 
-    pub fn resolve(&self, ctx: &RunContext, age: f32) -> Param {
+    pub fn resolve(&self, ctx: &ScriptContext, age: f32) -> Param {
         match self {
             Param::Const(val) => Param::newconst(*val),
             Param::Param(param) => match &param.def {

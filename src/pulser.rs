@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::context::RunContext;
+use crate::context::ScriptContext;
 use crate::param::Param;
 use crate::waves::WaveShape;
 
@@ -56,7 +56,7 @@ impl PulserState {
         }
     }
 
-    pub fn tick(&mut self, ctx: &RunContext, pulser: &Pulser) {
+    pub fn tick(&mut self, ctx: &ScriptContext, pulser: &Pulser) {
         let age = ctx.age() - self.birth;
         if age >= self.nextpulse {
             let posparam = pulser.pos.resolve(ctx, age as f32);
@@ -84,7 +84,7 @@ impl PulserState {
         self.pulses.retain(|pulse| !pulse.dead);
     }
 
-    pub fn render(&mut self, ctx: &RunContext, buf: &mut [f32]) {
+    pub fn render(&mut self, ctx: &ScriptContext, buf: &mut [f32]) {
         let bufrange = buf.len() as f32;
         buf.fill(0.0);
 
