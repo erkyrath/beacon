@@ -5,6 +5,7 @@ use rand::rngs::SmallRng;
 use rand::SeedableRng;
 
 use crate::pixel::Pix;
+use crate::clock::CtxClock;
 use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
@@ -18,12 +19,7 @@ pub enum PixBuffer<'a> {
 pub struct RunContext {
     pub script: Script,
     pub size: usize,
-    pub fixtick: Option<u32>,
-    
-    birth: Instant,
-    tickcount: usize,
-    age: f64,
-    ticklen: f32,
+    pub clock: CtxClock,
     
     pub rng: Rc<RefCell<SmallRng>>,
 
@@ -37,12 +33,7 @@ impl RunContext {
         let mut ctx = RunContext {
             script: Script::new(),
             size: size,
-            fixtick: fixtick,
-            
-            birth: Instant::now(),
-            tickcount: 0,
-            age: 0.0,
-            ticklen: 0.0,
+            clock: CtxClock::new(fixtick),
             
             rng: Rc::new(RefCell::new(SmallRng::from_entropy())),
             op1s: Vec::default(),
@@ -78,11 +69,11 @@ impl RunContext {
     }
 
     pub fn age(&self) -> f64 {
-        self.age
+        self.clock.age
     }
     
     pub fn ticklen(&self) -> f32 {
-        self.ticklen
+        self.clock.ticklen
     }
 
     pub fn applybuf<F>(&self, mut func: F)
@@ -112,17 +103,7 @@ impl RunContext {
     }
 
     pub fn tick(&mut self) {
-        let newage: f64;
-        if let Some(fps) = &self.fixtick {
-            newage = self.tickcount as f64 / *fps as f64;
-        }
-        else {
-            let dur = self.birth.elapsed();
-            newage = dur.as_secs_f64();
-        }
-        self.ticklen = (newage - self.age) as f32;
-        self.age = newage;
-        self.tickcount += 1;
+        let _newage: f64 = self.clock.tick();
 
         for ix in (0..self.script.order.len()).rev() {
             match self.script.order[ix] {

@@ -21,6 +21,7 @@ mod op;
 mod script;
 mod parse;
 mod param;
+mod clock;
 mod context;
 mod waves;
 mod pulser;
