@@ -5,15 +5,11 @@ use rand::SeedableRng;
 
 use crate::pixel::Pix;
 use crate::clock::CtxClock;
+use crate::runner::PixBuffer;
 use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
-
-pub enum PixBuffer<'a> {
-    Buf1(&'a [f32]),
-    Buf3(&'a [Pix<f32>]),
-}
 
 pub struct RunContext {
     pub script: Script,

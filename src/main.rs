@@ -22,12 +22,14 @@ mod script;
 mod parse;
 mod param;
 mod clock;
+mod runner;
 mod context;
 mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
-use context::{RunContext, PixBuffer};
+use runner::PixBuffer;
+use context::RunContext;
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
