@@ -251,13 +251,14 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     let spi = Spi::new(
         Bus::Spi0,
         SlaveSelect::Ss0,
-        20_000_000,
+        20_000_000, // Hz?
         // Mode0: IdleLow (CPOL0), CaptureOnFirstTransition (CPHA0)
         rppal::spi::Mode::Mode0)
         .map_err(|err| err.to_string())?;
     println!("### spi {:?}", spi);
 
     let mut driver = apa102_spi::Apa102::new(spi);
+    //### might need to change default BGR
 
     let mut ctx = RunContext::new(script, pixsize, None);
     
@@ -389,6 +390,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
                     }
                 });
                 println!("Power use: {:.1} white pixels ({:.01}%)", total, 100.0 * total / (pixsize as f32));
+                // Really the off pixels require a bit of power, maybe 5%?
                 powertime = ctx.age();
             }
         }
