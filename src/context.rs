@@ -23,13 +23,11 @@ impl ScriptRunner {
     }
 }
 
-/*###
 impl Runner for ScriptRunner {
     fn build(&self, size: usize, fixtick: Option<u32>) -> ScriptContext {
-        ScriptContext::new(self.script, size, fixtick)
+        ScriptContext::new(self.script.clone(), size, fixtick)
     }
 }
-###*/
 
 pub struct ScriptContext {
     pub script: Script,
