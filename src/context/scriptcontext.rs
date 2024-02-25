@@ -26,8 +26,8 @@ impl ScriptRunner {
 
 pub struct ScriptContext {
     pub script: Script,
-    pub size: usize,
-    pub clock: CtxClock,
+    size: usize,
+    clock: CtxClock,
     
     pub rng: Rc<RefCell<SmallRng>>,
 

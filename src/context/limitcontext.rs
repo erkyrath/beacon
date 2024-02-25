@@ -17,10 +17,10 @@ impl LimitRunner {
 }
 
 pub struct LimitContext {
-    pub child: Box<RunContextWrap>,
-    pub limit: f32,
+    child: Box<RunContextWrap>,
+    limit: f32,
     
-    pub clock: CtxClock,
+    clock: CtxClock,
 }
 
 impl LimitContext {
