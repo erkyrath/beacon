@@ -28,7 +28,7 @@ mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
-use runner::{RunContext, RunContextWrap, PixBuffer};
+use runner::{Runner, RunContext, RunContextWrap, PixBuffer};
 use context::{ScriptRunner, ScriptContext};
 
 #[derive(Options, Debug)]
@@ -103,10 +103,6 @@ fn main() {
         },
     }
 
-    //###let runner = ScriptRunner::new(script);
-
-    let fps = opts.fps.unwrap_or(60);
-
     if opts.dump {
         script.dump();
         let res = script.consistency_check();
@@ -116,12 +112,17 @@ fn main() {
             },
             Ok(()) => {},
         }
+        return;
     }
-    else if let Some(filename) = &opts.writefile {
+    
+    let runner = ScriptRunner::new(script);
+    let fps = opts.fps.unwrap_or(60);
+
+    if let Some(filename) = &opts.writefile {
         let framecount = opts.framecount.unwrap_or(16);
         let frameskip = opts.frameskip.unwrap_or(0);
         let pixheight = opts.winheight.unwrap_or(4) as usize;
-        let res = run_writefile(filename, script, pixsize, pixheight, fps, framecount, frameskip);
+        let res = run_writefile(filename, &runner, pixsize, pixheight, fps, framecount, frameskip);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -133,7 +134,7 @@ fn main() {
     }
     else if opts.spin {
         let dur: f64 = 0.1;
-        let res = run_spin(script, pixsize, fps, dur);
+        let res = run_spin(&runner, pixsize, fps, dur);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -144,7 +145,7 @@ fn main() {
         }
     }
     else if opts.led {
-        let res = run_leds(script, pixsize, fps);
+        let res = run_leds(&runner, pixsize, fps);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -152,15 +153,15 @@ fn main() {
     else {
         let winwidth = opts.winwidth.unwrap_or(800);
         let winheight = opts.winheight.unwrap_or(100);
-        let res = run_sdl(script, pixsize, fps, filename, opts.watchfile, opts.showpower, winwidth, winheight);
+        let res = run_sdl(&runner, pixsize, fps, filename, opts.watchfile, opts.showpower, winwidth, winheight);
         if let Err(msg) = res {
             println!("{msg}");
         }
     }
 }
 
-fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
-    let mut ctx = ScriptContext::new(script, pixsize, Some(fps));
+fn run_spin(runner: &dyn Runner, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
+    let mut ctx = runner.build(pixsize, Some(fps));
     let mut count = 0;
     let start = Instant::now();
     
@@ -180,13 +181,13 @@ fn run_spin(script: Script, pixsize: usize, fps: u32, seconds: f64) -> Result<us
 }
 
 #[cfg(not(feature = "png"))]
-fn run_writefile(_filename: &str, _script: Script, _pixsize: usize, _pixheight: usize, _fps: u32, _framecount: usize, _frameskip: usize) -> Result<(), String> {
+fn run_writefile(_filename: &str, _runner: &dyn Runner, _pixsize: usize, _pixheight: usize, _fps: u32, _framecount: usize, _frameskip: usize) -> Result<(), String> {
     return Err("png feature not available".to_string());
 }
 
 #[cfg(feature = "png")]
-fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
-    let mut ctx = ScriptContext::new(script, pixsize, Some(fps));
+fn run_writefile(filename: &str, runner: &dyn Runner, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
+    let mut ctx = runner.build(pixsize, Some(fps));
 
     for _ in 0..frameskip {
         ctx.tick();
@@ -242,12 +243,12 @@ fn run_writefile(filename: &str, script: Script, pixsize: usize, pixheight: usiz
 }
 
 #[cfg(not(feature = "rpi"))]
-fn run_leds(_script: Script, _pixsize: usize, _fps: u32) -> Result<(), String> {
+fn run_leds(_runner: &dyn Runner, _pixsize: usize, _fps: u32) -> Result<(), String> {
     return Err("rpi feature not available".to_string());
 }
 
 #[cfg(feature = "rpi")]
-fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
+fn run_leds(runner: &dyn Runner, pixsize: usize, fps: u32) -> Result<(), String> {
     use rppal::spi::{Bus, SlaveSelect, Spi};
     use smart_leds_trait::{RGB8, SmartLedsWrite};
 
@@ -270,7 +271,7 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
     let mut driver = apa102_spi::Apa102::new(spi);
     //### might need to change default BGR
 
-    let mut ctx = ScriptContext::new(script, pixsize, None);
+    let mut ctx = runner.build(pixsize, None);
     
     loop {
         ctx.tick();
@@ -308,12 +309,12 @@ fn run_leds(script: Script, pixsize: usize, fps: u32) -> Result<(), String> {
 }
 
 #[cfg(not(feature = "sdl2"))]
-fn run_sdl(_script: Script, _pixsize: usize, _fps: u32, _filename: &str, _watchfile: bool, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
+fn run_sdl(_runner: &dyn Runner, _pixsize: usize, _fps: u32, _filename: &str, _watchfile: bool, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
     return Err("sdl2 feature not available".to_string());
 }
 
 #[cfg(feature = "sdl2")]
-fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
+fn run_sdl(runner: &dyn Runner, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     use sdl2::pixels::Color;
     use sdl2::event::Event;
     use sdl2::keyboard::Keycode;
@@ -357,7 +358,7 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = ScriptContext::new(script, pixsize, None);
+    let mut ctx = runner.build(pixsize, None);
     let mut pause = false;
         
     'running: loop {
@@ -371,7 +372,8 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
                 watchtime = newtime;
                 match parse::parse_script(&filename) {
                     Ok(newscript) => {
-                        ctx = ScriptContext::new(newscript, pixsize, None);
+                        let newrunner = ScriptRunner::new(newscript);
+                        ctx = newrunner.build(pixsize, None);
                         powertime = 0.0;
                     },
                     Err(msg) => {

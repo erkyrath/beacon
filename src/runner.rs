@@ -22,16 +22,30 @@ pub enum RunContextWrap {
     Script(ScriptContext),
 }
 
+impl RunContextWrap {
+    pub fn tick(&mut self) {
+        match self {
+            RunContextWrap::Script(ctx) => ctx.tick()
+        }
+    }
+    
+    pub fn age(&self) -> f64 {
+        match self {
+            RunContextWrap::Script(ctx) => ctx.age()
+        }
+    }
+}
+
 impl RunContext for RunContextWrap {
     fn applybuf<F>(&self, func: F)
     where F: FnMut(PixBuffer) {
-        match &self {
+        match self {
             RunContextWrap::Script(ctx) => ctx.applybuf(func)
         }
     }
     
     fn done(&self) -> bool {
-        match &self {
+        match self {
             RunContextWrap::Script(ctx) => ctx.done()
         }
     }
