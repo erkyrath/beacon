@@ -31,6 +31,7 @@ use script::{Script, ScriptIndex};
 use runner::{Runner, RunContext, PixBuffer};
 use context::scriptcontext::ScriptRunner;
 use context::limitcontext::LimitRunner;
+use context::cyclecontext::CycleRunner;
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
