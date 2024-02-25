@@ -29,7 +29,7 @@ mod pulser;
 
 use script::{Script, ScriptIndex};
 use runner::{Runner, RunContext, RunContextWrap, PixBuffer};
-use context::{ScriptRunner, ScriptContext};
+use context::scriptcontext::{ScriptRunner, ScriptContext};
 
 #[derive(Options, Debug)]
 pub struct AppOptions {

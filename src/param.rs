@@ -2,7 +2,7 @@ use std::fmt;
 use rand::Rng;
 
 use crate::waves::WaveShape;
-use crate::context::ScriptContext;
+use crate::context::scriptcontext::ScriptContext;
 use crate::runner::RunContext;
 
 // To think about:

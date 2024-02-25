@@ -2,7 +2,7 @@ use std::fmt;
 use std::cell::RefCell;
 use rand::Rng;
 
-use crate::context::ScriptContext;
+use crate::context::scriptcontext::ScriptContext;
 use crate::runner::RunContext;
 use crate::lerp::Lerp;
 use crate::pixel::Pix;

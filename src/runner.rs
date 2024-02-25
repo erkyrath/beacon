@@ -1,6 +1,6 @@
 use crate::pixel::Pix;
 
-use crate::context::ScriptContext;
+use crate::context::scriptcontext::ScriptContext;
 
 pub enum PixBuffer<'a> {
     Buf1(&'a [f32]),
