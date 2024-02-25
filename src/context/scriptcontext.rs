@@ -5,7 +5,7 @@ use rand::SeedableRng;
 
 use crate::pixel::Pix;
 use crate::clock::CtxClock;
-use crate::runner::{Runner, RunContext, RunContextWrap, PixBuffer};
+use crate::runner::{Runner, RunContext, PixBuffer};
 use crate::script::{Script, ScriptIndex};
 use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
@@ -16,17 +16,11 @@ pub struct ScriptRunner {
 }
 
 impl ScriptRunner {
-    pub fn new(script: Script) -> ScriptRunner {
-        ScriptRunner {
+    pub fn new(script: Script) -> Runner {
+        let runner = ScriptRunner {
             script: script,
-        }
-    }
-}
-
-impl Runner for ScriptRunner {
-    fn build(&self, size: usize, fixtick: Option<u32>) -> RunContextWrap {
-        let ctx = ScriptContext::new(self.script.clone(), size, fixtick);
-        RunContextWrap::Script(ctx)
+        };
+        Runner::Script(runner)
     }
 }
 

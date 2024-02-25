@@ -1,14 +1,10 @@
 use crate::pixel::Pix;
 
-use crate::context::scriptcontext::ScriptContext;
+use crate::context::scriptcontext::{ScriptRunner, ScriptContext};
 
 pub enum PixBuffer<'a> {
     Buf1(&'a [f32]),
     Buf3(&'a [Pix<f32>]),
-}
-
-pub trait Runner {
-    fn build(&self, size: usize, fixtick: Option<u32>) -> RunContextWrap;
 }
 
 pub trait RunContext {
@@ -20,6 +16,21 @@ pub trait RunContext {
     where F: FnMut(PixBuffer);
 
     fn done(&self) -> bool;
+}
+
+pub enum Runner {
+    Script(ScriptRunner),
+}
+
+impl Runner {
+    pub fn build(&self, size: usize, fixtick: Option<u32>) -> RunContextWrap {
+        match self {
+            Runner::Script(runner) => {
+                let ctx = ScriptContext::new(runner.script.clone(), size, fixtick);
+                RunContextWrap::Script(ctx)
+            }
+        }
+    }
 }
 
 pub enum RunContextWrap {

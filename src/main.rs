@@ -28,8 +28,8 @@ mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
-use runner::{Runner, RunContext, RunContextWrap, PixBuffer};
-use context::scriptcontext::{ScriptRunner, ScriptContext};
+use runner::{Runner, RunContext, PixBuffer};
+use context::scriptcontext::ScriptRunner;
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
@@ -122,7 +122,7 @@ fn main() {
         let framecount = opts.framecount.unwrap_or(16);
         let frameskip = opts.frameskip.unwrap_or(0);
         let pixheight = opts.winheight.unwrap_or(4) as usize;
-        let res = run_writefile(filename, &runner, pixsize, pixheight, fps, framecount, frameskip);
+        let res = run_writefile(filename, runner, pixsize, pixheight, fps, framecount, frameskip);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -134,7 +134,7 @@ fn main() {
     }
     else if opts.spin {
         let dur: f64 = 0.1;
-        let res = run_spin(&runner, pixsize, fps, dur);
+        let res = run_spin(runner, pixsize, fps, dur);
         match res {
             Err(msg) => {
                 println!("{msg}");
@@ -145,7 +145,7 @@ fn main() {
         }
     }
     else if opts.led {
-        let res = run_leds(&runner, pixsize, fps);
+        let res = run_leds(runner, pixsize, fps);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -153,14 +153,14 @@ fn main() {
     else {
         let winwidth = opts.winwidth.unwrap_or(800);
         let winheight = opts.winheight.unwrap_or(100);
-        let res = run_sdl(&runner, pixsize, fps, filename, opts.watchfile, opts.showpower, winwidth, winheight);
+        let res = run_sdl(runner, pixsize, fps, filename, opts.watchfile, opts.showpower, winwidth, winheight);
         if let Err(msg) = res {
             println!("{msg}");
         }
     }
 }
 
-fn run_spin(runner: &dyn Runner, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
+fn run_spin(runner: Runner, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
     let mut ctx = runner.build(pixsize, Some(fps));
     let mut count = 0;
     let start = Instant::now();
@@ -181,12 +181,12 @@ fn run_spin(runner: &dyn Runner, pixsize: usize, fps: u32, seconds: f64) -> Resu
 }
 
 #[cfg(not(feature = "png"))]
-fn run_writefile(_filename: &str, _runner: &dyn Runner, _pixsize: usize, _pixheight: usize, _fps: u32, _framecount: usize, _frameskip: usize) -> Result<(), String> {
+fn run_writefile(_filename: &str, _runner: Runner, _pixsize: usize, _pixheight: usize, _fps: u32, _framecount: usize, _frameskip: usize) -> Result<(), String> {
     return Err("png feature not available".to_string());
 }
 
 #[cfg(feature = "png")]
-fn run_writefile(filename: &str, runner: &dyn Runner, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
+fn run_writefile(filename: &str, runner: Runner, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
     let mut ctx = runner.build(pixsize, Some(fps));
 
     for _ in 0..frameskip {
@@ -243,12 +243,12 @@ fn run_writefile(filename: &str, runner: &dyn Runner, pixsize: usize, pixheight:
 }
 
 #[cfg(not(feature = "rpi"))]
-fn run_leds(_runner: &dyn Runner, _pixsize: usize, _fps: u32) -> Result<(), String> {
+fn run_leds(_runner: Runner, _pixsize: usize, _fps: u32) -> Result<(), String> {
     return Err("rpi feature not available".to_string());
 }
 
 #[cfg(feature = "rpi")]
-fn run_leds(runner: &dyn Runner, pixsize: usize, fps: u32) -> Result<(), String> {
+fn run_leds(runner: Runner, pixsize: usize, fps: u32) -> Result<(), String> {
     use rppal::spi::{Bus, SlaveSelect, Spi};
     use smart_leds_trait::{RGB8, SmartLedsWrite};
 
@@ -309,12 +309,12 @@ fn run_leds(runner: &dyn Runner, pixsize: usize, fps: u32) -> Result<(), String>
 }
 
 #[cfg(not(feature = "sdl2"))]
-fn run_sdl(_runner: &dyn Runner, _pixsize: usize, _fps: u32, _filename: &str, _watchfile: bool, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
+fn run_sdl(_runner: Runner, _pixsize: usize, _fps: u32, _filename: &str, _watchfile: bool, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
     return Err("sdl2 feature not available".to_string());
 }
 
 #[cfg(feature = "sdl2")]
-fn run_sdl(runner: &dyn Runner, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
+fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     use sdl2::pixels::Color;
     use sdl2::event::Event;
     use sdl2::keyboard::Keycode;
