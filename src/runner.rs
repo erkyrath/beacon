@@ -2,7 +2,7 @@ use crate::pixel::Pix;
 
 use crate::context::scriptcontext::{ScriptRunner, ScriptContext};
 use crate::context::limitcontext::{LimitRunner, LimitContext};
-use crate::context::cyclecontext::{CycleRunner};
+use crate::context::cyclecontext::{CycleRunner, CycleContext};
 
 pub enum PixBuffer<'a> {
     Buf1(&'a [f32]),
@@ -40,7 +40,8 @@ impl Runner {
                 RunContextWrap::Limit(ctx)
             },
             Runner::Cycle(run) => {
-                panic!("###")
+                let ctx = CycleContext::new(run.runners.clone(), run.interval, size, fixtick);
+                RunContextWrap::Cycle(ctx)
             },
         }
     }
@@ -49,6 +50,7 @@ impl Runner {
 pub enum RunContextWrap {
     Script(ScriptContext),
     Limit(LimitContext),
+    Cycle(CycleContext),
 }
 
 impl RunContext for RunContextWrap {
@@ -56,6 +58,7 @@ impl RunContext for RunContextWrap {
         match self {
             RunContextWrap::Script(ctx) => ctx.tick(),
             RunContextWrap::Limit(ctx) => ctx.tick(),
+            RunContextWrap::Cycle(ctx) => ctx.tick(),
         }
     }
     
@@ -63,6 +66,7 @@ impl RunContext for RunContextWrap {
         match self {
             RunContextWrap::Script(ctx) => ctx.age(),
             RunContextWrap::Limit(ctx) => ctx.age(),
+            RunContextWrap::Cycle(ctx) => ctx.age(),
         }
     }
 
@@ -71,6 +75,7 @@ impl RunContext for RunContextWrap {
         match self {
             RunContextWrap::Script(ctx) => ctx.applybuf(func),
             RunContextWrap::Limit(ctx) => ctx.applybuf(func),
+            RunContextWrap::Cycle(ctx) => ctx.applybuf(func),
         }
     }
     
@@ -78,6 +83,7 @@ impl RunContext for RunContextWrap {
         match self {
             RunContextWrap::Script(ctx) => ctx.done(),
             RunContextWrap::Limit(ctx) => ctx.done(),
+            RunContextWrap::Cycle(ctx) => ctx.done(),
         }
     }
 }
