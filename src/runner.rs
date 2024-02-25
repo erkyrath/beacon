@@ -1,6 +1,7 @@
 use crate::pixel::Pix;
 
 use crate::context::scriptcontext::{ScriptRunner, ScriptContext};
+use crate::context::limitcontext::{LimitRunner, LimitContext};
 
 pub enum PixBuffer<'a> {
     Buf1(&'a [f32]),
@@ -20,6 +21,7 @@ pub trait RunContext {
 
 pub enum Runner {
     Script(ScriptRunner),
+    Limit(LimitRunner),
 }
 
 impl Runner {
@@ -29,37 +31,47 @@ impl Runner {
                 let ctx = ScriptContext::new(runner.script.clone(), size, fixtick);
                 RunContextWrap::Script(ctx)
             }
+            Runner::Limit(run) => {
+                let child = run.runner.build(size, fixtick);
+                let ctx = LimitContext::new(child, run.limit, size, fixtick);
+                RunContextWrap::Limit(ctx)
+            }
         }
     }
 }
 
 pub enum RunContextWrap {
     Script(ScriptContext),
+    Limit(LimitContext),
 }
 
 impl RunContext for RunContextWrap {
     fn tick(&mut self) {
         match self {
-            RunContextWrap::Script(ctx) => ctx.tick()
+            RunContextWrap::Script(ctx) => ctx.tick(),
+            RunContextWrap::Limit(ctx) => ctx.tick(),
         }
     }
     
     fn age(&self) -> f64 {
         match self {
-            RunContextWrap::Script(ctx) => ctx.age()
+            RunContextWrap::Script(ctx) => ctx.age(),
+            RunContextWrap::Limit(ctx) => ctx.age(),
         }
     }
 
     fn applybuf<F>(&self, func: F)
     where F: FnMut(PixBuffer) {
         match self {
-            RunContextWrap::Script(ctx) => ctx.applybuf(func)
+            RunContextWrap::Script(ctx) => ctx.applybuf(func),
+            RunContextWrap::Limit(ctx) => ctx.applybuf(func),
         }
     }
     
     fn done(&self) -> bool {
         match self {
-            RunContextWrap::Script(ctx) => ctx.done()
+            RunContextWrap::Script(ctx) => ctx.done(),
+            RunContextWrap::Limit(ctx) => ctx.done(),
         }
     }
 }
