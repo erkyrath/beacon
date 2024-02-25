@@ -3,6 +3,7 @@ use rand::Rng;
 
 use crate::waves::WaveShape;
 use crate::context::ScriptContext;
+use crate::runner::RunContext;
 
 // To think about:
 // Params containing params? RandFlat(0, Changing())

@@ -82,10 +82,6 @@ impl ScriptContext {
         self.size
     }
 
-    pub fn age(&self) -> f64 {
-        self.clock.age
-    }
-    
     pub fn ticklen(&self) -> f32 {
         self.clock.ticklen
     }
@@ -101,8 +97,11 @@ impl ScriptContext {
         let buf = self.op3s[val].buf.borrow();
         func(&buf);
     }
+}
 
-    pub fn tick(&mut self) {
+impl RunContext for ScriptContext {
+
+    fn tick(&mut self) {
         let _newage: f64 = self.clock.tick();
 
         for ix in (0..self.script.order.len()).rev() {
@@ -116,9 +115,11 @@ impl ScriptContext {
             }
         }
     }
-}
-
-impl RunContext for ScriptContext {
+    
+    fn age(&self) -> f64 {
+        self.clock.age
+    }
+    
     fn applybuf<F>(&self, mut func: F)
     where F: FnMut(PixBuffer) {
         match &self.script.order[0] {

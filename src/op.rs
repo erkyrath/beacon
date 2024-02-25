@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use rand::Rng;
 
 use crate::context::ScriptContext;
+use crate::runner::RunContext;
 use crate::lerp::Lerp;
 use crate::pixel::Pix;
 use crate::waves::WaveShape;
