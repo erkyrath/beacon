@@ -28,8 +28,8 @@ mod waves;
 mod pulser;
 
 use script::{Script, ScriptIndex};
-use runner::{RunContext, PixBuffer};
-use context::ScriptContext;
+use runner::{RunContext, RunContextWrap, PixBuffer};
+use context::{ScriptRunner, ScriptContext};
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
@@ -102,6 +102,8 @@ fn main() {
             return;
         },
     }
+
+    //###let runner = ScriptRunner::new(script);
 
     let fps = opts.fps.unwrap_or(60);
 
@@ -317,8 +319,6 @@ fn run_sdl(script: Script, pixsize: usize, fps: u32, filename: &str, watchfile: 
     use sdl2::keyboard::Keycode;
     use sdl2::pixels::PixelFormatEnum;
     
-    script.consistency_check()?;
-
     let ticktime = 1_000_000_000u32 / fps;
     
     let margin: u32 = 16;
