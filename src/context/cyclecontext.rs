@@ -22,6 +22,7 @@ pub struct CycleContext {
     runners: Box<Vec<Runner>>,
     interval: f32,
     size: usize,
+    fixtick: Option<u32>,
     clock: CtxClock,
 
     curindex: usize,
@@ -38,6 +39,7 @@ impl CycleContext {
             runners: runners,
             interval: interval,
             size: size,
+            fixtick: fixtick,
             clock: CtxClock::new(fixtick),
 
             curindex: 0,
@@ -51,7 +53,15 @@ impl CycleContext {
 impl RunContext for CycleContext {
 
     fn tick(&mut self) {
-        let _newage: f64 = self.clock.tick();
+        let newage = self.clock.tick() as f32;
+
+        if newage > self.nextchange || self.curchild.done() {
+            self.nextchange = newage + self.interval;
+            self.curindex = (self.curindex+1) % self.runners.len();
+            let runner = self.runners[self.curindex].clone();
+            self.curchild = Box::new(runner.build(self.size, self.fixtick));
+        }
+        
         self.curchild.tick();
     }
 
@@ -65,7 +75,7 @@ impl RunContext for CycleContext {
     }
 
     fn done(&self) -> bool {
-        self.curchild.done()
+        false
     }
     
 }
