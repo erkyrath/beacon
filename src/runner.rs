@@ -2,6 +2,7 @@ use crate::pixel::Pix;
 
 use crate::context::scriptcontext::{ScriptRunner, ScriptContext};
 use crate::context::limitcontext::{LimitRunner, LimitContext};
+use crate::context::cyclecontext::{CycleRunner};
 
 pub enum PixBuffer<'a> {
     Buf1(&'a [f32]),
@@ -23,20 +24,24 @@ pub trait RunContext {
 pub enum Runner {
     Script(ScriptRunner),
     Limit(LimitRunner),
+    Cycle(CycleRunner),
 }
 
 impl Runner {
     pub fn build(&self, size: usize, fixtick: Option<u32>) -> RunContextWrap {
         match self {
-            Runner::Script(runner) => {
-                let ctx = ScriptContext::new(runner.script.clone(), size, fixtick);
+            Runner::Script(run) => {
+                let ctx = ScriptContext::new(run.script.clone(), size, fixtick);
                 RunContextWrap::Script(ctx)
-            }
+            },
             Runner::Limit(run) => {
                 let child = run.runner.build(size, fixtick);
                 let ctx = LimitContext::new(child, run.limit, size, fixtick);
                 RunContextWrap::Limit(ctx)
-            }
+            },
+            Runner::Cycle(run) => {
+                panic!("###")
+            },
         }
     }
 }
