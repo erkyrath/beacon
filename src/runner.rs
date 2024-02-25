@@ -21,3 +21,18 @@ pub trait RunContext {
 pub enum RunContextWrap {
     Script(ScriptContext),
 }
+
+impl RunContextWrap {
+    pub fn applybuf<F>(&self, func: F)
+    where F: FnMut(PixBuffer) {
+        match &self {
+            RunContextWrap::Script(ctx) => ctx.applybuf(func)
+        }
+    }
+    
+    pub fn done(&self) -> bool {
+        match &self {
+            RunContextWrap::Script(ctx) => ctx.done()
+        }
+    }
+}
