@@ -18,10 +18,10 @@ pub struct ScriptRunner {
 
 impl ScriptRunner {
     pub fn new(script: Script) -> Runner {
-        let runner = ScriptRunner {
+        let run = ScriptRunner {
             script: script,
         };
-        Runner::Script(runner)
+        Runner::Script(run)
     }
 }
 
