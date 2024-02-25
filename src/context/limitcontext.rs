@@ -1,5 +1,6 @@
 use crate::runner::{Runner, RunContext, RunContextWrap, PixBuffer};
 
+#[derive(Clone)]
 pub struct LimitRunner {
     pub runner: Box<Runner>,
     pub limit: f32,

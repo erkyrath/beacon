@@ -19,6 +19,7 @@ pub trait RunContext {
     fn done(&self) -> bool;
 }
 
+#[derive(Clone)]
 pub enum Runner {
     Script(ScriptRunner),
     Limit(LimitRunner),

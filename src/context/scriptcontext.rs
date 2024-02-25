@@ -11,6 +11,7 @@ use crate::op::{Op1Ctx, Op3Ctx};
 use crate::op::{Op1Def, Op3Def};
 use crate::op::{Op1State, Op3State};
 
+#[derive(Clone)]
 pub struct ScriptRunner {
     pub script: Script,
 }
