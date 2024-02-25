@@ -1,4 +1,3 @@
-use crate::clock::CtxClock;
 use crate::runner::{Runner, RunContext, RunContextWrap, PixBuffer};
 
 pub struct LimitRunner {
@@ -19,16 +18,13 @@ impl LimitRunner {
 pub struct LimitContext {
     child: Box<RunContextWrap>,
     limit: f32,
-    
-    clock: CtxClock,
 }
 
 impl LimitContext {
-    pub fn new(child: RunContextWrap, limit: f32, _size: usize, fixtick: Option<u32>) -> LimitContext {
+    pub fn new(child: RunContextWrap, limit: f32, _size: usize, _fixtick: Option<u32>) -> LimitContext {
         let ctx = LimitContext {
             child: Box::new(child),
             limit: limit,
-            clock: CtxClock::new(fixtick),
         };
         ctx
     }
@@ -41,7 +37,7 @@ impl RunContext for LimitContext {
     }
 
     fn age(&self) -> f64 {
-        self.clock.age
+        self.child.age()
     }
     
     fn applybuf<F>(&self, func: F)
@@ -50,7 +46,10 @@ impl RunContext for LimitContext {
     }
 
     fn done(&self) -> bool {
-        self.clock.age as f32 > self.limit
+        if self.child.age() as f32 > self.limit {
+            return true;
+        }
+        self.child.done()
     }
     
 }
