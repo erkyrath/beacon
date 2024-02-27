@@ -63,7 +63,31 @@ impl CycleContext {
     }
 }
 
-
+fn applyscaled(ctx: &RunContextWrap, changebuf: &mut [Pix<f32>], scale: f32) {
+    let pixsize = changebuf.len();
+    
+    ctx.applybuf(|pixbuf| {
+        match pixbuf {
+            PixBuffer::Buf1(buf) => {
+                assert!(pixsize == buf.len());
+                for xpos in 0..pixsize {
+                    changebuf[xpos].r += scale * buf[xpos];
+                    changebuf[xpos].g += scale * buf[xpos];
+                    changebuf[xpos].b += scale * buf[xpos];
+                }
+            },
+            PixBuffer::Buf3(buf) => {
+                assert!(pixsize == buf.len());
+                for xpos in 0..pixsize {
+                    changebuf[xpos].r += scale * buf[xpos].r;
+                    changebuf[xpos].g += scale * buf[xpos].r;
+                    changebuf[xpos].b += scale * buf[xpos].r;
+                }
+            },
+        }
+    });
+}    
+    
 impl RunContext for CycleContext {
 
     fn tick(&mut self) {
@@ -94,47 +118,12 @@ impl RunContext for CycleContext {
         match &self.lastchild {
             None => self.curchild.applybuf(func),
             Some(child) => {
-                let pixsize = self.size;
-                /*###{
+                {
                     let mut changebuf = self.changebuf.borrow_mut();
                     changebuf.fill(Pix::new(0.0, 0.0, 0.0));
-                    self.curchild.applybuf(|pixbuf| {
-                        match pixbuf {
-                            PixBuffer::Buf1(buf) => {
-                                for xpos in 0..pixsize {
-                                    changebuf[xpos].r += buf[xpos];
-                                    changebuf[xpos].g += buf[xpos];
-                                    changebuf[xpos].b += buf[xpos];
-                                }
-                            },
-                            PixBuffer::Buf3(buf) => {
-                                for xpos in 0..pixsize {
-                                    changebuf[xpos].r += buf[xpos].r;
-                                    changebuf[xpos].g += buf[xpos].r;
-                                    changebuf[xpos].b += buf[xpos].r;
-                                }
-                            },
-                        }
-                    });
-                    child.applybuf(|pixbuf| {
-                        match pixbuf {
-                            PixBuffer::Buf1(buf) => {
-                                for xpos in 0..pixsize {
-                                    changebuf[xpos].r += buf[xpos];
-                                    changebuf[xpos].g += buf[xpos];
-                                    changebuf[xpos].b += buf[xpos];
-                                }
-                            },
-                            PixBuffer::Buf3(buf) => {
-                                for xpos in 0..pixsize {
-                                    changebuf[xpos].r += buf[xpos].r;
-                                    changebuf[xpos].g += buf[xpos].r;
-                                    changebuf[xpos].b += buf[xpos].r;
-                                }
-                            },
-                        }
-                    });
-                }###*/
+                    applyscaled(&self.curchild, &mut changebuf, 0.5);
+                    applyscaled(child, &mut changebuf, 0.5);
+                }
                 {
                     let changebuf = self.changebuf.borrow();
                     func(PixBuffer::Buf3(&changebuf));
