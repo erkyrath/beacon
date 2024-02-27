@@ -25,13 +25,14 @@ pub struct WatchScriptContext {
 }
 
 impl WatchScriptContext {
-    pub fn new(filename: &str, script: Script, size: usize, fixtick: Option<u32>) -> WatchScriptContext {
+    pub fn new(filename: &str, script: Script, size: usize, fixtick: Option<u32>) -> Result<WatchScriptContext, String> {
         let runner = ScriptRunner::new(script);
-        let child = runner.build(size, fixtick);
-        WatchScriptContext {
+        let child = runner.build(size, fixtick)?;
+        let ctx = WatchScriptContext {
             filename: filename.to_string(),
             child: Box::new(child),
-        }
+        };
+        Ok(ctx)
     }
 }
 

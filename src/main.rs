@@ -32,6 +32,7 @@ use runner::{Runner, RunContext, PixBuffer};
 use context::scriptcontext::ScriptRunner;
 use context::limitcontext::LimitRunner;
 use context::cyclecontext::CycleRunner;
+use context::watchcontext::WatchScriptRunner;
 
 #[derive(Options, Debug)]
 pub struct AppOptions {
@@ -117,7 +118,7 @@ fn main() {
         return;
     }
     
-    let runner = ScriptRunner::new(script);
+    let runner = WatchScriptRunner::new(&filename, script);
     let fps = opts.fps.unwrap_or(60);
 
     if let Some(filename) = &opts.writefile {
@@ -163,7 +164,7 @@ fn main() {
 }
 
 fn run_spin(runner: Runner, pixsize: usize, fps: u32, seconds: f64) -> Result<usize, String> {
-    let mut ctx = runner.build(pixsize, Some(fps));
+    let mut ctx = runner.build(pixsize, Some(fps))?;
     let mut count = 0;
     let start = Instant::now();
     
@@ -189,7 +190,7 @@ fn run_writefile(_filename: &str, _runner: Runner, _pixsize: usize, _pixheight: 
 
 #[cfg(feature = "png")]
 fn run_writefile(filename: &str, runner: Runner, pixsize: usize, pixheight: usize, fps: u32, framecount: usize, frameskip: usize) -> Result<(), String> {
-    let mut ctx = runner.build(pixsize, Some(fps));
+    let mut ctx = runner.build(pixsize, Some(fps))?;
 
     for _ in 0..frameskip {
         ctx.tick();
@@ -273,7 +274,7 @@ fn run_leds(runner: Runner, pixsize: usize, fps: u32) -> Result<(), String> {
     let mut driver = apa102_spi::Apa102::new(spi);
     //### might need to change default BGR
 
-    let mut ctx = runner.build(pixsize, None);
+    let mut ctx = runner.build(pixsize, None)?;
     
     loop {
         ctx.tick();
@@ -360,7 +361,7 @@ fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: 
     
     let mut event_pump = sdl_context.event_pump()?;
 
-    let mut ctx = runner.build(pixsize, None);
+    let mut ctx = runner.build(pixsize, None)?;
     let mut pause = false;
         
     'running: loop {
@@ -375,7 +376,7 @@ fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: 
                 match parse::parse_script(&filename) {
                     Ok(newscript) => {
                         let newrunner = ScriptRunner::new(newscript);
-                        ctx = newrunner.build(pixsize, None);
+                        ctx = newrunner.build(pixsize, None)?;
                         powertime = 0.0;
                     },
                     Err(msg) => {

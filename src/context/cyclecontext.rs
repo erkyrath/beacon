@@ -40,11 +40,11 @@ pub struct CycleContext {
 }
 
 impl CycleContext {
-    pub fn new(runners: Box<Vec<Runner>>, interval: f32, size: usize, fixtick: Option<u32>) -> CycleContext {
+    pub fn new(runners: Box<Vec<Runner>>, interval: f32, size: usize, fixtick: Option<u32>) -> Result<CycleContext, String> {
         let runner = runners[0].clone();
-        let child = runner.build(size, fixtick);
+        let child = runner.build(size, fixtick)?;
         
-        CycleContext {
+        let ctx = CycleContext {
             runners: runners,
             interval: interval,
             fadetime: 0.5,
@@ -59,7 +59,8 @@ impl CycleContext {
             nextchange: interval,
 
             changebuf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
-        }
+        };
+        Ok(ctx)
     }
 }
 
@@ -72,7 +73,8 @@ impl RunContext for CycleContext {
             self.nextchange = newage + self.interval;
             self.curindex = (self.curindex+1) % self.runners.len();
             let runner = self.runners[self.curindex].clone();
-            let lastchild = mem::replace(&mut self.curchild, Box::new(runner.build(self.size, self.fixtick)));
+            let newchild = runner.build(self.size, self.fixtick).unwrap(); //###
+            let lastchild = mem::replace(&mut self.curchild, Box::new(newchild));
             self.lastchange = newage;
             self.lastchild = Some(lastchild);
         }
