@@ -47,7 +47,7 @@ impl CycleContext {
         CycleContext {
             runners: runners,
             interval: interval,
-            fadetime: 1.0,
+            fadetime: 0.5,
             size: size,
             fixtick: fixtick,
             clock: CtxClock::new(fixtick),
@@ -80,8 +80,8 @@ fn applyscaled(ctx: &RunContextWrap, changebuf: &mut [Pix<f32>], scale: f32) {
                 assert!(pixsize == buf.len());
                 for xpos in 0..pixsize {
                     changebuf[xpos].r += scale * buf[xpos].r;
-                    changebuf[xpos].g += scale * buf[xpos].r;
-                    changebuf[xpos].b += scale * buf[xpos].r;
+                    changebuf[xpos].g += scale * buf[xpos].g;
+                    changebuf[xpos].b += scale * buf[xpos].b;
                 }
             },
         }
@@ -107,6 +107,9 @@ impl RunContext for CycleContext {
         }
         
         self.curchild.tick();
+        if let Some(child) = &mut self.lastchild {
+            child.tick();
+        }
     }
 
     fn age(&self) -> f64 {
@@ -119,10 +122,11 @@ impl RunContext for CycleContext {
             None => self.curchild.applybuf(func),
             Some(child) => {
                 {
+                    let scale = (self.age() as f32 - self.lastchange) / self.fadetime;
                     let mut changebuf = self.changebuf.borrow_mut();
                     changebuf.fill(Pix::new(0.0, 0.0, 0.0));
-                    applyscaled(&self.curchild, &mut changebuf, 0.5);
-                    applyscaled(child, &mut changebuf, 0.5);
+                    applyscaled(&self.curchild, &mut changebuf, scale);
+                    applyscaled(child, &mut changebuf, 1.0-scale);
                 }
                 {
                     let changebuf = self.changebuf.borrow();
