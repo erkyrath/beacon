@@ -3,6 +3,7 @@ use crate::pixel::Pix;
 use crate::context::scriptcontext::{ScriptRunner, ScriptContext};
 use crate::context::limitcontext::{LimitRunner, LimitContext};
 use crate::context::cyclecontext::{CycleRunner, CycleContext};
+use crate::context::watchcontext::{WatchScriptRunner, WatchScriptContext};
 
 pub enum PixBuffer<'a> {
     Buf1(&'a [f32]),
@@ -25,6 +26,7 @@ pub enum Runner {
     Script(ScriptRunner),
     Limit(LimitRunner),
     Cycle(CycleRunner),
+    WatchScript(WatchScriptRunner),
 }
 
 impl Runner {
@@ -43,6 +45,10 @@ impl Runner {
                 let ctx = CycleContext::new(run.runners.clone(), run.interval, size, fixtick);
                 RunContextWrap::Cycle(ctx)
             },
+            Runner::WatchScript(run) => {
+                let ctx = WatchScriptContext::new(&run.filename, run.script.clone(), size, fixtick);
+                RunContextWrap::WatchScript(ctx)
+            },
         }
     }
 }
@@ -51,6 +57,7 @@ pub enum RunContextWrap {
     Script(ScriptContext),
     Limit(LimitContext),
     Cycle(CycleContext),
+    WatchScript(WatchScriptContext),
 }
 
 impl RunContext for RunContextWrap {
@@ -59,6 +66,7 @@ impl RunContext for RunContextWrap {
             RunContextWrap::Script(ctx) => ctx.tick(),
             RunContextWrap::Limit(ctx) => ctx.tick(),
             RunContextWrap::Cycle(ctx) => ctx.tick(),
+            RunContextWrap::WatchScript(ctx) => ctx.tick(),
         }
     }
     
@@ -67,6 +75,7 @@ impl RunContext for RunContextWrap {
             RunContextWrap::Script(ctx) => ctx.age(),
             RunContextWrap::Limit(ctx) => ctx.age(),
             RunContextWrap::Cycle(ctx) => ctx.age(),
+            RunContextWrap::WatchScript(ctx) => ctx.age(),
         }
     }
 
@@ -76,6 +85,7 @@ impl RunContext for RunContextWrap {
             RunContextWrap::Script(ctx) => ctx.applybuf(func),
             RunContextWrap::Limit(ctx) => ctx.applybuf(func),
             RunContextWrap::Cycle(ctx) => ctx.applybuf(func),
+            RunContextWrap::WatchScript(ctx) => ctx.applybuf(func),
         }
     }
     
@@ -84,6 +94,7 @@ impl RunContext for RunContextWrap {
             RunContextWrap::Script(ctx) => ctx.done(),
             RunContextWrap::Limit(ctx) => ctx.done(),
             RunContextWrap::Cycle(ctx) => ctx.done(),
+            RunContextWrap::WatchScript(ctx) => ctx.done(),
         }
     }
 }
