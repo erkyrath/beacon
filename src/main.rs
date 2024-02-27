@@ -117,8 +117,15 @@ fn main() {
         }
         return;
     }
+
+    let runner: Runner;
+    if opts.watchfile {
+        runner = WatchScriptRunner::new(&filename, script);
+    }
+    else {
+        runner = ScriptRunner::new(script);
+    }
     
-    let runner = WatchScriptRunner::new(&filename, script);
     let fps = opts.fps.unwrap_or(60);
 
     if let Some(filename) = &opts.writefile {
