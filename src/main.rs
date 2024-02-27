@@ -156,7 +156,7 @@ fn main() {
     else {
         let winwidth = opts.winwidth.unwrap_or(800);
         let winheight = opts.winheight.unwrap_or(100);
-        let res = run_sdl(runner, pixsize, fps, filename, opts.watchfile, opts.showpower, winwidth, winheight);
+        let res = run_sdl(runner, pixsize, fps, filename, opts.showpower, winwidth, winheight);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -312,12 +312,12 @@ fn run_leds(runner: Runner, pixsize: usize, fps: u32) -> Result<(), String> {
 }
 
 #[cfg(not(feature = "sdl2"))]
-fn run_sdl(_runner: Runner, _pixsize: usize, _fps: u32, _filename: &str, _watchfile: bool, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
+fn run_sdl(_runner: Runner, _pixsize: usize, _fps: u32, _filename: &str, _showpower: bool, _winwidth: u32, _winheight: u32) -> Result<(), String> {
     return Err("sdl2 feature not available".to_string());
 }
 
 #[cfg(feature = "sdl2")]
-fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: bool, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
+fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     use sdl2::pixels::Color;
     use sdl2::event::Event;
     use sdl2::keyboard::Keycode;
@@ -333,14 +333,6 @@ fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: 
 
     let mut powertime: f64 = 0.0;
  
-    let mut watchtime: SystemTime = SystemTime::now();
-    if watchfile {
-        let stat = std::fs::metadata(filename)
-            .map_err(|err| err.to_string())?;
-        watchtime = stat.modified()
-            .map_err(|err| err.to_string())?;
-    }
-
     let wintitle = format!("beacon: {} ({}p)", filename, pixsize);
     let window = video_subsystem.window(wintitle.as_str(), winwidth, winheight+2*margin)
         .position_centered()
@@ -365,27 +357,6 @@ fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: 
     let mut pause = false;
         
     'running: loop {
-        if watchfile {
-            let stat = std::fs::metadata(filename)
-                .map_err(|err| err.to_string())?;
-            let newtime = stat.modified()
-                .map_err(|err| err.to_string())?;
-            if newtime != watchtime {
-                println!("Reloading...");
-                watchtime = newtime;
-                match parse::parse_script(&filename) {
-                    Ok(newscript) => {
-                        let newrunner = ScriptRunner::new(newscript);
-                        ctx = newrunner.build(pixsize, None)?;
-                        powertime = 0.0;
-                    },
-                    Err(msg) => {
-                        println!("{msg}");
-                    },
-                }
-            }
-        }
-
         if !pause {
             ctx.tick()?;
         }
