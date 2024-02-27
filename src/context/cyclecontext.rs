@@ -2,7 +2,8 @@ use std::mem;
 use std::cell::RefCell;
 
 use crate::pixel::Pix;
-use crate::runner::{Runner, RunContext, RunContextWrap, PixBuffer};
+use crate::runner::{Runner, RunContext, RunContextWrap};
+use crate::runner::{PixBuffer, applybufadd};
 use crate::clock::CtxClock;
 
 #[derive(Clone)]
@@ -63,31 +64,6 @@ impl CycleContext {
     }
 }
 
-fn applyscaled(ctx: &RunContextWrap, changebuf: &mut [Pix<f32>], scale: f32) {
-    let pixsize = changebuf.len();
-    
-    ctx.applybuf(|pixbuf| {
-        match pixbuf {
-            PixBuffer::Buf1(buf) => {
-                assert!(pixsize == buf.len());
-                for xpos in 0..pixsize {
-                    changebuf[xpos].r += scale * buf[xpos];
-                    changebuf[xpos].g += scale * buf[xpos];
-                    changebuf[xpos].b += scale * buf[xpos];
-                }
-            },
-            PixBuffer::Buf3(buf) => {
-                assert!(pixsize == buf.len());
-                for xpos in 0..pixsize {
-                    changebuf[xpos].r += scale * buf[xpos].r;
-                    changebuf[xpos].g += scale * buf[xpos].g;
-                    changebuf[xpos].b += scale * buf[xpos].b;
-                }
-            },
-        }
-    });
-}    
-    
 impl RunContext for CycleContext {
 
     fn tick(&mut self) {
@@ -125,8 +101,8 @@ impl RunContext for CycleContext {
                     let scale = (self.age() as f32 - self.lastchange) / self.fadetime;
                     let mut changebuf = self.changebuf.borrow_mut();
                     changebuf.fill(Pix::new(0.0, 0.0, 0.0));
-                    applyscaled(&self.curchild, &mut changebuf, scale);
-                    applyscaled(child, &mut changebuf, 1.0-scale);
+                    applybufadd(&self.curchild, &mut changebuf, scale);
+                    applybufadd(child, &mut changebuf, 1.0-scale);
                 }
                 {
                     let changebuf = self.changebuf.borrow();

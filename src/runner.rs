@@ -87,3 +87,30 @@ impl RunContext for RunContextWrap {
         }
     }
 }
+
+
+pub fn applybufadd(ctx: &RunContextWrap, changebuf: &mut [Pix<f32>], scale: f32) {
+    let pixsize = changebuf.len();
+    
+    ctx.applybuf(|pixbuf| {
+        match pixbuf {
+            PixBuffer::Buf1(buf) => {
+                assert!(pixsize == buf.len());
+                for xpos in 0..pixsize {
+                    changebuf[xpos].r += scale * buf[xpos];
+                    changebuf[xpos].g += scale * buf[xpos];
+                    changebuf[xpos].b += scale * buf[xpos];
+                }
+            },
+            PixBuffer::Buf3(buf) => {
+                assert!(pixsize == buf.len());
+                for xpos in 0..pixsize {
+                    changebuf[xpos].r += scale * buf[xpos].r;
+                    changebuf[xpos].g += scale * buf[xpos].g;
+                    changebuf[xpos].b += scale * buf[xpos].b;
+                }
+            },
+        }
+    });
+}    
+    
