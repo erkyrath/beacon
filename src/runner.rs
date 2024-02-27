@@ -11,7 +11,7 @@ pub enum PixBuffer<'a> {
 }
 
 pub trait RunContext {
-    fn tick(&mut self);
+    fn tick(&mut self) -> Result<(), String>;
 
     fn age(&self) -> f64;
 
@@ -61,7 +61,7 @@ pub enum RunContextWrap {
 }
 
 impl RunContext for RunContextWrap {
-    fn tick(&mut self) {
+    fn tick(&mut self) -> Result<(), String> {
         match self {
             RunContextWrap::Script(ctx) => ctx.tick(),
             RunContextWrap::Limit(ctx) => ctx.tick(),

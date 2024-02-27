@@ -33,8 +33,8 @@ impl LimitContext {
 
 impl RunContext for LimitContext {
 
-    fn tick(&mut self) {
-        self.child.tick();
+    fn tick(&mut self) -> Result<(), String> {
+        self.child.tick()
     }
 
     fn age(&self) -> f64 {

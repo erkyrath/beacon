@@ -52,16 +52,18 @@ impl WatchScriptContext {
 
 impl RunContext for WatchScriptContext {
 
-    fn tick(&mut self) {
-        let stat = std::fs::metadata(&self.filename).unwrap();
-        let newtime = stat.modified().unwrap();
+    fn tick(&mut self) -> Result<(), String> {
+        let stat = std::fs::metadata(&self.filename)
+            .map_err(|err| err.to_string())?;
+        let newtime = stat.modified()
+            .map_err(|err| err.to_string())?;
         if newtime != self.watchtime {
             println!("Reloading...");
             self.watchtime = newtime;
             match parse::parse_script(&self.filename) {
                 Ok(newscript) => {
                     let newrunner = ScriptRunner::new(newscript);
-                    let ctx = newrunner.build(self.size, self.fixtick).unwrap();
+                    let ctx = newrunner.build(self.size, self.fixtick)?;
                     self.child = Box::new(ctx);
                 },
                 Err(msg) => {
@@ -70,7 +72,7 @@ impl RunContext for WatchScriptContext {
             }
         }
         
-        self.child.tick();
+        self.child.tick()
     }
 
     fn age(&self) -> f64 {

@@ -37,7 +37,6 @@ pub struct CycleContext {
     nextchange: f32,
 
     changebuf: RefCell<Vec<Pix<f32>>>,
-    failed: bool,
 }
 
 impl CycleContext {
@@ -60,7 +59,6 @@ impl CycleContext {
             nextchange: interval,
 
             changebuf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
-            failed: false,
         };
         Ok(ctx)
     }
@@ -68,21 +66,15 @@ impl CycleContext {
 
 impl RunContext for CycleContext {
 
-    fn tick(&mut self) {
+    fn tick(&mut self) -> Result<(), String> {
         let newage = self.clock.tick() as f32;
 
         if newage > self.nextchange || self.curchild.done() {
             self.nextchange = newage + self.interval;
             self.curindex = (self.curindex+1) % self.runners.len();
             let runner = self.runners[self.curindex].clone();
-            let newchild = runner.build(self.size, self.fixtick);
-            if let Err(msg) = newchild { 
-                println!("{msg}");
-                self.failed = true;
-                return;
-            }
-
-            let lastchild = mem::replace(&mut self.curchild, Box::new(newchild.unwrap()));
+            let newchild = runner.build(self.size, self.fixtick)?;
+            let lastchild = mem::replace(&mut self.curchild, Box::new(newchild));
             self.lastchange = newage;
             self.lastchild = Some(lastchild);
         }
@@ -91,10 +83,11 @@ impl RunContext for CycleContext {
             self.lastchild = None;
         }
         
-        self.curchild.tick();
+        self.curchild.tick()?;
         if let Some(child) = &mut self.lastchild {
-            child.tick();
+            child.tick()?;
         }
+        Ok(())
     }
 
     fn age(&self) -> f64 {
@@ -122,7 +115,7 @@ impl RunContext for CycleContext {
     }
 
     fn done(&self) -> bool {
-        self.failed
+        false
     }
     
 }

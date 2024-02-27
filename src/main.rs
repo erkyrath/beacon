@@ -169,7 +169,7 @@ fn run_spin(runner: Runner, pixsize: usize, fps: u32, seconds: f64) -> Result<us
     let start = Instant::now();
     
     loop {
-        ctx.tick();
+        ctx.tick()?;
         count += 1;
         let dur = start.elapsed();
         if dur.as_secs_f64() > seconds {
@@ -193,11 +193,11 @@ fn run_writefile(filename: &str, runner: Runner, pixsize: usize, pixheight: usiz
     let mut ctx = runner.build(pixsize, Some(fps))?;
 
     for _ in 0..frameskip {
-        ctx.tick();
+        ctx.tick()?;
     }
 
     for count in 0..framecount {
-        ctx.tick();
+        ctx.tick()?;
         if ctx.done() {
             break;
         }
@@ -277,7 +277,7 @@ fn run_leds(runner: Runner, pixsize: usize, fps: u32) -> Result<(), String> {
     let mut ctx = runner.build(pixsize, None)?;
     
     loop {
-        ctx.tick();
+        ctx.tick()?;
 
         let mut buffer: Vec<RGB8> = vec![RGB8::default(); pixsize];
         
@@ -387,7 +387,7 @@ fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, watchfile: 
         }
 
         if !pause {
-            ctx.tick();
+            ctx.tick()?;
         }
 
         if showpower {

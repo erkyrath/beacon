@@ -96,7 +96,7 @@ impl ScriptContext {
 
 impl RunContext for ScriptContext {
 
-    fn tick(&mut self) {
+    fn tick(&mut self) -> Result<(), String> {
         let _newage: f64 = self.clock.tick();
 
         for ix in (0..self.script.order.len()).rev() {
@@ -109,6 +109,8 @@ impl RunContext for ScriptContext {
                 },
             }
         }
+
+        Ok(())
     }
     
     fn age(&self) -> f64 {
