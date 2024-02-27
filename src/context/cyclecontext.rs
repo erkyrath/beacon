@@ -2,8 +2,7 @@ use std::mem;
 use std::cell::RefCell;
 
 use crate::pixel::Pix;
-use crate::runner::{Runner, RunContext, RunContextWrap};
-use crate::runner::{PixBuffer, applybufadd};
+use crate::runner::{Runner, RunContext, RunContextWrap, PixBuffer};
 use crate::clock::CtxClock;
 
 #[derive(Clone)]
@@ -101,8 +100,8 @@ impl RunContext for CycleContext {
                     let scale = (self.age() as f32 - self.lastchange) / self.fadetime;
                     let mut changebuf = self.changebuf.borrow_mut();
                     changebuf.fill(Pix::new(0.0, 0.0, 0.0));
-                    applybufadd(&self.curchild, &mut changebuf, scale);
-                    applybufadd(child, &mut changebuf, 1.0-scale);
+                    self.curchild.applybufadd(&mut changebuf, scale);
+                    child.applybufadd(&mut changebuf, 1.0-scale);
                 }
                 {
                     let changebuf = self.changebuf.borrow();
