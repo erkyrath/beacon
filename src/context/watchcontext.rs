@@ -1,3 +1,6 @@
+use std::time::SystemTime;
+
+use crate::parse;
 use crate::script::Script;
 use crate::runner::{Runner, RunContext, RunContextWrap, PixBuffer};
 use crate::context::scriptcontext::{ScriptRunner, ScriptContext};
@@ -20,7 +23,10 @@ impl WatchScriptRunner {
 
 pub struct WatchScriptContext {
     pub filename: String,
+    size: usize,
+    fixtick: Option<u32>,
 
+    watchtime: SystemTime,
     child: Box<RunContextWrap>,
 }
 
@@ -28,8 +34,16 @@ impl WatchScriptContext {
     pub fn new(filename: &str, script: Script, size: usize, fixtick: Option<u32>) -> Result<WatchScriptContext, String> {
         let runner = ScriptRunner::new(script);
         let child = runner.build(size, fixtick)?;
+        let stat = std::fs::metadata(filename)
+            .map_err(|err| err.to_string())?;
+        let watchtime = stat.modified()
+            .map_err(|err| err.to_string())?;
+
         let ctx = WatchScriptContext {
             filename: filename.to_string(),
+            size: size,
+            fixtick: fixtick,
+            watchtime: watchtime,
             child: Box::new(child),
         };
         Ok(ctx)
@@ -39,6 +53,23 @@ impl WatchScriptContext {
 impl RunContext for WatchScriptContext {
 
     fn tick(&mut self) {
+        let stat = std::fs::metadata(&self.filename).unwrap();
+        let newtime = stat.modified().unwrap();
+        if newtime != self.watchtime {
+            println!("Reloading...");
+            self.watchtime = newtime;
+            match parse::parse_script(&self.filename) {
+                Ok(newscript) => {
+                    let newrunner = ScriptRunner::new(newscript);
+                    let ctx = newrunner.build(self.size, self.fixtick).unwrap();
+                    self.child = Box::new(ctx);
+                },
+                Err(msg) => {
+                    println!("{msg}");
+                },
+            }
+        }
+        
         self.child.tick();
     }
 
