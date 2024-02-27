@@ -37,6 +37,7 @@ pub struct CycleContext {
     nextchange: f32,
 
     changebuf: RefCell<Vec<Pix<f32>>>,
+    failed: bool,
 }
 
 impl CycleContext {
@@ -59,6 +60,7 @@ impl CycleContext {
             nextchange: interval,
 
             changebuf: RefCell::new(vec![Pix::new(0.0, 0.0, 0.0); size]),
+            failed: false,
         };
         Ok(ctx)
     }
@@ -73,8 +75,14 @@ impl RunContext for CycleContext {
             self.nextchange = newage + self.interval;
             self.curindex = (self.curindex+1) % self.runners.len();
             let runner = self.runners[self.curindex].clone();
-            let newchild = runner.build(self.size, self.fixtick).unwrap(); //###
-            let lastchild = mem::replace(&mut self.curchild, Box::new(newchild));
+            let newchild = runner.build(self.size, self.fixtick);
+            if let Err(msg) = newchild { 
+                println!("{msg}");
+                self.failed = true;
+                return;
+            }
+
+            let lastchild = mem::replace(&mut self.curchild, Box::new(newchild.unwrap()));
             self.lastchange = newage;
             self.lastchild = Some(lastchild);
         }
@@ -114,7 +122,7 @@ impl RunContext for CycleContext {
     }
 
     fn done(&self) -> bool {
-        false
+        self.failed
     }
     
 }
