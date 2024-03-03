@@ -1,0 +1,55 @@
+field1=sum
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.04
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, 0.08
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.04
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, -0.08
+
+field2=sum
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.04
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, 0.03
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.04
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, -0.03
+
+max
+  pgradient
+    stop=x: 0, $000
+    stop=x: 0.5, $00F
+    stop=x: 1, $FFF
+    decay
+      halflife=0.1
+      'field1
+  pgradient
+    stop=x: 0, $000
+    stop=x: 0.5, $208
+    stop=x: 1, $98F
+    decay
+      halflife=0.1
+      'field2
