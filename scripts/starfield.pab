@@ -1,0 +1,45 @@
+max
+  pgradient
+    stop=x: 0.00, $000
+    stop=x: 0.40, $000
+    stop=x: 0.47, $F40
+    stop=x: 0.49, $FFC
+    stop=x: 0.50, $FFC
+    stop=x: 0.51, $FFC
+    stop=x: 0.53, $F40
+    stop=x: 0.60, $000
+    stop=x: 1.00, $000
+    noise: grain=16, octaves=1
+      offset=changing: 0, 0.17
+
+  muls
+    _2=0.85
+    pgradient
+      stop=x: 0.00, $000
+      stop=x: 0.40, $000
+      stop=x: 0.47, $F00
+      stop=x: 0.49, $FCC
+      stop=x: 0.50, $CCC
+      stop=x: 0.51, $FCC
+      stop=x: 0.53, $F00
+      stop=x: 0.60, $000
+      stop=x: 1.00, $000
+      noise: grain=24, octaves=2
+        offset=changing: 0, 0.13
+
+  muls
+    _2=0.55
+    pgradient
+      stop=x: 0.00, $000
+      stop=x: 0.40, $000
+      stop=x: 0.47, $F00
+      stop=x: 0.49, $FCC
+      stop=x: 0.50, $CCC
+      stop=x: 0.51, $FCC
+      stop=x: 0.53, $F00
+      stop=x: 0.60, $000
+      stop=x: 1.00, $000
+      noise: grain=32, octaves=3
+        offset=changing: 0, 0.07
+
+
