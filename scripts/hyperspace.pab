@@ -1,0 +1,42 @@
+pgradient
+  stop=x: 0, $000
+  stop=x: 0.5, $00F
+  stop=x: 1, $FFF
+  
+  sum
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.02
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, 0.03
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.03
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, 0.08
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.02
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, -0.03
+    pulser
+      interval=randflat: 0.2, 0.6
+      timeshape=flat
+      spaceshape=sine
+      width=0.03
+      pos=quote:
+        changing:
+          start=0.5
+          velocity=quote: changing: 0.0, -0.08
