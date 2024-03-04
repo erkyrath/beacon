@@ -270,6 +270,11 @@ fn run_leds(runner: Runner, pixsize: usize, fps: u32) -> Result<(), String> {
     println!("### info {:?}", info);
 
     let spi = Spi::new(
+        // Spi0:
+        //   MISO: BCM GPIO 9 (physical pin 21)
+        //   MOSI: BCM GPIO 10 (physical pin 19)
+        //   SCLK: BCM GPIO 11 (physical pin 23)
+        //   SS (CS): Ss0 BCM GPIO 8 (physical pin 24)
         Bus::Spi0,
         SlaveSelect::Ss0,
         20_000_000, // Hz?
