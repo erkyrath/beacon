@@ -32,10 +32,7 @@ pub enum Runner {
 impl Runner {
     pub fn build(&self, size: usize, fixtick: Option<u32>) -> Result<RunContextWrap, String> {
         match self {
-            Runner::Script(run) => {
-                let ctx = ScriptContext::new(run.script.clone(), size, fixtick);
-                Ok(RunContextWrap::Script(ctx))
-            },
+            Runner::Script(run) => run.build(size, fixtick),
             Runner::Limit(run) => {
                 let child = run.runner.build(size, fixtick)?;
                 let ctx = LimitContext::new(child, run.limit, size, fixtick);
@@ -45,10 +42,7 @@ impl Runner {
                 let ctx = CycleContext::new(run.runners.clone(), run.interval, size, fixtick)?;
                 Ok(RunContextWrap::Cycle(ctx))
             },
-            Runner::WatchScript(run) => {
-                let ctx = WatchScriptContext::new(&run.filename, run.script.clone(), size, fixtick)?;
-                Ok(RunContextWrap::WatchScript(ctx))
-            },
+            Runner::WatchScript(run) => run.build(size, fixtick),
         }
     }
 

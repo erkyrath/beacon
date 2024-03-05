@@ -23,6 +23,11 @@ impl WatchScriptRunner {
     pub fn getname(&self) -> &str {
         &self.filename
     }
+
+    pub fn build(&self, size: usize, fixtick: Option<u32>) -> Result<RunContextWrap, String> {
+        let ctx = WatchScriptContext::new(&self.filename, self.script.clone(), size, fixtick)?;
+        Ok(RunContextWrap::WatchScript(ctx))
+    }
 }
 
 pub struct WatchScriptContext {
