@@ -51,6 +51,13 @@ impl Runner {
             },
         }
     }
+
+    pub fn getname(&self) -> &str {
+        match self {
+            Runner::Script(run) => run.getname(),
+            _ => "???",
+        }
+    }
 }
 
 pub enum RunContextWrap {

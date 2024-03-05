@@ -25,6 +25,10 @@ impl ScriptRunner {
         };
         Runner::Script(run)
     }
+
+    pub fn getname(&self) -> &str {
+        &self.filename
+    }
 }
 
 pub struct ScriptContext {

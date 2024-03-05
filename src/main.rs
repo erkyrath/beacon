@@ -163,7 +163,7 @@ fn main() {
     else {
         let winwidth = opts.winwidth.unwrap_or(800);
         let winheight = opts.winheight.unwrap_or(100);
-        let res = run_sdl(runner, pixsize, fps, filename, opts.showpower, winwidth, winheight);
+        let res = run_sdl(runner, pixsize, fps, opts.showpower, winwidth, winheight);
         if let Err(msg) = res {
             println!("{msg}");
         }
@@ -329,7 +329,7 @@ fn run_sdl(_runner: Runner, _pixsize: usize, _fps: u32, _filename: &str, _showpo
 }
 
 #[cfg(feature = "sdl2")]
-fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
+fn run_sdl(runner: Runner, pixsize: usize, fps: u32, showpower: bool, winwidth: u32, winheight: u32) -> Result<(), String> {
     use sdl2::pixels::Color;
     use sdl2::event::Event;
     use sdl2::keyboard::Keycode;
@@ -345,7 +345,7 @@ fn run_sdl(runner: Runner, pixsize: usize, fps: u32, filename: &str, showpower: 
 
     let mut powertime: f64 = 0.0;
  
-    let wintitle = format!("beacon: {} ({}p)", filename, pixsize);
+    let wintitle = format!("beacon: {} ({}p)", runner.getname(), pixsize);
     let window = video_subsystem.window(wintitle.as_str(), winwidth, winheight+2*margin)
         .position_centered()
         .build()
