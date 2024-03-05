@@ -55,7 +55,9 @@ impl Runner {
     pub fn getname(&self) -> &str {
         match self {
             Runner::Script(run) => run.getname(),
-            _ => "???",
+            Runner::Limit(run) => run.getname(),
+            Runner::Cycle(run) => run.getname(),
+            Runner::WatchScript(run) => run.getname(),
         }
     }
 }

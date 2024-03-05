@@ -14,6 +14,10 @@ impl LimitRunner {
         };
         Runner::Limit(run)
     }
+
+    pub fn getname(&self) -> &str {
+        self.runner.getname()
+    }
 }
 
 pub struct LimitContext {

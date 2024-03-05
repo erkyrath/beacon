@@ -19,6 +19,10 @@ impl WatchScriptRunner {
         };
         Runner::WatchScript(run)
     }
+    
+    pub fn getname(&self) -> &str {
+        &self.filename
+    }
 }
 
 pub struct WatchScriptContext {

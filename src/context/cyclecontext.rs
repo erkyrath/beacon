@@ -9,16 +9,23 @@ use crate::clock::CtxClock;
 pub struct CycleRunner {
     pub runners: Box<Vec<Runner>>,
     pub interval: f32,
+    label: String,
 }
 
 impl CycleRunner {
     pub fn new(runners: Vec<Runner>, interval: f32) -> Runner {
-        assert!(runners.len() > 0);
+        let count = runners.len();
+        assert!(count > 0);
         let run = CycleRunner {
             runners: Box::new(runners),
             interval: interval,
+            label: format!("{} scripts", count),
         };
         Runner::Cycle(run)
+    }
+    
+    pub fn getname(&self) -> &str {
+        return &self.label;
     }
 }
 
