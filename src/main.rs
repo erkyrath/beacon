@@ -93,38 +93,49 @@ fn main() {
         None => 160,
     };
 
-    let filename = &opts.args[0];
-    let script: Script;
-    
-    match parse::parse_script(&filename) {
-        Ok(val) => {
-            script = val;
-        },
-        Err(msg) => {
-            println!("{msg}");
-            return;
-        },
-    }
-
-    if opts.dump {
-        script.dump();
-        let res = script.consistency_check();
-        match res {
+    let mut runners: Vec<Runner> = vec!();
+    for filename in &opts.args {
+        let script: Script;
+        
+        match parse::parse_script(&filename) {
+            Ok(val) => {
+                script = val;
+            },
             Err(msg) => {
                 println!("{msg}");
+                return;
             },
-            Ok(()) => {},
         }
-        return;
+        
+        if opts.dump {
+            script.dump();
+            let res = script.consistency_check();
+            match res {
+                Err(msg) => {
+                    println!("{msg}");
+                },
+                Ok(()) => {},
+            }
+            return;
+        }
+
+        let runner: Runner;
+        if opts.watchfile {
+            runner = WatchScriptRunner::new(&filename, script);
+        }
+        else {
+            runner = ScriptRunner::new(script, &filename);
+        }
+
+        runners.push(runner);
     }
 
-    let runner: Runner;
-    if opts.watchfile {
-        runner = WatchScriptRunner::new(&filename, script);
+    let runner: Runner = if runners.len() == 1 {
+        runners.pop().unwrap()
     }
     else {
-        runner = ScriptRunner::new(script, &filename);
-    }
+        CycleRunner::new(runners, 3.0)
+    };
     
     let fps = opts.fps.unwrap_or(60);
 
