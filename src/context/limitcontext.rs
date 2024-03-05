@@ -18,6 +18,12 @@ impl LimitRunner {
     pub fn getname(&self) -> &str {
         self.runner.getname()
     }
+    
+    pub fn build(&self, size: usize, fixtick: Option<u32>) -> Result<RunContextWrap, String> {
+        let child = self.runner.build(size, fixtick)?;
+        let ctx = LimitContext::new(child, self.limit, size, fixtick);
+        Ok(RunContextWrap::Limit(ctx))
+    }
 }
 
 pub struct LimitContext {

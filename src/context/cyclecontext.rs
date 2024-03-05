@@ -27,6 +27,11 @@ impl CycleRunner {
     pub fn getname(&self) -> &str {
         return &self.label;
     }
+    
+    pub fn build(&self, size: usize, fixtick: Option<u32>) -> Result<RunContextWrap, String> {
+        let ctx = CycleContext::new(self.runners.clone(), self.interval, size, fixtick)?;
+        Ok(RunContextWrap::Cycle(ctx))
+    }
 }
 
 pub struct CycleContext {

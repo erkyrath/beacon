@@ -33,15 +33,8 @@ impl Runner {
     pub fn build(&self, size: usize, fixtick: Option<u32>) -> Result<RunContextWrap, String> {
         match self {
             Runner::Script(run) => run.build(size, fixtick),
-            Runner::Limit(run) => {
-                let child = run.runner.build(size, fixtick)?;
-                let ctx = LimitContext::new(child, run.limit, size, fixtick);
-                Ok(RunContextWrap::Limit(ctx))
-            },
-            Runner::Cycle(run) => {
-                let ctx = CycleContext::new(run.runners.clone(), run.interval, size, fixtick)?;
-                Ok(RunContextWrap::Cycle(ctx))
-            },
+            Runner::Limit(run) => run.build(size, fixtick),
+            Runner::Cycle(run) => run.build(size, fixtick),
             Runner::WatchScript(run) => run.build(size, fixtick),
         }
     }
