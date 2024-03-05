@@ -14,12 +14,14 @@ use crate::op::{Op1State, Op3State};
 #[derive(Clone)]
 pub struct ScriptRunner {
     pub script: Script,
+    filename: String,
 }
 
 impl ScriptRunner {
-    pub fn new(script: Script) -> Runner {
+    pub fn new(script: Script, filename: &str) -> Runner {
         let run = ScriptRunner {
             script: script,
+            filename: filename.to_string(),
         };
         Runner::Script(run)
     }

@@ -83,8 +83,8 @@ pub struct AppOptions {
 fn main() {
     let opts = AppOptions::parse_args_default_or_exit();
 
-    if opts.args.len() != 1 {
-        println!("usage: beacon [--dump] script");
+    if opts.args.len() == 0 {
+        println!("usage: beacon [--dump] script [...]");
         return;
     }
 
@@ -123,7 +123,7 @@ fn main() {
         runner = WatchScriptRunner::new(&filename, script);
     }
     else {
-        runner = ScriptRunner::new(script);
+        runner = ScriptRunner::new(script, &filename);
     }
     
     let fps = opts.fps.unwrap_or(60);

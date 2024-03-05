@@ -32,7 +32,7 @@ pub struct WatchScriptContext {
 
 impl WatchScriptContext {
     pub fn new(filename: &str, script: Script, size: usize, fixtick: Option<u32>) -> Result<WatchScriptContext, String> {
-        let runner = ScriptRunner::new(script);
+        let runner = ScriptRunner::new(script, &filename);
         let child = runner.build(size, fixtick)?;
         let stat = std::fs::metadata(filename)
             .map_err(|err| err.to_string())?;
@@ -62,7 +62,7 @@ impl RunContext for WatchScriptContext {
             self.watchtime = newtime;
             match parse::parse_script(&self.filename) {
                 Ok(newscript) => {
-                    let newrunner = ScriptRunner::new(newscript);
+                    let newrunner = ScriptRunner::new(newscript, &self.filename);
                     let ctx = newrunner.build(self.size, self.fixtick)?;
                     self.child = Box::new(ctx);
                 },
