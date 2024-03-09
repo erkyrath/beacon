@@ -1,0 +1,31 @@
+muls
+  _2=1.5
+  sum
+    pgradient
+      stop=x:0.0, $000
+      stop=x:0.1, $000
+      stop=x:0.4, $94F
+      stop=x:1.0, $D8F
+
+      sum
+        pulser
+          interval=5.0
+          width=randnorm: 0.4, 0.05
+          spaceshape=sine
+          timeshape=flat
+          pos=quote: changing: -0.2, 0.2
+
+        noise
+          max=0.1
+          grain=64
+          octaves=3
+
+    muls
+      $0FF
+      mul
+        -1
+        noise
+          max=0.5
+          grain=64
+          octaves=3
+          offset=changing: 0, 0.3
