@@ -30,7 +30,7 @@ def parse(filename):
             continue
         ls = lex(ln)
 
-        lnterms = imbibe(ls)
+        lnterms = parseline(ls)
         print(lnterms)
         
 
@@ -143,7 +143,7 @@ class Term:
             argstr = '(' + ', '.join(ls) + ')'
         return '<Term %s%s%s>' % (namestr, self.tok, argstr)
 
-def imbibe(ln):
+def parseline(ln):
     res = []
     
     pos = comma_or_colon(ln)
@@ -152,7 +152,7 @@ def imbibe(ln):
         ln = ln[ pos+1 : ]
         term = bareterm(head)
         res.append(term)
-        restls = imbibe(ln)
+        restls = parseline(ln)
         res.extend(restls)
         return res
 
@@ -160,7 +160,7 @@ def imbibe(ln):
     if pos is not None and ln[pos].typ is TokType.COLON:
         args = ln[ pos+1 : ]
         ln = ln[ : pos ]
-        argterms = imbibe(args)
+        argterms = parseline(args)
         
     term = bareterm(ln)
     if argterms:
