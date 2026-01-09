@@ -3,16 +3,14 @@
 import sys
 
 from lex import parselines
+from compile import compileall
 
 def parse(filename):
     fl = open(filename)
-    root = parselines(fl)
+    parsetrees = parselines(fl)
     fl.close()
 
-    return root
+    compileall(parsetrees)
 
 
 root = parse(sys.argv[1])
-
-for term in root:
-    term.dump()

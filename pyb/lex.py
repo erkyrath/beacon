@@ -7,8 +7,8 @@ pat_number = re.compile('^[-]?[0-9]*[.]?[0-9]+')
 pat_color = re.compile('^[$][0-9a-fA-F]+')
 
 def parselines(fl):
-    root = []
-    stack = [ (0, root ) ]
+    trees = []
+    stack = [ (0, trees ) ]
     
     for ln in fl.readlines():
         ln = ln.rstrip()
@@ -45,7 +45,7 @@ def parselines(fl):
         
         curls.extend(lnterms)
 
-    return root
+    return trees
 
 
 class TokType(StrEnum):
