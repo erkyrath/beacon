@@ -11,6 +11,11 @@ pat_color = re.compile('^[$][0-9a-fA-F]+')
 
 def parse(filename):
     fl = open(filename)
+    
+    root = []
+    curindent = 0
+    stack = []
+    
     for ln in fl.readlines():
         ln = ln.rstrip()
         match = pat_white.match(ln)
@@ -24,7 +29,10 @@ def parse(filename):
         if not ln or ln.startswith('#'):
             continue
         ls = lex(ln)
-        print(indent, ls)
+
+        lnterms = imbibe(ls)
+        print(lnterms)
+        
 
 class TokType(StrEnum):
     SYMBOL = 'SYMBOL'
@@ -45,6 +53,19 @@ class Token:
             return '<Token %s>' % (self.typ,)
         else:
             return '<Token %s %r>' % (self.typ, self.val,)
+
+    def __str__(self):
+        match self.typ:
+            case TokType.COMMA:
+                return '='
+            case TokType.COLON:
+                return ':'
+            case TokType.EQUALS:
+                return '='
+            case TokType.QUOTE:
+                return '\''
+            case _:
+                return str(self.val)
 
 def lex(ln):
     res = []
@@ -104,6 +125,72 @@ def lex(ln):
         raise Exception('invalid character: ' + ln)
         
     return res
+
+
+class Term:
+    def __init__(self, tok, name=None):
+        self.tok = tok
+        self.name = name
+        self.args = []
+
+    def __repr__(self):
+        namestr = ''
+        if self.name:
+            namestr = self.name+'='
+        argstr = ''
+        if self.args:
+            ls = [ repr(arg) for arg in self.args ]
+            argstr = '(' + ', '.join(ls) + ')'
+        return '<Term %s%s%s>' % (namestr, self.tok, argstr)
+
+def imbibe(ln):
+    res = []
     
-parse('test.pab')
+    pos = comma_or_colon(ln)
+    if pos is not None and ln[pos].typ is TokType.COMMA:
+        head = ln[ : pos ]
+        ln = ln[ pos+1 : ]
+        term = bareterm(head)
+        res.append(term)
+        restls = imbibe(ln)
+        res.extend(restls)
+        return res
+
+    argterms = None
+    if pos is not None and ln[pos].typ is TokType.COLON:
+        args = ln[ pos+1 : ]
+        ln = ln[ : pos ]
+        argterms = imbibe(args)
+        
+    term = bareterm(ln)
+    if argterms:
+        term.args.extend(argterms)
+    res.append(term)
+    return res
+
+def comma_or_colon(ln):
+    for ix, tok in enumerate(ln):
+        if tok.typ is TokType.COMMA:
+            return ix
+        if tok.typ is TokType.COLON:
+            return ix
+    return -1
+
+def bareterm(ln):
+    nodname = None
+    if len(ln) >= 2 and ln[1].typ is TokType.EQUALS:
+        if ln[0].typ is not TokType.SYMBOL:
+            raise Exception('not SYMBOL before =')
+        nodname = ln[0].val
+        ln = ln[ 2 : ]
+    if len(ln) != 1:
+        raise Exception('bareterm must be one token')
+    tok = ln[0]
+    if tok.typ not in [ TokType.SYMBOL, TokType.NUM ]:
+        raise Exception('invalid bareterm')
+    term = Term(tok, name=nodname)
+    return term
+
+
+parse('test2.pab')
 
