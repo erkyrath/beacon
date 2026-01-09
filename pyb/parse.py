@@ -217,13 +217,13 @@ def bareterm(ln):
     if len(ln) != 1:
         raise Exception('bareterm must be one token')
     tok = ln[0]
-    if tok.typ not in [ TokType.SYMBOL, TokType.NUM ]:
+    if tok.typ not in [ TokType.SYMBOL, TokType.NUM, TokType.COLOR ]:
         raise Exception('invalid bareterm')
     term = Term(tok, name=nodname)
     return term
 
 
-root = parse('test2.pab')
+root = parse('test.pab')
 
 for term in root:
     term.dump()
