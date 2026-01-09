@@ -13,8 +13,7 @@ def parse(filename):
     fl = open(filename)
     
     root = []
-    curindent = 0
-    stack = []
+    stack = [ (0, root ) ]
     
     for ln in fl.readlines():
         ln = ln.rstrip()
@@ -31,8 +30,28 @@ def parse(filename):
         ls = lex(ln)
 
         lnterms = parseline(ls)
-        print(lnterms)
+
+        (curindent, curls) = stack[-1]
         
+        while indent < curindent:
+            del stack[-1]
+            curindent, curls = stack[-1]
+            if indent > curindent:
+                raise Exception('indent mismatch')
+
+        if indent > curindent:
+            lastindent, lastls = stack[-1]
+            if not lastls:
+                raise Exception('indenting on nothing')
+            lastitem = lastls[-1]
+            lastitem.args.extend(lnterms)
+            stack.append( (indent, lastitem.args) )
+            continue
+        
+        curls.extend(lnterms)
+
+    return root
+
 
 class TokType(StrEnum):
     SYMBOL = 'SYMBOL'
@@ -143,6 +162,17 @@ class Term:
             argstr = '(' + ', '.join(ls) + ')'
         return '<Term %s%s%s>' % (namestr, self.tok, argstr)
 
+    def dump(self, indent=0):
+        namestr = ''
+        if self.name:
+            namestr = self.name+'='
+        colon = ':' if self.args else ''
+        print('%s%s%s%s' % ('  '*indent, namestr, self.tok, colon))
+        if self.args:
+            for arg in self.args:
+                arg.dump(indent+1)
+        
+
 def parseline(ln):
     res = []
     
@@ -160,7 +190,8 @@ def parseline(ln):
     if pos is not None and ln[pos].typ is TokType.COLON:
         args = ln[ pos+1 : ]
         ln = ln[ : pos ]
-        argterms = parseline(args)
+        if args:
+            argterms = parseline(args)
         
     term = bareterm(ln)
     if argterms:
@@ -174,7 +205,7 @@ def comma_or_colon(ln):
             return ix
         if tok.typ is TokType.COLON:
             return ix
-    return -1
+    return None
 
 def bareterm(ln):
     nodname = None
@@ -192,5 +223,7 @@ def bareterm(ln):
     return term
 
 
-parse('test2.pab')
+root = parse('test2.pab')
 
+for term in root:
+    term.dump()
