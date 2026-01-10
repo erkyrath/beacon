@@ -1,3 +1,12 @@
+from enum import IntEnum
+
+class AxisDep(IntEnum):
+    NONE  = 0
+    TIME  = 1
+    SPACE = 2
+    SPACETIME = 3
+
+
 class Program:
     def __init__(self, start, defs):
         self.start = start
