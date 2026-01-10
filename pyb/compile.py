@@ -1,11 +1,13 @@
-from enum import StrEnum
+from enum import IntEnum
 
 from lex import Term, TokType
 from program import Program
 
-class Ctx(StrEnum):
-    TIME  = 'TIME'
-    SPACE = 'SPACE'
+class Ctx(IntEnum):
+    NONE  = 0
+    TIME  = 1
+    SPACE = 2
+    SPACETIME = 3
 
 class Node:
     classname = '???'
@@ -14,6 +16,8 @@ class Node:
     def __init__(self):
         self.id = '%s_%d' % (self.classname, Node.idcount,)
         Node.idcount += 1
+
+        self.buffered = False
 
     def __repr__(self):
         return '<%s>' % (self.id,)
