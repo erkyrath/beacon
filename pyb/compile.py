@@ -9,6 +9,14 @@ class Ctx(IntEnum):
     SPACE = 2
     SPACETIME = 3
 
+class ArgFormat:
+    def __init__(self, name, anon=False, multiple=False, default=None):
+        self.name = name
+        self.anon = anon
+        self.multiple = multiple
+        self.default = default
+        self.optional = (default is not None)
+    
 class Node:
     classname = '???'
     idcount = 0
@@ -25,6 +33,10 @@ class Node:
 
 class NodeConstant(Node):
     classname = 'constant'
+
+    argformat = [
+        ArgFormat('value', float)
+    ]
 
     def __init__(self, term, ctx, asnum=None):
         Node.__init__(self, ctx)
@@ -45,6 +57,13 @@ class NodeConstant(Node):
 
 class NodeLinear(Node):
     classname = 'linear'
+
+    argsformat = [
+        ArgFormat('start', Ctx.TIME),
+        ArgFormat('velocity', Ctx.TIME),
+        ### ArgFormat('pos', Ctx.TIME, default=0.5),
+        ### ArgFormat('addend', Node, anon=True, multiple=True),
+    ]
 
     def __init__(self, term, ctx):
         Node.__init__(self, ctx)
