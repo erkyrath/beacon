@@ -8,6 +8,8 @@ class Program:
 
     def post(self):
         self.postiter(self.start)
+        assert(self.start is self.nodes[-1])
+        self.start.buffered = True
         #print(self.nodes)
 
     def postiter(self, nod):
@@ -16,6 +18,13 @@ class Program:
         self.nodes.insert(0, nod)
         self.nodeidset.add(nod.id)
         ### recurse on nod.args
+
+    def writebuffer(self, nod):
+        val = nod.generatedata()
+        print('  for (ix=0; ix<pixelCount; ix++) {')
+        print('    %s[ix] = (%s)' % (nod.id, val,))
+        print('  }')
+        
 
     def write(self):
         print('var clock = 0   // seconds')
@@ -26,7 +35,9 @@ class Program:
         # delta is ms since last call
         ### we'll want an accuracy hack here
         print('  clock += (delta / 1000)')
-        self.start.generatedata()
+        for nod in self.nodes:
+            if nod.buffered:
+                self.writebuffer(nod)
         print('}')
         print()
 

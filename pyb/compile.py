@@ -36,6 +36,9 @@ class NodeConstant(Node):
         if arg.tok.typ != TokType.NUM:
             raise Exception('constant must have numeric arg')
         self.value = arg.tok.val
+        
+    def generatedata(self):
+        return str(self.value)
 
 class NodeLinear(Node):
     classname = 'linear'
@@ -52,9 +55,9 @@ class NodeLinear(Node):
         self.velocity = compile(argvel, Ctx.TIME)
 
     def generatedata(self):
-        print('  for (ix=0; ix<pixelCount; ix++) {')
-        print('    %s[ix] = (%s) + (ix/pixelCount) * (%s)' % (self.id, self.start.value, self.velocity.value))
-        print('  }')
+        startdata = self.start.generatedata()
+        veldata = self.velocity.generatedata()
+        return '(%s) + (ix/pixelCount) * (%s)' % (startdata, veldata,)
         
 def compileall(trees):
     roots = []
