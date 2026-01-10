@@ -14,3 +14,4 @@ def parse(filename):
 
 
 program = parse(sys.argv[1])
+program.write()

@@ -46,13 +46,18 @@ class NodeLinear(Node):
         assert argvel.name == 'velocity'
         self.start = compile(argstart, Ctx.TIME)
         self.velocity = compile(argvel, Ctx.TIME)
+
+    def generatedata(self):
+        print('  for (ix=0; ix<pixelCount; ix++) {')
+        print('    %s[ix] = (%s) + (ix/pixelCount) * (%s)' % (self.id, self.start.value, self.velocity.value))
+        print('  }')
         
 def compileall(trees):
     roots = []
     for term in trees:
         root = compile(term, Ctx.SPACE)
         roots.append(( root, term.name ))
-        print(root)
+        #print(root)
 
     startnod = None
     map = {}
