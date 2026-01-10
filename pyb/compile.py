@@ -55,7 +55,7 @@ class NodeConstant(Node):
     def __init__(self, term, ctx, asnum=None):
         Node.__init__(self, ctx)
         if term is None and asnum is not None:
-            self.value = asnum
+            self.args = self.argclass(value=asnum)
             return
         if len(term.args) != 1:
             raise Exception('constant must have one arg')
@@ -64,10 +64,10 @@ class NodeConstant(Node):
             raise Exception('constant must have numeric arg')
         if arg.args:
             raise Exception('number cannot have args')
-        self.value = arg.tok.val
+        self.args = self.argclass(value=arg.tok.val)
         
     def generatedata(self):
-        return str(self.value)
+        return str(self.args.value)
 
 class NodeLinear(Node):
     classname = 'linear'
@@ -87,12 +87,14 @@ class NodeLinear(Node):
         assert argstart.name == 'start'
         argvel = term.args[1]
         assert argvel.name == 'velocity'
-        self.start = compile(argstart, Ctx.TIME)
-        self.velocity = compile(argvel, Ctx.TIME)
+        self.args = self.argclass(
+            start=compile(argstart, Ctx.TIME),
+            velocity=compile(argvel, Ctx.TIME)
+        )
 
     def generatedata(self):
-        startdata = self.start.generatedata()
-        veldata = self.velocity.generatedata()
+        startdata = self.args.start.generatedata()
+        veldata = self.args.velocity.generatedata()
         return '(%s) + (ix/pixelCount) * (%s)' % (startdata, veldata,)
 
 nodeclasses = [
