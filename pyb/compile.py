@@ -13,10 +13,11 @@ class Node:
     classname = '???'
     idcount = 0
     
-    def __init__(self):
+    def __init__(self, ctx):
         self.id = '%s_%d' % (self.classname, Node.idcount,)
         Node.idcount += 1
 
+        self.implicit = ctx
         self.buffered = False
 
     def __repr__(self):
@@ -26,7 +27,7 @@ class NodeConstant(Node):
     classname = 'constant'
 
     def __init__(self, term, ctx, asnum=None):
-        Node.__init__(self)
+        Node.__init__(self, ctx)
         if term is None and asnum is not None:
             self.value = asnum
             return
@@ -46,7 +47,7 @@ class NodeLinear(Node):
     classname = 'linear'
 
     def __init__(self, term, ctx):
-        Node.__init__(self)
+        Node.__init__(self, ctx)
         if len(term.args) != 2:
             raise Exception('linear must have two args')
         argstart = term.args[0]
