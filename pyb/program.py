@@ -46,10 +46,12 @@ class Program:
 
     def write(self):
         print('var clock = 0   // seconds')
-        print('%s_pixels = array(pixelCount)' % (self.start.id,))
+        for nod in self.nodes:
+            if nod.buffered:
+                print('%s_pixels = array(pixelCount)' % (nod.id,))
         print()
 
-        print('export function atStartup {')
+        print('function atStartup {')
         print('}')
         print()
         
@@ -59,6 +61,7 @@ class Program:
         print('  clock += (delta / 1000)')
         for nod in self.nodes:
             if nod.buffered:
+                ### and time-dependent
                 self.writebuffer(nod)
         print('}')
         print()
