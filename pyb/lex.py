@@ -39,7 +39,10 @@ def parselines(fl):
             if not lastls:
                 raise Exception('indenting on nothing')
             lastitem = lastls[-1]
-            lastitem.args.extend(lnterms)
+            if lnterms:
+                if lastitem.tok.typ != TokType.SYMBOL:
+                    raise Exception('only symbols can have args')
+                lastitem.args.extend(lnterms)
             stack.append( (indent, lastitem.args) )
             continue
         
@@ -190,6 +193,8 @@ def parseline(ln):
         
     term = bareterm(ln)
     if argterms:
+        if term.tok.typ != TokType.SYMBOL:
+            raise Exception('only symbols can have args')
         term.args.extend(argterms)
     res.append(term)
     return res
