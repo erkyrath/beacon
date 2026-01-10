@@ -26,18 +26,31 @@ class Program:
             return
         self.nodes.insert(0, nod)
         self.nodeidset.add(nod.id)
-        ### recurse on nod.args
+
+        for argf in nod.argformat:
+            arg = getattr(nod.args, argf.name)
+            if not argf.multiple:
+                if isinstance(arg, Node):
+                    self.postiter(arg)
+            else:
+                argls = arg
+                for arg in argls:
+                    if isinstance(arg, Node):
+                        self.postiter(arg)
 
     def writebuffer(self, nod):
         val = nod.generatedata()
         print('  for (ix=0; ix<pixelCount; ix++) {')
         print('    %s[ix] = (%s)' % (nod.id, val,))
         print('  }')
-        
 
     def write(self):
         print('var clock = 0   // seconds')
         print('%s_pixels = array(pixelCount)' % (self.start.id,))
+        print()
+
+        print('export function atStartup {')
+        print('}')
         print()
         
         print('export function beforeRender(delta) {')
@@ -56,3 +69,9 @@ class Program:
         print('}')
         print()
         
+
+
+# Late imports
+from compile import Node
+
+

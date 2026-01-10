@@ -2,7 +2,6 @@ from enum import StrEnum
 from collections import namedtuple
 
 from lex import Term, TokType
-from program import Program
 
 class Ctx(StrEnum):
     TIME  = 'TIME'
@@ -137,3 +136,6 @@ def compile(term, ctx):
             return NodeLinear(term, ctx)
         case _:
             raise Exception('unknown term id')
+
+# Late imports
+from program import Program
