@@ -35,6 +35,8 @@ class NodeConstant(Node):
         arg = term.args[0]
         if arg.tok.typ != TokType.NUM:
             raise Exception('constant must have numeric arg')
+        if arg.args:
+            raise Exception('number cannot have args')
         self.value = arg.tok.val
         
     def generatedata(self):
@@ -64,7 +66,6 @@ def compileall(trees):
     for term in trees:
         root = compile(term, Ctx.SPACE)
         roots.append(( root, term.name ))
-        #print(root)
 
     startnod = None
     map = {}
@@ -81,6 +82,8 @@ def compileall(trees):
 
 def compile(term, ctx):
     if term.tok.typ == TokType.NUM:
+        if term.args:
+            raise Exception('number cannot have args')
         return NodeConstant(None, ctx, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')

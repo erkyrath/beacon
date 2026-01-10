@@ -10,6 +10,9 @@ def parse(filename):
     parsetrees = parselines(fl)
     fl.close()
 
+    #for term in parsetrees:
+    #    term.dump()
+        
     return compileall(parsetrees)
 
 
