@@ -10,7 +10,7 @@ def parse(filename):
     parsetrees = parselines(fl)
     fl.close()
 
-    compileall(parsetrees)
+    return compileall(parsetrees)
 
 
-root = parse(sys.argv[1])
+program = parse(sys.argv[1])

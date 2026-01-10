@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from lex import Term, TokType
+from program import Program
 
 class Ctx(StrEnum):
     TIME  = 'TIME'
@@ -43,8 +44,8 @@ class NodeLinear(Node):
         assert argstart.name == 'start'
         argvel = term.args[1]
         assert argvel.name == 'velocity'
-        self.start = compile(argstart, ctx)
-        self.velocity = compile(argvel, ctx)
+        self.start = compile(argstart, Ctx.TIME)
+        self.velocity = compile(argvel, Ctx.TIME)
         
 def compileall(trees):
     roots = []
@@ -53,7 +54,18 @@ def compileall(trees):
         roots.append(( root, term.name ))
         print(root)
 
-    return roots
+    startnod = None
+    map = {}
+    for (nod, name) in roots:
+        if name is None:
+            if startnod is not None:
+                raise Exception('more than one start')
+            startnod = nod
+        else:
+            if name in map:
+                raise Exception('duplicate def')
+            map[name] = nod
+    return Program(startnod, map)
 
 def compile(term, ctx):
     if term.tok.typ == TokType.NUM:
