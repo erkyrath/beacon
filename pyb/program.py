@@ -28,7 +28,7 @@ class Program:
         self.nodeidset.add(nod.id)
 
         for argf in nod.argformat:
-            arg = getattr(nod.args, argf.name)
+            arg = nod.getarg(argf.name)
             if not argf.multiple:
                 if isinstance(arg, Node):
                     self.postiter(arg)
@@ -37,6 +37,9 @@ class Program:
                 for arg in argls:
                     if isinstance(arg, Node):
                         self.postiter(arg)
+
+    def dump(self):
+        self.start.dump()
 
     def writebuffer(self, nod):
         val = nod.generatedata()
@@ -52,6 +55,7 @@ class Program:
         print()
 
         print('function atStartup {')
+        ### if nod.buffered and not time-dependent
         print('}')
         print()
         

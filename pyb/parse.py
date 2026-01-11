@@ -18,4 +18,6 @@ def parse(filename):
 
 program = parse(sys.argv[1])
 program.post()
+program.dump()
+print('// ' + sys.argv[1])
 program.write()

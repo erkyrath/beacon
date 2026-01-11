@@ -44,6 +44,26 @@ class Node:
     def __repr__(self):
         return '<%s>' % (self.id,)
 
+    def getarg(self, key):
+        return getattr(self.args, key)
+
+    def dump(self, indent=0, name=None):
+        indentstr = '  '*indent
+        namestr = name+'=' if name else ''
+        print('%s%s<%s>' % (indentstr, namestr, self.id,))
+        for argf in self.argformat:
+            arg = self.getarg(argf.name)
+            if not argf.multiple:
+                argls = [ arg ]
+            else:
+                argls = arg
+            for arg in argls:
+                if isinstance(arg, Node):
+                    arg.dump(indent+1, name=argf.name)
+                else:
+                    print('%s  %s=%s' % (indentstr, argf.name, arg,))
+            
+
 class NodeConstant(Node):
     classname = 'constant'
 
