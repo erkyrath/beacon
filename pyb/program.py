@@ -39,6 +39,8 @@ class Program:
                         self.postiter(arg)
 
     def dump(self):
+        for name in self.defs:
+            self.defs[name].dump(name=name)
         self.start.dump()
 
     def writebuffer(self, nod):

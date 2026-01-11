@@ -50,7 +50,8 @@ class Node:
     def dump(self, indent=0, name=None):
         indentstr = '  '*indent
         namestr = name+'=' if name else ''
-        print('%s%s<%s>' % (indentstr, namestr, self.id,))
+        impstr = str(self.implicit)[0]
+        print('%s%s<%s> (%s)' % (indentstr, namestr, self.id, impstr))
         for argf in self.argformat:
             arg = self.getarg(argf.name)
             if not argf.multiple:
