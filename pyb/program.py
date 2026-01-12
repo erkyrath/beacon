@@ -45,8 +45,8 @@ class Program:
 
     def writebuffer(self, nod):
         val = nod.generatedata()
-        print('  for (ix=0; ix<pixelCount; ix++) {')
-        print('    %s[ix] = (%s)' % (nod.id, val,))
+        print('  for (var ix=0; ix<pixelCount; ix++) {')
+        print('    %s_pixels[ix] = (%s)' % (nod.id, val,))
         print('  }')
 
     def write(self):
