@@ -47,6 +47,14 @@ class Node:
     def getarg(self, key):
         return getattr(self.args, key)
 
+    def implicitparam(self):
+        if self.implicit is Ctx.TIME:
+            ### relative to start?
+            return "clock"
+        if self.implicit is Ctx.SPACE:
+            return "(ix/pixelCount)"
+        raise Exception('implicit not set')
+
     def dump(self, indent=0, name=None):
         indentstr = '  '*indent
         namestr = name+'=' if name else ''
@@ -95,8 +103,6 @@ class NodeLinear(Node):
     argformat = [
         ArgFormat('start', Ctx.TIME),
         ArgFormat('velocity', Ctx.TIME),
-        ### ArgFormat('pos', Ctx.TIME, default=0.5),
-        ### ArgFormat('addend', Node, anon=True, multiple=True),
     ]
 
     def __init__(self, term, ctx):
@@ -113,9 +119,10 @@ class NodeLinear(Node):
         )
 
     def generatedata(self):
+        param = self.implicitparam()
         startdata = self.args.start.generatedata()
         veldata = self.args.velocity.generatedata()
-        return '(%s) + (ix/pixelCount) * (%s)' % (startdata, veldata,)
+        return '(%s) + %s * (%s)' % (startdata, param, veldata,)
 
 nodeclasses = [
     NodeConstant,
