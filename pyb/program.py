@@ -6,6 +6,18 @@ class AxisDep(IntEnum):
     SPACE = 2
     SPACETIME = 3
 
+def axisdepname(dep):
+    match dep:
+        case AxisDep.NONE:
+            return 'NONE'
+        case AxisDep.TIME:
+            return 'TIME'
+        case AxisDep.SPACE:
+            return 'SPACE'
+        case AxisDep.SPACETIME:
+            return 'SPACETIME'
+        case _:
+            return '???%s' % (dep,)
 
 class Program:
     def __init__(self, start, defs):
@@ -27,16 +39,25 @@ class Program:
         self.nodes.insert(0, nod)
         self.nodeidset.add(nod.id)
 
+        subdeps = AxisDep.NONE
+
         for argf in nod.argformat:
             arg = nod.getarg(argf.name)
             if not argf.multiple:
-                if isinstance(arg, Node):
-                    self.postiter(arg)
+                argls = [ arg ]
             else:
                 argls = arg
-                for arg in argls:
-                    if isinstance(arg, Node):
-                        self.postiter(arg)
+            for arg in argls:
+                if isinstance(arg, Node):
+                    self.postiter(arg)
+                    subdeps |= arg.depend
+
+        if nod.usesimplicit:
+            if nod.implicit == Ctx.TIME:
+                nod.depend = AxisDep.TIME
+            if nod.implicit == Ctx.SPACE:
+                nod.depend = AxisDep.SPACE
+        nod.depend |= subdeps
 
     def dump(self):
         for name in self.defs:
@@ -81,6 +102,6 @@ class Program:
 
 
 # Late imports
-from compile import Node
+from compile import Node, Ctx
 
 

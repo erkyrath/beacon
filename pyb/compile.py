@@ -28,6 +28,8 @@ class Node:
     argformatmap = None
     argclass = None
 
+    usesimplicit = False
+
     @staticmethod
     def prepclasses(classls):
         for cla in classls:
@@ -39,6 +41,7 @@ class Node:
         Node.idcount += 1
 
         self.implicit = ctx
+        self.depend = AxisDep.NONE
         self.buffered = False
 
     def __repr__(self):
@@ -48,6 +51,8 @@ class Node:
         return getattr(self.args, key)
 
     def generateimplicit(self):
+        if not self.usesimplicit:
+            raise Exception('usesimplicit not set')
         if self.implicit is Ctx.TIME:
             ### relative to start?
             return "clock"
@@ -59,7 +64,8 @@ class Node:
         indentstr = '  '*indent
         namestr = name+'=' if name else ''
         impstr = str(self.implicit)[0]
-        print('%s%s<%s> (%s)' % (indentstr, namestr, self.id, impstr))
+        depstr = axisdepname(self.depend)
+        print('%s%s<%s> (%s) dep=%s' % (indentstr, namestr, self.id, impstr, depstr))
         for argf in self.argformat:
             arg = self.getarg(argf.name)
             if not argf.multiple:
@@ -100,6 +106,7 @@ class NodeConstant(Node):
 class NodeLinear(Node):
     classname = 'linear'
 
+    usesimplicit = True
     argformat = [
         ArgFormat('start', Ctx.TIME),
         ArgFormat('velocity', Ctx.TIME),
@@ -107,6 +114,8 @@ class NodeLinear(Node):
 
     def __init__(self, term, ctx):
         Node.__init__(self, ctx)
+        ### generic arg parsing
+        ### also move it out of init()
         if len(term.args) != 2:
             raise Exception('linear must have two args')
         argstart = term.args[0]
@@ -166,4 +175,4 @@ def compile(term, ctx):
             raise Exception('unknown term id')
 
 # Late imports
-from program import Program
+from program import Program, AxisDep, axisdepname
