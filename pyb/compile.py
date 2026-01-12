@@ -47,7 +47,7 @@ class Node:
     def getarg(self, key):
         return getattr(self.args, key)
 
-    def implicitparam(self):
+    def generateimplicit(self):
         if self.implicit is Ctx.TIME:
             ### relative to start?
             return "clock"
@@ -119,7 +119,7 @@ class NodeLinear(Node):
         )
 
     def generatedata(self):
-        param = self.implicitparam()
+        param = self.generateimplicit()
         startdata = self.args.start.generatedata()
         veldata = self.args.velocity.generatedata()
         return '(%s) + %s * (%s)' % (startdata, param, veldata,)
