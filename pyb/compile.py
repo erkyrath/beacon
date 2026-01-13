@@ -7,6 +7,18 @@ class Ctx(StrEnum):
     TIME  = 'TIME'
     SPACE = 'SPACE'
 
+class WaveShape(StrEnum):
+    FLAT = 'FLAT'
+    SQUARE = 'SQUARE'
+    HALFSQUARE = 'HALFSQUARE'
+    TRIANGLE = 'TRIANGLE'
+    TRAPEZOID = 'TRAPEZOID'
+    SAWTOOTH = 'SAWTOOTH'
+    SQRTOOTH = 'SQRTOOTH'
+    SAWDECAY = 'SAWDECAY'
+    SQRDECAY = 'SQRDECAY'
+    SINE = 'SINE'
+    
 class ArgFormat:
     def __init__(self, name, typ, anon=False, multiple=False, default=None):
         self.name = name
@@ -66,6 +78,10 @@ class Node:
                 if arg.tok.typ is not TokType.NUM:
                     raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
                 map[argf.name] = arg.tok.val
+            elif argf.typ is WaveShape:
+                if arg.tok.typ is not TokType.SYMBOL:
+                    raise Exception('%s: unrecognized waveshape' % (argf.name,))
+                map[argf.name] = WaveShape.__members__[arg.tok.val]
             elif argf.typ is Node:
                 map[argf.name] = compile(arg, self.implicit)
             elif argf.typ is Ctx.TIME:
