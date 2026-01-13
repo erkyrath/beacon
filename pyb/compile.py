@@ -47,6 +47,27 @@ class Node:
     def __repr__(self):
         return '<%s>' % (self.id,)
 
+    def parseargs(self, args):
+        map = {}
+        pos = 0
+        for arg in args:
+            if arg.name:
+                argf = self.argformatmap[arg.name]
+            else:
+                argf = self.argformat[pos]
+                pos += 1
+            if argf.name in map:
+                ### multiple?
+                raise Exception('%s: duplicate arg %s' % (self.classname, argf.name))
+            if argf.typ is float:
+                if arg.tok.typ is not TokType.NUM:
+                    raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
+                map[argf.name] = arg.tok.val
+            else:
+                raise Exception('%s: unimplemented arg type %s' % (self.classname, argf.name))
+
+        self.args = self.argclass(**map)
+
     def getarg(self, key):
         return getattr(self.args, key)
 
@@ -91,16 +112,6 @@ class NodeConstant(Node):
         if asnum is not None:
             self.args = self.argclass(value=asnum)
 
-    def parseargs(self, args):
-        if len(args) != 1:
-            raise Exception('constant must have one arg')
-        arg = args[0]
-        if arg.tok.typ != TokType.NUM:
-            raise Exception('constant must have numeric arg')
-        if arg.args:
-            raise Exception('number cannot have args')
-        self.args = self.argclass(value=arg.tok.val)
-        
     def generatedata(self):
         return str(self.args.value)
 
