@@ -86,14 +86,15 @@ class NodeConstant(Node):
         ArgFormat('value', float)
     ]
 
-    def __init__(self, term, ctx, asnum=None):
+    def __init__(self, ctx, asnum=None):
         Node.__init__(self, ctx)
-        if term is None and asnum is not None:
+        if asnum is not None:
             self.args = self.argclass(value=asnum)
-            return
-        if len(term.args) != 1:
+
+    def parseargs(self, args):
+        if len(args) != 1:
             raise Exception('constant must have one arg')
-        arg = term.args[0]
+        arg = args[0]
         if arg.tok.typ != TokType.NUM:
             raise Exception('constant must have numeric arg')
         if arg.args:
@@ -112,15 +113,12 @@ class NodeLinear(Node):
         ArgFormat('velocity', Ctx.TIME),
     ]
 
-    def __init__(self, term, ctx):
-        Node.__init__(self, ctx)
-        ### generic arg parsing
-        ### also move it out of init()
-        if len(term.args) != 2:
+    def parseargs(self, args):
+        if len(args) != 2:
             raise Exception('linear must have two args')
-        argstart = term.args[0]
+        argstart = args[0]
         assert argstart.name == 'start'
-        argvel = term.args[1]
+        argvel = args[1]
         assert argvel.name == 'velocity'
         self.args = self.argclass(
             start=compile(argstart, Ctx.TIME),
@@ -163,16 +161,18 @@ def compile(term, ctx):
     if term.tok.typ == TokType.NUM:
         if term.args:
             raise Exception('number cannot have args')
-        return NodeConstant(None, ctx, asnum=term.tok.val)
+        return NodeConstant(ctx, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')
     match term.tok.val:
         case 'constant':
-            return NodeConstant(term, ctx)
+            nod = NodeConstant(ctx)
         case 'linear':
-            return NodeLinear(term, ctx)
+            nod = NodeLinear(ctx)
         case _:
             raise Exception('unknown term id')
+    nod.parseargs(term.args)
+    return nod
 
 # Late imports
 from program import Program, AxisDep, axisdepname
