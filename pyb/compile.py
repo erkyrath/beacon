@@ -14,7 +14,7 @@ class ArgFormat:
         self.anon = anon
         self.multiple = multiple
         self.default = default
-        self.optional = (default is not None)
+        self.isoptional = (default is not None)
 
     def __repr__(self):
         defaultstr = ' = %s' if self.default else ''
@@ -70,7 +70,13 @@ class Node:
             elif argf.typ is Ctx.SPACE:
                 map[argf.name] = compile(arg, Ctx.SPACE)
             else:
-                raise Exception('%s: unimplemented arg type %s' % (self.classname, argf.name))
+                raise Exception('%s: unimplemented arg type: %s' % (self.classname, argf.name))
+
+        for argf in self.argformat:
+            if argf.name not in map and argf.isoptional:
+                if not (isinstance(argf.default, int) or isinstance(argf.default, float)):
+                    raise Exception('%s: arg default is not numeric: %s' % (self.classname, argf.name))
+                map[argf.name] = NodeConstant(Ctx.TIME, asnum=argf.default)
 
         self.args = self.argclass(**map)
 
