@@ -175,7 +175,7 @@ class NodeClamp(Node):
         argdata = self.args.arg.generatedata()
         mindata = self.args.min.generatedata()
         maxdata = self.args.max.generatedata()
-        return 'max(min(%s, %s), %s)' % (argdata, maxdata, mindata,)
+        return 'clamp(%s, %s, %s)' % (argdata, mindata, maxdata,)
 
 nodeclasses = [
     NodeConstant,
