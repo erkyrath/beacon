@@ -30,9 +30,12 @@ class Node:
 
     usesimplicit = False
 
+    allclassmap = {}
+
     @staticmethod
     def prepclasses(classls):
         for cla in classls:
+            Node.allclassmap[cla.classname] = cla
             cla.argformatmap = dict([(argf.name, argf) for argf in cla.argformat])
             cla.argclass = namedtuple('Args_'+cla.classname, [ argf.name for argf in cla.argformat ])
     
@@ -192,16 +195,10 @@ def compile(term, ctx):
         return NodeConstant(ctx, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')
-    ### map
-    match term.tok.val:
-        case 'constant':
-            nod = NodeConstant(ctx)
-        case 'linear':
-            nod = NodeLinear(ctx)
-        case 'clamp':
-            nod = NodeClamp(ctx)
-        case _:
-            raise Exception('unknown term id')
+    cla = Node.allclassmap.get(term.tok.val)
+    if not cla:
+        raise Exception('unknown term: %s' % (term.tok.val,))
+    nod = cla(ctx)
     nod.parseargs(term.args)
     return nod
 
