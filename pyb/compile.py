@@ -63,6 +63,10 @@ class Node:
                 if arg.tok.typ is not TokType.NUM:
                     raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
                 map[argf.name] = arg.tok.val
+            elif argf.typ is Ctx.TIME:
+                map[argf.name] = compile(arg, Ctx.TIME)
+            elif argf.typ is Ctx.SPACE:
+                map[argf.name] = compile(arg, Ctx.SPACE)
             else:
                 raise Exception('%s: unimplemented arg type %s' % (self.classname, argf.name))
 
@@ -123,18 +127,6 @@ class NodeLinear(Node):
         ArgFormat('start', Ctx.TIME),
         ArgFormat('velocity', Ctx.TIME),
     ]
-
-    def parseargs(self, args):
-        if len(args) != 2:
-            raise Exception('linear must have two args')
-        argstart = args[0]
-        assert argstart.name == 'start'
-        argvel = args[1]
-        assert argvel.name == 'velocity'
-        self.args = self.argclass(
-            start=compile(argstart, Ctx.TIME),
-            velocity=compile(argvel, Ctx.TIME)
-        )
 
     def generatedata(self):
         param = self.generateimplicit()
