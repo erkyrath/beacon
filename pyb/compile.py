@@ -134,9 +134,28 @@ class NodeLinear(Node):
         veldata = self.args.velocity.generatedata()
         return '(%s) + %s * (%s)' % (startdata, param, veldata,)
 
+class NodeClamp(Node):
+    classname = 'clamp'
+    
+    usesimplicit = False
+    argformat = [
+        ArgFormat('arg', Ctx.TIME),
+        ArgFormat('min', float, default=0),
+        ArgFormat('max', float, default=1),
+    ]
+
+    def generatedata(self):
+        argdata = self.args.arg.generatedata()
+        #mindata = self.args.min.generatedata()
+        mindata = str(self.args.min)
+        maxdata = str(self.args.max)
+        #maxdata = self.args.max.generatedata()
+        return 'max(min(%s, %s), %s)' % (argdata, maxdata, mindata,)
+
 nodeclasses = [
     NodeConstant,
     NodeLinear,
+    NodeClamp,
 ]
 
 Node.prepclasses(nodeclasses)
@@ -167,11 +186,14 @@ def compile(term, ctx):
         return NodeConstant(ctx, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')
+    ### map
     match term.tok.val:
         case 'constant':
             nod = NodeConstant(ctx)
         case 'linear':
             nod = NodeLinear(ctx)
+        case 'clamp':
+            nod = NodeClamp(ctx)
         case _:
             raise Exception('unknown term id')
     nod.parseargs(term.args)
