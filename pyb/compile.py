@@ -63,6 +63,8 @@ class Node:
                 if arg.tok.typ is not TokType.NUM:
                     raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
                 map[argf.name] = arg.tok.val
+            elif argf.typ is Node:
+                map[argf.name] = compile(arg, self.implicit)
             elif argf.typ is Ctx.TIME:
                 map[argf.name] = compile(arg, Ctx.TIME)
             elif argf.typ is Ctx.SPACE:
@@ -139,17 +141,15 @@ class NodeClamp(Node):
     
     usesimplicit = False
     argformat = [
-        ArgFormat('arg', Ctx.TIME),
-        ArgFormat('min', float, default=0),
-        ArgFormat('max', float, default=1),
+        ArgFormat('arg', Node),
+        ArgFormat('min', Ctx.TIME, default=0),
+        ArgFormat('max', Ctx.TIME, default=1),
     ]
 
     def generatedata(self):
         argdata = self.args.arg.generatedata()
-        #mindata = self.args.min.generatedata()
-        mindata = str(self.args.min)
-        maxdata = str(self.args.max)
-        #maxdata = self.args.max.generatedata()
+        mindata = self.args.min.generatedata()
+        maxdata = self.args.max.generatedata()
         return 'max(min(%s, %s), %s)' % (argdata, maxdata, mindata,)
 
 nodeclasses = [
