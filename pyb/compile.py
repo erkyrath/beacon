@@ -159,7 +159,7 @@ class NodeLinear(Node):
         param = self.generateimplicit()
         startdata = self.args.start.generatedata()
         veldata = self.args.velocity.generatedata()
-        return '(%s) + %s * (%s)' % (startdata, param, veldata,)
+        return '(%s + %s * %s)' % (startdata, param, veldata,)
 
 class NodeClamp(Node):
     classname = 'clamp'
@@ -196,7 +196,7 @@ class NodeWave(Node):
         perioddata = self.args.period.generatedata()
         match self.args.shape:
             case WaveShape.SINE:
-                return '%s+%s*(0.5-0.5*cos(PI2*%s/%s))' % (mindata, '(%s-%s)'%(maxdata,mindata,), param, perioddata)
+                return '(%s+%s*(0.5-0.5*cos(PI2*%s/%s)))' % (mindata, '(%s-%s)'%(maxdata,mindata,), param, perioddata)
             case _:
                 raise Exception('unimplemented WaveShape')
 
