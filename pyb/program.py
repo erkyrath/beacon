@@ -21,7 +21,12 @@ def axisdepname(dep):
 
 class WriteCtx:
     def __init__(self):
-        pass
+        self.storedvals = []
+
+    def store_val(self, nod, key, expr):
+        varname = '%s_val_%s' % (nod.id, key,)
+        self.storedvals.append( (varname, expr) )
+        return varname
         
 class Program:
     def __init__(self, start, defs):
@@ -71,6 +76,10 @@ class Program:
     def writebuffer(self, nod, ctx):
         val = nod.generatedata(ctx=ctx)
         print('  for (var ix=0; ix<pixelCount; ix++) {')
+        for varname, expr in ctx.storedvals:
+            ### nod-descended only? or clear after we dump them?
+            ### subject to TIME/SPACE placement!
+            print('    var %s = %s' % (varname, expr,))
         print('    %s_pixels[ix] = (%s)' % (nod.id, val,))
         print('  }')
 

@@ -196,7 +196,8 @@ class NodeWave(Node):
         perioddata = self.args.period.generatedata(ctx=ctx)
         match self.args.shape:
             case WaveShape.SINE:
-                return '(%s+%s*(0.5-0.5*cos(PI2*%s/%s)))' % (mindata, '(%s-%s)'%(maxdata,mindata,), param, perioddata)
+                diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, mindata,))
+                return '(%s+%s*(0.5-0.5*cos(PI2*%s/%s)))' % (mindata, diffval, param, perioddata)
             case _:
                 raise Exception('unimplemented WaveShape')
 
