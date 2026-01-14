@@ -69,8 +69,12 @@ class Node:
             if arg.name:
                 argf = self.argformatmap[arg.name]
             else:
+                ### should be first unused or last multiple
                 argf = self.argformat[pos]
-                pos += 1
+                if pos == len(self.argformat)-1 and argf.multiple:
+                    pass  # stay on final multiple
+                else:
+                    pos += 1
             if not argf.multiple and argf.name in map:
                 raise Exception('%s: duplicate arg %s' % (self.classname, argf.name))
 
@@ -198,7 +202,21 @@ class NodeSum(Node):
         argdata = []
         for arg in self.args.arg:
             argdata.append(arg.generatedata(ctx=ctx))
-        return '(' + ' + '.join(argdata) + ')'
+        return '(%s)' % (' + '.join(argdata),)
+    
+class NodeMean(Node):
+    classname = 'mean'
+    
+    usesimplicit = False
+    argformat = [
+        ArgFormat('arg', Node, multiple=True),
+    ]
+
+    def generatedata(self, ctx):
+        argdata = []
+        for arg in self.args.arg:
+            argdata.append(arg.generatedata(ctx=ctx))
+        return '(%s) / %s' % (' + '.join(argdata), len(argdata),)
     
 class NodeWave(Node):
     classname = 'wave'
@@ -256,6 +274,7 @@ nodeclasses = [
     NodeLinear,
     NodeClamp,
     NodeSum,
+    NodeMean,
     NodeWave,
 ]
 
