@@ -81,7 +81,7 @@ class Node:
             elif argf.typ is WaveShape:
                 if arg.tok.typ is not TokType.SYMBOL:
                     raise Exception('%s: unrecognized waveshape' % (argf.name,))
-                map[argf.name] = WaveShape.__members__[arg.tok.val]
+                map[argf.name] = WaveShape.__members__[arg.tok.val.upper()]
             elif argf.typ is Node:
                 map[argf.name] = compile(arg, self.implicit)
             elif argf.typ is Ctx.TIME:
@@ -177,10 +177,34 @@ class NodeClamp(Node):
         maxdata = self.args.max.generatedata()
         return 'clamp(%s, %s, %s)' % (argdata, mindata, maxdata,)
 
+class NodeWave(Node):
+    classname = 'wave'
+
+    usesimplicit = True
+    argformat = [
+        ArgFormat('shape', WaveShape),
+        ArgFormat('min', Ctx.TIME, default=0),
+        ArgFormat('max', Ctx.TIME, default=1),
+        ArgFormat('period', Ctx.TIME, default=1),
+        ### offset?
+    ]
+
+    def generatedata(self):
+        param = self.generateimplicit()
+        mindata = self.args.min.generatedata()
+        maxdata = self.args.max.generatedata()
+        perioddata = self.args.period.generatedata()
+        match self.args.shape:
+            case WaveShape.SINE:
+                return '0.5-0.5*cos(PI2*%s)' % (param,)
+            case _:
+                raise Exception('unimplemented WaveShape')
+
 nodeclasses = [
     NodeConstant,
     NodeLinear,
     NodeClamp,
+    NodeWave,
 ]
 
 Node.prepclasses(nodeclasses)
@@ -211,7 +235,7 @@ def compile(term, ctx):
         return NodeConstant(ctx, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')
-    cla = Node.allclassmap.get(term.tok.val)
+    cla = Node.allclassmap.get(term.tok.val.lower())
     if not cla:
         raise Exception('unknown term: %s' % (term.tok.val,))
     nod = cla(ctx)
