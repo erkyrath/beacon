@@ -19,6 +19,10 @@ def axisdepname(dep):
         case _:
             return '???%s' % (dep,)
 
+class WriteCtx:
+    def __init__(self):
+        pass
+        
 class Program:
     def __init__(self, start, defs):
         self.start = start
@@ -64,13 +68,15 @@ class Program:
             self.defs[name].dump(name=name)
         self.start.dump()
 
-    def writebuffer(self, nod):
-        val = nod.generatedata()
+    def writebuffer(self, nod, ctx):
+        val = nod.generatedata(ctx=ctx)
         print('  for (var ix=0; ix<pixelCount; ix++) {')
         print('    %s_pixels[ix] = (%s)' % (nod.id, val,))
         print('  }')
 
     def write(self):
+        ctx = WriteCtx()
+        
         print('var clock = 0   // seconds')
         for nod in self.nodes:
             if nod.buffered:
@@ -89,7 +95,7 @@ class Program:
         for nod in self.nodes:
             if nod.buffered:
                 ### and time-dependent
-                self.writebuffer(nod)
+                self.writebuffer(nod, ctx=ctx)
         print('}')
         print()
 

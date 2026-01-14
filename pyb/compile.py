@@ -143,7 +143,7 @@ class NodeConstant(Node):
         if asnum is not None:
             self.args = self.argclass(value=asnum)
 
-    def generatedata(self):
+    def generatedata(self, ctx):
         return str(self.args.value)
 
 class NodeLinear(Node):
@@ -155,10 +155,10 @@ class NodeLinear(Node):
         ArgFormat('velocity', Ctx.TIME),
     ]
 
-    def generatedata(self):
+    def generatedata(self, ctx):
         param = self.generateimplicit()
-        startdata = self.args.start.generatedata()
-        veldata = self.args.velocity.generatedata()
+        startdata = self.args.start.generatedata(ctx=ctx)
+        veldata = self.args.velocity.generatedata(ctx=ctx)
         return '(%s + %s * %s)' % (startdata, param, veldata,)
 
 class NodeClamp(Node):
@@ -171,10 +171,10 @@ class NodeClamp(Node):
         ArgFormat('max', Ctx.TIME, default=1),
     ]
 
-    def generatedata(self):
-        argdata = self.args.arg.generatedata()
-        mindata = self.args.min.generatedata()
-        maxdata = self.args.max.generatedata()
+    def generatedata(self, ctx):
+        argdata = self.args.arg.generatedata(ctx=ctx)
+        mindata = self.args.min.generatedata(ctx=ctx)
+        maxdata = self.args.max.generatedata(ctx=ctx)
         return 'clamp(%s, %s, %s)' % (argdata, mindata, maxdata,)
 
 class NodeWave(Node):
@@ -189,11 +189,11 @@ class NodeWave(Node):
         ### offset?
     ]
 
-    def generatedata(self):
+    def generatedata(self, ctx):
         param = self.generateimplicit()
-        mindata = self.args.min.generatedata()
-        maxdata = self.args.max.generatedata()
-        perioddata = self.args.period.generatedata()
+        mindata = self.args.min.generatedata(ctx=ctx)
+        maxdata = self.args.max.generatedata(ctx=ctx)
+        perioddata = self.args.period.generatedata(ctx=ctx)
         match self.args.shape:
             case WaveShape.SINE:
                 return '(%s+%s*(0.5-0.5*cos(PI2*%s/%s)))' % (mindata, '(%s-%s)'%(maxdata,mindata,), param, perioddata)
