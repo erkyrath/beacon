@@ -71,25 +71,34 @@ class Node:
             else:
                 argf = self.argformat[pos]
                 pos += 1
-            if argf.name in map:
-                ### multiple?
+            if not argf.multiple and argf.name in map:
                 raise Exception('%s: duplicate arg %s' % (self.classname, argf.name))
+
+            argval = None
+            
             if argf.typ is float:
                 if arg.tok.typ is not TokType.NUM:
                     raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
-                map[argf.name] = arg.tok.val
+                argval = arg.tok.val
             elif argf.typ is WaveShape:
                 if arg.tok.typ is not TokType.SYMBOL:
                     raise Exception('%s: unrecognized waveshape' % (argf.name,))
-                map[argf.name] = WaveShape.__members__[arg.tok.val.upper()]
+                argval = WaveShape.__members__[arg.tok.val.upper()]
             elif argf.typ is Node:
-                map[argf.name] = compile(arg, self.implicit)
+                argval = compile(arg, self.implicit)
             elif argf.typ is Ctx.TIME:
-                map[argf.name] = compile(arg, Ctx.TIME)
+                argval = compile(arg, Ctx.TIME)
             elif argf.typ is Ctx.SPACE:
-                map[argf.name] = compile(arg, Ctx.SPACE)
+                argval = compile(arg, Ctx.SPACE)
             else:
                 raise Exception('%s: unimplemented arg type: %s' % (self.classname, argf.name))
+
+            if not argf.multiple:
+                map[argf.name] = argval
+            else:
+                if argf.name not in map:
+                    map[argf.name] = []
+                map[argf.name].append(argval)
 
         for argf in self.argformat:
             if argf.name not in map and argf.isoptional:
