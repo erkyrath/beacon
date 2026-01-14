@@ -159,6 +159,30 @@ class NodeConstant(Node):
     def generatedata(self, ctx):
         return str(self.args.value)
 
+class NodeTime(Node):
+    classname = 'time'
+
+    usesimplicit = False
+    argformat = [
+        ArgFormat('arg', Ctx.TIME),
+    ]
+
+    def generatedata(self, ctx):
+        argdata = self.args.arg.generatedata(ctx=ctx)
+        return argdata
+
+class NodeSpace(Node):
+    classname = 'space'
+
+    usesimplicit = False
+    argformat = [
+        ArgFormat('arg', Ctx.SPACE),
+    ]
+
+    def generatedata(self, ctx):
+        argdata = self.args.arg.generatedata(ctx=ctx)
+        return argdata
+
 class NodeLinear(Node):
     classname = 'linear'
 
@@ -275,6 +299,8 @@ class NodeWave(Node):
 
 nodeclasses = [
     NodeConstant,
+    NodeTime,
+    NodeSpace,
     NodeLinear,
     NodeClamp,
     NodeSum,
