@@ -186,6 +186,20 @@ class NodeClamp(Node):
         maxdata = self.args.max.generatedata(ctx=ctx)
         return 'clamp(%s, %s, %s)' % (argdata, mindata, maxdata,)
 
+class NodeSum(Node):
+    classname = 'sum'
+    
+    usesimplicit = False
+    argformat = [
+        ArgFormat('arg', Node, multiple=True),
+    ]
+
+    def generatedata(self, ctx):
+        argdata = []
+        for arg in self.args.arg:
+            argdata.append(arg.generatedata(ctx=ctx))
+        return '(' + ' + '.join(argdata) + ')'
+    
 class NodeWave(Node):
     classname = 'wave'
 
@@ -241,6 +255,7 @@ nodeclasses = [
     NodeConstant,
     NodeLinear,
     NodeClamp,
+    NodeSum,
     NodeWave,
 ]
 
