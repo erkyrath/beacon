@@ -202,6 +202,8 @@ class NodeSum(Node):
         argdata = []
         for arg in self.args.arg:
             argdata.append(arg.generatedata(ctx=ctx))
+        if len(argdata) == 1:
+            return argdata[0]
         return '(%s)' % (' + '.join(argdata),)
     
 class NodeMean(Node):
@@ -216,6 +218,8 @@ class NodeMean(Node):
         argdata = []
         for arg in self.args.arg:
             argdata.append(arg.generatedata(ctx=ctx))
+        if len(argdata) == 1:
+            return argdata[0]
         return '(%s) / %s' % (' + '.join(argdata), len(argdata),)
     
 class NodeWave(Node):
