@@ -270,37 +270,38 @@ class NodeWave(Node):
         mindata = self.args.min.generatedata(ctx=ctx)
         maxdata = self.args.max.generatedata(ctx=ctx)
         perioddata = self.args.period.generatedata(ctx=ctx)
+        theta = '%s/%s' % (param, perioddata,)
         match self.args.shape:
             case WaveShape.FLAT:
                 return maxdata
             case WaveShape.SAWTOOTH:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(mod(%s/%s, 1)))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(mod(%s, 1)))' % (minval, diffval, theta)
             case WaveShape.SAWDECAY:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(1-mod(%s/%s, 1)))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(1-mod(%s, 1)))' % (minval, diffval, theta)
             case WaveShape.SQRTOOTH:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(pow(mod(%s/%s, 1), 2)))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(pow(mod(%s, 1), 2)))' % (minval, diffval, theta)
             case WaveShape.SQRDECAY:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(pow(1-mod(%s/%s, 1), 2)))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(pow(1-mod(%s, 1), 2)))' % (minval, diffval, theta)
             case WaveShape.TRIANGLE:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(triangle(%s/%s)))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(triangle(%s)))' % (minval, diffval, theta)
             case WaveShape.HALFSQUARE:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(square(%s/%s, 0.5)))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(square(%s, 0.5)))' % (minval, diffval, theta)
             case WaveShape.SINE:
                 minval = ctx.store_val(self, 'min', mindata)
                 hdiffval = ctx.store_val(self, 'hdiff', '((%s-%s)*0.5)' % (maxdata, minval,))
-                return '(%s+%s*(1-cos(PI2*%s/%s)))' % (minval, hdiffval, param, perioddata)
+                return '(%s+%s*(1-cos(PI2*%s)))' % (minval, hdiffval, theta)
             case _:
                 raise Exception('unimplemented WaveShape')
 
