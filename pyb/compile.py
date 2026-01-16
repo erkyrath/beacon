@@ -270,7 +270,11 @@ class NodeWave(Node):
         mindata = self.args.min.generatedata(ctx=ctx)
         maxdata = self.args.max.generatedata(ctx=ctx)
         perioddata = self.args.period.generatedata(ctx=ctx)
-        theta = '%s/%s' % (param, perioddata,)
+        if self.implicit is Ctx.SPACE:
+            theta = '((%s-0.5)/%s+0.5)' % (param, perioddata,)
+        else:
+            theta = '%s/%s' % (param, perioddata,)
+            
         match self.args.shape:
             case WaveShape.FLAT:
                 return maxdata
