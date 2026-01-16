@@ -272,7 +272,7 @@ class NodeWave(Node):
         perioddata = self.args.period.generatedata(ctx=ctx)
         match self.args.shape:
             case WaveShape.FLAT:
-                return mindata
+                return maxdata
             case WaveShape.SAWTOOTH:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
