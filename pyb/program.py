@@ -92,7 +92,7 @@ class Program:
                 print('%s_pixels = array(pixelCount)' % (nod.id,))
         print()
 
-        print('function atStartup {')
+        print('function atStartup() {')
         ### if nod.buffered and not time-dependent
         print('}')
         print()
