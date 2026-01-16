@@ -284,11 +284,11 @@ class NodeWave(Node):
             case WaveShape.SQRTOOTH:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(pow(mod(%s/%s, 1)), 2))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(pow(mod(%s/%s, 1), 2)))' % (minval, diffval, param, perioddata)
             case WaveShape.SQRDECAY:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
-                return '(%s+%s*(pow(1-mod(%s/%s, 1)), 2))' % (minval, diffval, param, perioddata)
+                return '(%s+%s*(pow(1-mod(%s/%s, 1), 2)))' % (minval, diffval, param, perioddata)
             case WaveShape.TRIANGLE:
                 minval = ctx.store_val(self, 'min', mindata)
                 diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
