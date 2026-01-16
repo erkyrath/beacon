@@ -64,19 +64,26 @@ class Node:
 
     def parseargs(self, args):
         map = {}
-        pos = 0
         for arg in args:
             if arg.name:
                 argf = self.argformatmap[arg.name]
             else:
-                ### should be first unused or last multiple
-                argf = self.argformat[pos]
-                if pos == len(self.argformat)-1 and argf.multiple:
-                    pass  # stay on final multiple
-                else:
+                pos = 0
+                lastmultiple = None
+                while pos < len(self.argformat):
+                    argf = self.argformat[pos]
+                    if argf.name not in map:
+                        break
+                    if argf.multiple:
+                        lastmultiple = pos
                     pos += 1
+                if pos >= len(self.argformat):
+                    if lastmultiple is None:
+                        raise Exception('%s: too many arguments' % (self.classname,))
+                    pos = lastmultiple
+                argf = self.argformat[pos]
             if not argf.multiple and argf.name in map:
-                raise Exception('%s: duplicate arg %s' % (self.classname, argf.name))
+                raise Exception('%s: duplicate arg: %s' % (self.classname, argf.name))
 
             argval = None
             
