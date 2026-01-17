@@ -51,11 +51,7 @@ class Program:
         subdeps = AxisDep.NONE
 
         for argf in nod.argformat:
-            arg = nod.getarg(argf.name)
-            if not argf.multiple:
-                argls = [ arg ]
-            else:
-                argls = arg
+            argls = nod.getargls(argf.name, argf.multiple)
             for arg in argls:
                 if isinstance(arg, Node):
                     self.postiter(arg)

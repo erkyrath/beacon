@@ -122,6 +122,13 @@ class Node:
     def getarg(self, key):
         return getattr(self.args, key)
 
+    def getargls(self, key, multiple=False):
+        arg = getattr(self.args, key)
+        if not multiple:
+            return [ arg ]
+        else:
+            return arg
+        
     def generateimplicit(self):
         if not self.usesimplicit:
             raise Exception('usesimplicit not set')
