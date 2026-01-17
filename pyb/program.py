@@ -19,15 +19,21 @@ def axisdepname(dep):
         case _:
             return '???%s' % (dep,)
 
-class WriteCtx:
-    def __init__(self):
+class Stanza:
+    def __init__(self, nod):
+        self.nod = nod
+        self.depend = nod.depend
         self.storedvals = []
-
+        self.bottomline = None
+    
     def store_val(self, nod, key, expr):
         varname = '%s_val_%s' % (nod.id, key,)
         self.storedvals.append( (varname, expr) )
         return varname
-        
+
+    def generatebuffer(self):
+        self.bottomline = self.nod.generateexpr(ctx=self)
+
 class Program:
     def __init__(self, start, defs):
         self.start = start
@@ -36,11 +42,18 @@ class Program:
         self.nodes = []
         self.nodeidset = set()
 
+        self.stanzas = []
+
     def post(self):
         self.postiter(self.start)
         assert(self.start is self.nodes[-1])
         self.start.buffered = True
-        #print(self.nodes)
+
+        for nod in self.nodes:
+            if nod.buffered:
+                stanza = Stanza(nod)
+                self.stanzas.append(stanza)
+                stanza.generatebuffer()
 
     def postiter(self, nod):
         if nod.id in self.nodeidset:
@@ -76,23 +89,10 @@ class Program:
             self.defs[name].dump(name=name)
         self.start.dump()
 
-    def writebuffer(self, nod, ctx):
-        val = nod.generatedata(ctx=ctx)
-        print('  for (var ix=0; ix<pixelCount; ix++) {')
-        for varname, expr in ctx.storedvals:
-            ### nod-descended only? or clear after we dump them?
-            ### subject to TIME/SPACE placement!
-            print('    var %s = %s' % (varname, expr,))
-        print('    %s_pixels[ix] = (%s)' % (nod.id, val,))
-        print('  }')
-
     def write(self):
-        ctx = WriteCtx()
-        
         print('var clock = 0   // seconds')
-        for nod in self.nodes:
-            if nod.buffered:
-                print('%s_pixels = array(pixelCount)' % (nod.id,))
+        for stanza in self.stanzas:
+            print('%s_pixels = array(pixelCount)' % (stanza.nod.id,))
         print()
 
         ### if nod.buffered and not time-dependent
@@ -102,10 +102,14 @@ class Program:
         # delta is ms since last call
         ### we'll want an accuracy hack here
         print('  clock += (delta / 1000)')
-        for nod in self.nodes:
-            if nod.buffered:
-                ### and time-dependent
-                self.writebuffer(nod, ctx=ctx)
+        for stanza in self.stanzas:
+            ### if time-dependent
+            print('  for (var ix=0; ix<pixelCount; ix++) {')
+            for varname, expr in stanza.storedvals:
+                ### subject to TIME/SPACE placement!
+                print('    var %s = %s' % (varname, expr,))
+            print('    %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
+            print('  }')
         print('}')
         print()
 
