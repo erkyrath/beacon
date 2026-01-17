@@ -139,6 +139,12 @@ class Node:
             return "(ix/pixelCount)"
         raise Exception('implicit not set')
 
+    def generatedata(self, ctx):
+        return self.generateexpr(ctx)
+
+    def generateexpr(self, ctx):
+        raise NotImplementedError(self.classname)
+    
     def dump(self, indent=0, name=None):
         indentstr = '  '*indent
         namestr = name+'=' if name else ''
@@ -171,7 +177,7 @@ class NodeConstant(Node):
         if asnum is not None:
             self.args = self.argclass(value=asnum)
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         return str(self.args.value)
 
 class NodeTime(Node):
@@ -182,7 +188,7 @@ class NodeTime(Node):
         ArgFormat('arg', Ctx.TIME),
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         argdata = self.args.arg.generatedata(ctx=ctx)
         return argdata
 
@@ -194,7 +200,7 @@ class NodeSpace(Node):
         ArgFormat('arg', Ctx.SPACE),
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         argdata = self.args.arg.generatedata(ctx=ctx)
         return argdata
 
@@ -207,7 +213,7 @@ class NodeLinear(Node):
         ArgFormat('velocity', Ctx.TIME),
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         param = self.generateimplicit()
         startdata = self.args.start.generatedata(ctx=ctx)
         veldata = self.args.velocity.generatedata(ctx=ctx)
@@ -223,7 +229,7 @@ class NodeClamp(Node):
         ArgFormat('max', Ctx.TIME, default=1),
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         argdata = self.args.arg.generatedata(ctx=ctx)
         mindata = self.args.min.generatedata(ctx=ctx)
         maxdata = self.args.max.generatedata(ctx=ctx)
@@ -237,7 +243,7 @@ class NodeSum(Node):
         ArgFormat('arg', Node, multiple=True),
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         argdata = []
         for arg in self.args.arg:
             argdata.append(arg.generatedata(ctx=ctx))
@@ -253,7 +259,7 @@ class NodeMean(Node):
         ArgFormat('arg', Node, multiple=True),
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         argdata = []
         for arg in self.args.arg:
             argdata.append(arg.generatedata(ctx=ctx))
@@ -273,7 +279,7 @@ class NodeWave(Node):
         ### offset?
     ]
 
-    def generatedata(self, ctx):
+    def generateexpr(self, ctx):
         param = self.generateimplicit()
         mindata = self.args.min.generatedata(ctx=ctx)
         maxdata = self.args.max.generatedata(ctx=ctx)
