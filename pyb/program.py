@@ -64,6 +64,13 @@ class Program:
                 nod.depend = AxisDep.SPACE
         nod.depend |= subdeps
 
+        for argf in nod.argformat:
+            argls = nod.getargls(argf.name, argf.multiple)
+            for arg in argls:
+                if isinstance(arg, Node):
+                    if arg.depend != nod.depend and not isinstance(arg, NodeConstant):
+                        arg.buffered = True
+        
     def dump(self):
         for name in self.defs:
             self.defs[name].dump(name=name)
@@ -111,6 +118,6 @@ class Program:
 
 
 # Late imports
-from compile import Node, Ctx
+from compile import Node, NodeConstant, Ctx
 
 
