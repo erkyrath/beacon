@@ -153,11 +153,7 @@ class Node:
         bufstr = ' (BUF)' if self.buffered else ''
         print('%s%s<%s> (%s) dep=%s%s' % (indentstr, namestr, self.id, impstr, depstr, bufstr))
         for argf in self.argformat:
-            arg = self.getarg(argf.name)
-            if not argf.multiple:
-                argls = [ arg ]
-            else:
-                argls = arg
+            argls = self.getargls(argf.name, argf.multiple)
             for arg in argls:
                 if isinstance(arg, Node):
                     arg.dump(indent+1, name=argf.name)
