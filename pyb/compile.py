@@ -137,7 +137,8 @@ class Node:
         namestr = name+'=' if name else ''
         impstr = str(self.implicit)[0]
         depstr = axisdepname(self.depend)
-        print('%s%s<%s> (%s) dep=%s' % (indentstr, namestr, self.id, impstr, depstr))
+        bufstr = ' (BUF)' if self.buffered else ''
+        print('%s%s<%s> (%s) dep=%s%s' % (indentstr, namestr, self.id, impstr, depstr, bufstr))
         for argf in self.argformat:
             arg = self.getarg(argf.name)
             if not argf.multiple:
