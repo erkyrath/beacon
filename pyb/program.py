@@ -92,24 +92,33 @@ class Program:
     def write(self):
         print('var clock = 0   // seconds')
         for stanza in self.stanzas:
+            ### or scalar
             print('%s_pixels = array(pixelCount)' % (stanza.nod.id,))
         print()
 
-        ### if nod.buffered and not time-dependent
+        for stanza in self.stanzas:
+            if not (stanza.depend & AxisDep.TIME):
+                ### or no loop
+                print('for (var ix=0; ix<pixelCount; ix++) {')
+                for varname, expr in stanza.storedvals:
+                    print('  var %s = %s' % (varname, expr,))
+                    print('  %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
+                print('}')
         print()
         
         print('export function beforeRender(delta) {')
         # delta is ms since last call
         ### we'll want an accuracy hack here
         print('  clock += (delta / 1000)')
+        
         for stanza in self.stanzas:
-            ### if time-dependent
-            print('  for (var ix=0; ix<pixelCount; ix++) {')
-            for varname, expr in stanza.storedvals:
-                ### subject to TIME/SPACE placement!
-                print('    var %s = %s' % (varname, expr,))
-            print('    %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
-            print('  }')
+            if stanza.depend & AxisDep.TIME:
+                ### or no loop
+                print('  for (var ix=0; ix<pixelCount; ix++) {')
+                for varname, expr in stanza.storedvals:
+                    print('    var %s = %s' % (varname, expr,))
+                print('    %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
+                print('  }')
         print('}')
         print()
 
