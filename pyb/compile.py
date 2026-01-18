@@ -62,7 +62,7 @@ class Node:
     def __repr__(self):
         return '<%s>' % (self.id,)
 
-    def parseargs(self, args):
+    def parseargs(self, args, defmap):
         map = {}
         for arg in args:
             if arg.name:
@@ -96,11 +96,11 @@ class Node:
                     raise Exception('%s: unrecognized waveshape' % (argf.name,))
                 argval = WaveShape.__members__[arg.tok.val.upper()]
             elif argf.typ is Node:
-                argval = compile(arg, self.implicit)
+                argval = compile(arg, implicit=self.implicit, defmap=defmap)
             elif argf.typ is Implicit.TIME:
-                argval = compile(arg, Implicit.TIME)
+                argval = compile(arg, implicit=Implicit.TIME, defmap=defmap)
             elif argf.typ is Implicit.SPACE:
-                argval = compile(arg, Implicit.SPACE)
+                argval = compile(arg, implicit=Implicit.SPACE, defmap=defmap)
             else:
                 raise Exception('%s: unimplemented arg type: %s' % (self.classname, argf.name))
 
@@ -347,35 +347,35 @@ Node.prepclasses(nodeclasses)
 
 def compileall(trees):
     roots = []
+    defmap = {}
     for term in trees:
-        root = compile(term, Implicit.SPACE)
+        root = compile(term, implicit=Implicit.SPACE, defmap=defmap)
         roots.append(( root, term.name ))
+        if term.name is not None:
+            if term.name in defmap:
+                raise Exception('duplicate def: %s' % (term.name,))
+            defmap[term.name] = root
 
     startnod = None
-    map = {}
     for (nod, name) in roots:
         if name is None:
             if startnod is not None:
                 raise Exception('more than one start')
             startnod = nod
-        else:
-            if name in map:
-                raise Exception('duplicate def')
-            map[name] = nod
-    return Program(startnod, map)
+    return Program(startnod, defmap)
 
-def compile(term, ctx):
+def compile(term, implicit, defmap):
     if term.tok.typ == TokType.NUM:
         if term.args:
             raise Exception('number cannot have args')
-        return NodeConstant(ctx, asnum=term.tok.val)
+        return NodeConstant(implicit, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')
     cla = Node.allclassmap.get(term.tok.val.lower())
     if not cla:
         raise Exception('unknown term: %s' % (term.tok.val,))
-    nod = cla(ctx)
-    nod.parseargs(term.args)
+    nod = cla(implicit)
+    nod.parseargs(term.args, defmap=defmap)
     return nod
 
 # Late imports
