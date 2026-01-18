@@ -354,7 +354,7 @@ def compileall(trees):
         if term.name is not None:
             if term.name in defmap:
                 raise Exception('duplicate def: %s' % (term.name,))
-            defmap[term.name] = root
+            defmap[term.name.lower()] = root
 
     startnod = None
     for (nod, name) in roots:
@@ -371,9 +371,12 @@ def compile(term, implicit, defmap):
         return NodeConstant(implicit, asnum=term.tok.val)
     if term.tok.typ != TokType.SYMBOL:
         raise Exception('non-symbol')
-    cla = Node.allclassmap.get(term.tok.val.lower())
+    key = term.tok.val.lower()
+    if key in defmap:
+        return defmap[key]
+    cla = Node.allclassmap.get(key)
     if not cla:
-        raise Exception('unknown term: %s' % (term.tok.val,))
+        raise Exception('unknown term: %s' % (key,))
     nod = cla(implicit)
     nod.parseargs(term.args, defmap=defmap)
     return nod
