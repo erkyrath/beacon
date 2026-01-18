@@ -373,6 +373,8 @@ def compile(term, implicit, defmap):
         raise Exception('non-symbol')
     key = term.tok.val.lower()
     if key in defmap:
+        if term.args:
+            raise Exception('variable name cannot have args: %s' % (key,))
         return defmap[key]
     cla = Node.allclassmap.get(key)
     if not cla:
