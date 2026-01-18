@@ -61,6 +61,7 @@ class Program:
         self.postiter(self.start)
         assert(self.start is self.nodes[-1])
         self.start.buffered = True
+        self.start.id = 'root'
 
         for nod in self.nodes:
             if nod.buffered:
