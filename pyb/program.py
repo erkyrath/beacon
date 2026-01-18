@@ -34,6 +34,15 @@ class Stanza:
     def generatebuffer(self):
         self.bottomline = self.nod.generateexpr(ctx=self)
 
+    def printlines(self, indent=0):
+        indentstr = indent * '  '
+        ### or no loop
+        print('%sfor (var ix=0; ix<pixelCount; ix++) {' % (indentstr,))
+        for varname, expr in self.storedvals:
+            print('%s  var %s = %s' % (indentstr, varname, expr,))
+        print('%s  %s_pixels[ix] = (%s)' % (indentstr, self.nod.id, self.bottomline,))
+        print('%s}' % (indentstr,))
+
 class Program:
     def __init__(self, start, defs):
         self.start = start
@@ -98,12 +107,7 @@ class Program:
 
         for stanza in self.stanzas:
             if not (stanza.depend & AxisDep.TIME):
-                ### or no loop
-                print('for (var ix=0; ix<pixelCount; ix++) {')
-                for varname, expr in stanza.storedvals:
-                    print('  var %s = %s' % (varname, expr,))
-                print('  %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
-                print('}')
+                stanza.printlines(indent=0)
         print()
         
         print('export function beforeRender(delta) {')
@@ -113,12 +117,7 @@ class Program:
         
         for stanza in self.stanzas:
             if stanza.depend & AxisDep.TIME:
-                ### or no loop
-                print('  for (var ix=0; ix<pixelCount; ix++) {')
-                for varname, expr in stanza.storedvals:
-                    print('    var %s = %s' % (varname, expr,))
-                print('    %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
-                print('  }')
+                stanza.printlines(indent=1)
         print('}')
         print()
 
