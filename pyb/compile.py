@@ -141,8 +141,10 @@ class Node:
 
     def generatedata(self, ctx):
         if self.buffered:
-            ### or not [ix]
-            return '%s_pixels[ix]' % (self.id,)
+            if not (self.depend & AxisDep.SPACE):
+                return '%s_scalar' % (self.id,)
+            else:
+                return '%s_pixels[ix]' % (self.id,)
         return self.generateexpr(ctx)
 
     def generateexpr(self, ctx):

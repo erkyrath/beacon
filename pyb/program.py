@@ -36,12 +36,16 @@ class Stanza:
 
     def printlines(self, indent=0):
         indentstr = indent * '  '
-        ### or no loop
-        print('%sfor (var ix=0; ix<pixelCount; ix++) {' % (indentstr,))
-        for varname, expr in self.storedvals:
-            print('%s  var %s = %s' % (indentstr, varname, expr,))
-        print('%s  %s_pixels[ix] = (%s)' % (indentstr, self.nod.id, self.bottomline,))
-        print('%s}' % (indentstr,))
+        if not (self.depend & AxisDep.SPACE):
+            for varname, expr in self.storedvals:
+                print('%svar %s = %s' % (indentstr, varname, expr,))
+            print('%s%s_scalar = (%s)' % (indentstr, self.nod.id, self.bottomline,))
+        else:
+            print('%sfor (var ix=0; ix<pixelCount; ix++) {' % (indentstr,))
+            for varname, expr in self.storedvals:
+                print('%s  var %s = %s' % (indentstr, varname, expr,))
+            print('%s  %s_pixels[ix] = (%s)' % (indentstr, self.nod.id, self.bottomline,))
+            print('%s}' % (indentstr,))
 
 class Program:
     def __init__(self, start, defs):
