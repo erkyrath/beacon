@@ -88,9 +88,9 @@ class Program:
                     subdeps |= arg.depend
 
         if nod.usesimplicit:
-            if nod.implicit == Ctx.TIME:
+            if nod.implicit == Implicit.TIME:
                 nod.depend = AxisDep.TIME
-            if nod.implicit == Ctx.SPACE:
+            if nod.implicit == Implicit.SPACE:
                 nod.depend = AxisDep.SPACE
         nod.depend |= subdeps
 
@@ -141,6 +141,6 @@ class Program:
 
 
 # Late imports
-from compile import Node, NodeConstant, Ctx
+from compile import Node, NodeConstant, Implicit
 
 

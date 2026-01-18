@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from lex import Term, TokType
 
-class Ctx(StrEnum):
+class Implicit(StrEnum):
     TIME  = 'TIME'
     SPACE = 'SPACE'
 
@@ -97,10 +97,10 @@ class Node:
                 argval = WaveShape.__members__[arg.tok.val.upper()]
             elif argf.typ is Node:
                 argval = compile(arg, self.implicit)
-            elif argf.typ is Ctx.TIME:
-                argval = compile(arg, Ctx.TIME)
-            elif argf.typ is Ctx.SPACE:
-                argval = compile(arg, Ctx.SPACE)
+            elif argf.typ is Implicit.TIME:
+                argval = compile(arg, Implicit.TIME)
+            elif argf.typ is Implicit.SPACE:
+                argval = compile(arg, Implicit.SPACE)
             else:
                 raise Exception('%s: unimplemented arg type: %s' % (self.classname, argf.name))
 
@@ -115,7 +115,7 @@ class Node:
             if argf.name not in map and argf.isoptional:
                 if not (isinstance(argf.default, int) or isinstance(argf.default, float)):
                     raise Exception('%s: arg default is not numeric: %s' % (self.classname, argf.name))
-                map[argf.name] = NodeConstant(Ctx.TIME, asnum=argf.default)
+                map[argf.name] = NodeConstant(Implicit.TIME, asnum=argf.default)
 
         self.args = self.argclass(**map)
 
@@ -135,10 +135,10 @@ class Node:
     def generateimplicit(self):
         if not self.usesimplicit:
             raise Exception('usesimplicit not set')
-        if self.implicit is Ctx.TIME:
+        if self.implicit is Implicit.TIME:
             ### relative to start?
             return "clock"
-        if self.implicit is Ctx.SPACE:
+        if self.implicit is Implicit.SPACE:
             return "(ix/pixelCount)"
         raise Exception('implicit not set')
 
@@ -192,7 +192,7 @@ class NodeTime(Node):
 
     usesimplicit = False
     argformat = [
-        ArgFormat('arg', Ctx.TIME),
+        ArgFormat('arg', Implicit.TIME),
     ]
 
     def generateexpr(self, ctx):
@@ -204,7 +204,7 @@ class NodeSpace(Node):
 
     usesimplicit = False
     argformat = [
-        ArgFormat('arg', Ctx.SPACE),
+        ArgFormat('arg', Implicit.SPACE),
     ]
 
     def generateexpr(self, ctx):
@@ -216,8 +216,8 @@ class NodeLinear(Node):
 
     usesimplicit = True
     argformat = [
-        ArgFormat('start', Ctx.TIME),
-        ArgFormat('velocity', Ctx.TIME),
+        ArgFormat('start', Implicit.TIME),
+        ArgFormat('velocity', Implicit.TIME),
     ]
 
     def generateexpr(self, ctx):
@@ -232,8 +232,8 @@ class NodeClamp(Node):
     usesimplicit = False
     argformat = [
         ArgFormat('arg', Node),
-        ArgFormat('min', Ctx.TIME, default=0),
-        ArgFormat('max', Ctx.TIME, default=1),
+        ArgFormat('min', Implicit.TIME, default=0),
+        ArgFormat('max', Implicit.TIME, default=1),
     ]
 
     def generateexpr(self, ctx):
@@ -249,6 +249,8 @@ class NodeSum(Node):
     argformat = [
         ArgFormat('arg', Node, multiple=True),
     ]
+
+    ### constantval if needed...
 
     def generateexpr(self, ctx):
         argdata = []
@@ -280,9 +282,9 @@ class NodeWave(Node):
     usesimplicit = True
     argformat = [
         ArgFormat('shape', WaveShape),
-        ArgFormat('min', Ctx.TIME, default=0),
-        ArgFormat('max', Ctx.TIME, default=1),
-        ArgFormat('period', Ctx.TIME, default=1),
+        ArgFormat('min', Implicit.TIME, default=0),
+        ArgFormat('max', Implicit.TIME, default=1),
+        ArgFormat('period', Implicit.TIME, default=1),
         ### offset?
     ]
 
@@ -291,7 +293,7 @@ class NodeWave(Node):
         mindata = self.args.min.generatedata(ctx=ctx)
         maxdata = self.args.max.generatedata(ctx=ctx)
         perioddata = self.args.period.generatedata(ctx=ctx)
-        if self.implicit is Ctx.SPACE:
+        if self.implicit is Implicit.SPACE:
             theta = '((%s-0.5)/%s+0.5)' % (param, perioddata,)
         else:
             theta = '%s/%s' % (param, perioddata,)
@@ -346,7 +348,7 @@ Node.prepclasses(nodeclasses)
 def compileall(trees):
     roots = []
     for term in trees:
-        root = compile(term, Ctx.SPACE)
+        root = compile(term, Implicit.SPACE)
         roots.append(( root, term.name ))
 
     startnod = None
