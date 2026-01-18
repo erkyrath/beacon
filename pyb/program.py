@@ -102,7 +102,7 @@ class Program:
                 print('for (var ix=0; ix<pixelCount; ix++) {')
                 for varname, expr in stanza.storedvals:
                     print('  var %s = %s' % (varname, expr,))
-                    print('  %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
+                print('  %s_pixels[ix] = (%s)' % (stanza.nod.id, stanza.bottomline,))
                 print('}')
         print()
         
