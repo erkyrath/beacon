@@ -128,6 +128,9 @@ class Node:
             return [ arg ]
         else:
             return arg
+
+    def constantval(self):
+        return None
         
     def generateimplicit(self):
         if not self.usesimplicit:
@@ -178,6 +181,9 @@ class NodeConstant(Node):
         if asnum is not None:
             self.args = self.argclass(value=asnum)
 
+    def constantval(self):
+        return self.args.value
+        
     def generateexpr(self, ctx):
         return str(self.args.value)
 
