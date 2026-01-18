@@ -65,6 +65,9 @@ class Program:
         assert(self.start is self.nodes[-1])
         self.start.buffered = True
         self.start.id = 'root'
+        for key, nod in self.defs.items():
+            if not isinstance(nod, NodeConstant):
+                nod.buffered = True
 
         for nod in self.nodes:
             if nod.buffered:
