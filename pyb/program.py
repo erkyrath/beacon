@@ -127,7 +127,10 @@ class Program:
         print()
 
         print('export function render(index) {')
-        print('  var val = %s_pixels[index]' % (self.start.id,))
+        if not (self.start.depend & AxisDep.SPACE):
+            print('  var val = %s_scalar' % (self.start.id,))
+        else:
+            print('  var val = %s_pixels[index]' % (self.start.id,))
         print('  rgb(val*val, 0, 0.1)')
         print('}')
         print()
