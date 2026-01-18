@@ -58,6 +58,9 @@ class Program:
         self.stanzas = []
 
     def post(self):
+        if self.start is None:
+            raise Exception('no root')
+        
         self.postiter(self.start)
         assert(self.start is self.nodes[-1])
         self.start.buffered = True
