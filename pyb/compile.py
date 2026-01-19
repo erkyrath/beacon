@@ -91,6 +91,10 @@ class Node:
                 if arg.tok.typ is not TokType.NUM:
                     raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
                 argval = arg.tok.val
+            elif argf.typ is int:
+                if arg.tok.typ is not TokType.NUM:
+                    raise Exception('%s: %s must be numeric' % (self.classname, argf.name))
+                argval = int(arg.tok.val)
             elif argf.typ is WaveShape:
                 if arg.tok.typ is not TokType.SYMBOL:
                     raise Exception('%s: unrecognized waveshape' % (argf.name,))
@@ -102,7 +106,7 @@ class Node:
             elif argf.typ is Implicit.SPACE:
                 argval = compile(arg, implicit=Implicit.SPACE, defmap=defmap)
             else:
-                raise Exception('%s: unimplemented arg type: %s' % (self.classname, argf.name))
+                raise Exception('%s: unimplemented arg type: %s (%s)' % (self.classname, argf.typ, argf.name))
 
             if not argf.multiple:
                 map[argf.name] = argval
@@ -151,7 +155,7 @@ class Node:
         return self.generateexpr(ctx)
 
     def generateexpr(self, ctx):
-        raise NotImplementedError(self.classname)
+        raise NotImplementedError('generateexpr: %s' % (self.classname,))
     
     def dump(self, indent=0, name=None):
         indentstr = '  '*indent
@@ -332,6 +336,20 @@ class NodeWave(Node):
             case _:
                 raise Exception('unimplemented WaveShape')
 
+class NodePulser(Node):
+    classname = 'pulser'
+    
+    usesimplicit = False
+    argformat = [
+        ArgFormat('maxcount', int),
+        ArgFormat('spaceshape', WaveShape, default=WaveShape.TRIANGLE),
+        ArgFormat('timeshape', WaveShape, default=WaveShape.SQRDECAY),
+        ArgFormat('interval', Implicit.TIME, default=1),
+        ArgFormat('pos', Implicit.TIME, default=0.5),
+        ArgFormat('duration', Implicit.TIME, default=1),
+        ArgFormat('width', Implicit.TIME, default=0.5),
+    ]
+
 nodeclasses = [
     NodeConstant,
     NodeTime,
@@ -341,6 +359,7 @@ nodeclasses = [
     NodeSum,
     NodeMean,
     NodeWave,
+    NodePulser,
 ]
 
 Node.prepclasses(nodeclasses)
