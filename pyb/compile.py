@@ -390,6 +390,15 @@ class NodePulser(Node):
             print('      if (relage > 1.0) {\n        %s_live[px] = 0\n        livecount -= 1\n        continue\n      }' % (self.id,))
             print('      timeval = triangle(relage)')
             ### timeval = sample timeshape(...)
+        ### minpos, maxpos, and check if pulse has flown off the edge
+        print('      for (var ix=minpos; ix<maxpos; ix++) {')
+        if self.args.spaceshape is WaveShape.FLAT:
+            print('        spaceval = 1')
+        else:
+            print('        spaceval = (ix/pixelCount)')
+            ### spaceval = sample spaceshape(...)
+        print('        %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
+        print('      }')
         print('    }')
         print('  }')
         
