@@ -116,8 +116,10 @@ class Program:
     def write(self):
         print('var clock = 0   // seconds')
         for stanza in self.stanzas:
-            ### or scalar
-            print('%s_pixels = array(pixelCount)' % (stanza.nod.id,))
+            if not (stanza.depend & AxisDep.SPACE):
+                print('var %s_scalar' % (stanza.nod.id,))
+            else:
+                print('var %s_pixels = array(pixelCount)' % (stanza.nod.id,))
         print()
 
         for stanza in self.stanzas:
