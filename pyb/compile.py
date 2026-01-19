@@ -233,6 +233,39 @@ class NodeLinear(Node):
         veldata = self.args.velocity.generatedata(ctx=ctx)
         return '(%s + %s * %s)' % (startdata, param, veldata,)
 
+class NodeRandFlat(Node):
+    classname = 'randflat'
+
+    usesimplicit = True
+    argformat = [
+        ArgFormat('min', Implicit.TIME),
+        ArgFormat('max', Implicit.TIME),
+    ]
+
+    def generateexpr(self, ctx):
+        # Don't actually use generateimplicit
+        mindata = self.args.min.generatedata(ctx=ctx)
+        maxdata = self.args.max.generatedata(ctx=ctx)
+        minval = ctx.store_val(self, 'min', mindata)
+        diffval = ctx.store_val(self, 'diff', '(%s-%s)' % (maxdata, minval,))
+        return '(random(%s)+%s)' % (diffval, minval,)
+    
+class NodeRandNorm(Node):
+    classname = 'randnorm'
+
+    usesimplicit = True
+    argformat = [
+        ArgFormat('mean', Implicit.TIME, default=0.5),
+        ArgFormat('stdev', Implicit.TIME, default=0.25),
+    ]
+
+    def generateexpr(self, ctx):
+        # Don't actually use generateimplicit
+        meandata = self.args.mean.generatedata(ctx=ctx)
+        stdevdata = self.args.stdev.generatedata(ctx=ctx)
+        ### constant-fold the stdev/0.522 part if possible?
+        return '(((random(1)+random(1)+random(1)-1.5)*%s/0.522)+%s)' % (stdevdata, meandata,)
+    
 class NodeClamp(Node):
     classname = 'clamp'
     
@@ -408,6 +441,8 @@ nodeclasses = [
     NodeTime,
     NodeSpace,
     NodeLinear,
+    NodeRandFlat,
+    NodeRandNorm,
     NodeClamp,
     NodeSum,
     NodeMean,
