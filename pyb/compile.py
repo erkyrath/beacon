@@ -356,8 +356,12 @@ class NodePulser(Node):
     def printstaticvars(self):
         maxcount = self.args.maxcount
         print('var %s_live = array(%d)' % (self.id, maxcount,))
+        print('var %s_livecount = 0' % (self.id,))
     
     def generateexpr(self, ctx):
+        # This is just the initial buffer-clear.
+        durationdata = self.args.duration.generatedata(ctx=ctx)
+        self.durationdata = durationdata ###
         return '0'
 
     def pulserprint(self):
@@ -365,6 +369,13 @@ class NodePulser(Node):
         maxcount = self.args.maxcount
         print('  for (var px=0; px<%d; px++) {' % (maxcount,))
         print('    if (%s_live[px]) {' % (self.id,))
+        if self.args.timeshape is WaveShape.FLAT:
+            print('      timeval = 1')
+        else:
+            ### calc age
+            print('      if (age > 1.0) {\n        %s_live[px] = 0\n        continue\n      }' % (self.id,))
+            print('      timeval = triangle(age / %s)' % (self.durationdata,))
+            ### timeval = sample timeshape(...)
         print('    }')
         print('  }')
         
