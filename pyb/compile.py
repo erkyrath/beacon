@@ -357,6 +357,7 @@ class NodePulser(Node):
         maxcount = self.args.maxcount
         print('var %s_live = array(%d)' % (self.id, maxcount,))
         print('var %s_livecount = 0' % (self.id,))
+        print('var %s_nextstart = 0' % (self.id,))
     
     def generateexpr(self, ctx):
         # This is just the initial buffer-clear.
@@ -367,14 +368,27 @@ class NodePulser(Node):
     def pulserprint(self):
         assert self.buffered
         maxcount = self.args.maxcount
+        print('  if (clock >= %s_nextstart && %s_livecount < %d) {' % (self.id, self.id, maxcount,))
+        print('    for (var px=0; px<%d; px++) {' % (maxcount,))
+        print('      if (!%s_live[px]) { break }' % (self.id,))
+        print('    }')
+        print('    if (px < %d) {' % (maxcount,))
+        print('      %s_live[px] = 1' % (self.id,))
+        print('      livecount += 1')
+        ### more pulse init
+        print('      %s_birth[px] = clock' % (self.id,))
+        print('    }')
+
+        print('  }')
         print('  for (var px=0; px<%d; px++) {' % (maxcount,))
         print('    if (%s_live[px]) {' % (self.id,))
         if self.args.timeshape is WaveShape.FLAT:
             print('      timeval = 1')
         else:
-            ### calc age
-            print('      if (age > 1.0) {\n        %s_live[px] = 0\n        continue\n      }' % (self.id,))
-            print('      timeval = triangle(age / %s)' % (self.durationdata,))
+            print('      age = clock - %s_birth[px]' % (self.id,))
+            print('      relage = age / %s' % (self.durationdata,))
+            print('      if (relage > 1.0) {\n        %s_live[px] = 0\n        livecount -= 1\n        continue\n      }' % (self.id,))
+            print('      timeval = triangle(relage)')
             ### timeval = sample timeshape(...)
         print('    }')
         print('  }')
