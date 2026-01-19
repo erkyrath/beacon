@@ -194,6 +194,17 @@ class NodeConstant(Node):
     def generateexpr(self, ctx):
         return str(self.args.value)
 
+class NodeQuote(Node):
+    classname = 'quote'
+
+    usesimplicit = False
+    argformat = [
+        ArgFormat('arg', Node),
+    ]
+
+    def generateexpr(self, ctx):
+        raise Exception('cannot use quote directly')
+
 class NodeTime(Node):
     classname = 'time'
 
@@ -437,6 +448,7 @@ class NodePulser(Node):
 
 nodeclasses = [
     NodeConstant,
+    NodeQuote,
     NodeTime,
     NodeSpace,
     NodeLinear,
