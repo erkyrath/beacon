@@ -408,6 +408,7 @@ class NodePulser(Node):
         durationdata = self.args.duration.generatedata(ctx=ctx)
         posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
+        ### if these have space-dep, assert?
         self.durationdata = durationdata ###
         self.posdata = posdata ###
         self.widthdata = widthdata ###
@@ -439,12 +440,14 @@ class NodePulser(Node):
             print('    timeval = triangle(relage)')
             ### timeval = sample timeshape(...)
         ### minpos, maxpos, and check if pulse has flown off the edge
+        print('    ppos = %s' % (self.posdata,))
+        print('    pwidth = %s' % (self.widthdata,))
         if self.args.spaceshape is WaveShape.FLAT:
             print('    minpos = 0')
             print('    maxpos = pixelCount')
         else:
-            print('    minpos = max(0, pixelCount*(%s-%s))' % (self.posdata, self.widthdata,))
-            print('    maxpos = min(pixelCount, pixelCount*(%s+%s))' % (self.posdata, self.widthdata,))
+            print('    minpos = max(0, pixelCount*(ppos-pwidth))')
+            print('    maxpos = min(pixelCount, pixelCount*(ppos+pwidth))')
         print('    for (var ix=minpos; ix<maxpos; ix++) {')
         if self.args.spaceshape is WaveShape.FLAT:
             print('      spaceval = 1')
