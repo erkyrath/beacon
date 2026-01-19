@@ -349,6 +349,9 @@ class NodePulser(Node):
         ArgFormat('duration', Implicit.TIME, default=1),
         ArgFormat('width', Implicit.TIME, default=0.5),
     ]
+    
+    def generateexpr(self, ctx):
+        return '0'
 
 nodeclasses = [
     NodeConstant,

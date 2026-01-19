@@ -81,8 +81,12 @@ class Program:
         self.nodes.insert(0, nod)
         self.nodeidset.add(nod.id)
 
-        subdeps = AxisDep.NONE
+        if isinstance(nod, NodePulser):
+            nod.depend = AxisDep.SPACETIME
+            nod.buffered = True
 
+        subdeps = AxisDep.NONE
+        
         for argf in nod.argformat:
             argls = nod.getargls(argf.name, argf.multiple)
             for arg in argls:
@@ -144,6 +148,6 @@ class Program:
 
 
 # Late imports
-from compile import Node, NodeConstant, Implicit
+from compile import Node, NodeConstant, NodePulser, Implicit
 
 
