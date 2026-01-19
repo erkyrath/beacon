@@ -406,7 +406,11 @@ class NodePulser(Node):
     def generateexpr(self, ctx):
         # This is just the initial buffer-clear.
         durationdata = self.args.duration.generatedata(ctx=ctx)
+        posdata = self.args.pos.generatedata(ctx=ctx)
+        widthdata = self.args.width.generatedata(ctx=ctx)
         self.durationdata = durationdata ###
+        self.posdata = posdata ###
+        self.widthdata = widthdata ###
         return '0'
 
     def pulserprint(self):
@@ -435,6 +439,12 @@ class NodePulser(Node):
             print('    timeval = triangle(relage)')
             ### timeval = sample timeshape(...)
         ### minpos, maxpos, and check if pulse has flown off the edge
+        if self.args.spaceshape is WaveShape.FLAT:
+            print('    minpos = 0')
+            print('    maxpos = pixelCount')
+        else:
+            print('    minpos = max(0, pixelCount*(%s-%s))' % (self.posdata, self.widthdata,))
+            print('    maxpos = min(pixelCount, pixelCount*(%s+%s))' % (self.posdata, self.widthdata,))
         print('    for (var ix=minpos; ix<maxpos; ix++) {')
         if self.args.spaceshape is WaveShape.FLAT:
             print('      spaceval = 1')
