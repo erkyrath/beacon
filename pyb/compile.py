@@ -414,24 +414,23 @@ class NodePulser(Node):
 
         print('  }')
         print('  for (var px=0; px<%d; px++) {' % (maxcount,))
-        print('    if (%s_live[px]) {' % (self.id,))
+        print('    if (!%s_live[px]) { break }' % (self.id,))
         if self.args.timeshape is WaveShape.FLAT:
-            print('      timeval = 1')
+            print('    timeval = 1')
         else:
-            print('      age = clock - %s_birth[px]' % (self.id,))
-            print('      relage = age / %s' % (self.durationdata,))
-            print('      if (relage > 1.0) {\n        %s_live[px] = 0\n        livecount -= 1\n        continue\n      }' % (self.id,))
-            print('      timeval = triangle(relage)')
+            print('    age = clock - %s_birth[px]' % (self.id,))
+            print('    relage = age / %s' % (self.durationdata,))
+            print('    if (relage > 1.0) {\n      %s_live[px] = 0\n      livecount -= 1\n      continue\n    }' % (self.id,))
+            print('    timeval = triangle(relage)')
             ### timeval = sample timeshape(...)
         ### minpos, maxpos, and check if pulse has flown off the edge
-        print('      for (var ix=minpos; ix<maxpos; ix++) {')
+        print('    for (var ix=minpos; ix<maxpos; ix++) {')
         if self.args.spaceshape is WaveShape.FLAT:
-            print('        spaceval = 1')
+            print('      spaceval = 1')
         else:
-            print('        spaceval = (ix/pixelCount)')
+            print('      spaceval = (ix/pixelCount)')
             ### spaceval = sample spaceshape(...)
-        print('        %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
-        print('      }')
+        print('      %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
         print('    }')
         print('  }')
         
