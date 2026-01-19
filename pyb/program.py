@@ -46,6 +46,8 @@ class Stanza:
                 print('%s  var %s = %s' % (indentstr, varname, expr,))
             print('%s  %s_pixels[ix] = (%s)' % (indentstr, self.nod.id, self.bottomline,))
             print('%s}' % (indentstr,))
+        if isinstance(self.nod, NodePulser):
+            self.nod.pulserprint()
 
 class Program:
     def __init__(self, start, defs):
@@ -115,13 +117,17 @@ class Program:
 
     def write(self):
         print('var clock = 0   // seconds')
+        print()
+        print('// stanza buffers:')
         for stanza in self.stanzas:
             if not (stanza.depend & AxisDep.SPACE):
                 print('var %s_scalar' % (stanza.nod.id,))
             else:
                 print('var %s_pixels = array(pixelCount)' % (stanza.nod.id,))
+            stanza.nod.printstaticvars()
         print()
 
+        print('// startup calculations:')
         for stanza in self.stanzas:
             if not (stanza.depend & AxisDep.TIME):
                 stanza.printlines(indent=0)

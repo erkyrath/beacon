@@ -136,6 +136,9 @@ class Node:
     def constantval(self):
         return None
         
+    def printstaticvars(self):
+        pass
+    
     def generateimplicit(self):
         if not self.usesimplicit:
             raise Exception('usesimplicit not set')
@@ -349,9 +352,22 @@ class NodePulser(Node):
         ArgFormat('duration', Implicit.TIME, default=1),
         ArgFormat('width', Implicit.TIME, default=0.5),
     ]
+
+    def printstaticvars(self):
+        maxcount = self.args.maxcount
+        print('var %s_live = array(%d)' % (self.id, maxcount,))
     
     def generateexpr(self, ctx):
         return '0'
+
+    def pulserprint(self):
+        assert self.buffered
+        maxcount = self.args.maxcount
+        print('  for (var px=0; px<%d; px++) {' % (maxcount,))
+        print('    if (%s_live[px]) {' % (self.id,))
+        print('    }')
+        print('  }')
+        
 
 nodeclasses = [
     NodeConstant,
