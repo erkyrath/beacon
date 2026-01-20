@@ -22,7 +22,8 @@ def parse(filename):
 
 program = parse(sys.argv[1])
 program.post()
-program.dump()
+if True:
+    program.dump()
 print('// ' + sys.argv[1])
 if False:
     for ln in srclines:

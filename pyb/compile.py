@@ -439,6 +439,8 @@ class NodePulser(Node):
     
     def generateexpr(self, ctx):
         durationdata = self.args.duration.generatedata(ctx=ctx)
+        if (self.args.pos.depend & AxisDep.SPACE):
+            raise Exception('pulser pos cannot be SPACE')
         if self.quote_pos:
             ### time will be relative to id_birth[px]
             posdata = self.args.pos.generatedata(ctx=ctx)
