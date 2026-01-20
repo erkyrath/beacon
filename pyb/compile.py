@@ -427,10 +427,17 @@ class NodePulser(Node):
         print('var %s_birth = array(%d)' % (self.id, maxcount,))
         print('var %s_livecount = 0' % (self.id,))
         print('var %s_nextstart = 0' % (self.id,))
+        if not isinstance(self.args.pos, NodeQuote):
+            print('var %s_arg_pos = array(%d)' % (self.id, maxcount,))
     
     def generateexpr(self, ctx):
         durationdata = self.args.duration.generatedata(ctx=ctx)
-        posdata = self.args.pos.generatedata(ctx=ctx)
+        if isinstance(self.args.pos, NodeQuote):
+            ### time will be relative to id_birth[px]
+            posdata = self.args.pos.args.arg.generatedata(ctx=ctx)
+        else:
+            ### will only be used once, shouldn't have store_vals
+            posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
         ### if these have space-dep, assert?
         self.durationdata = durationdata ###
@@ -449,6 +456,8 @@ class NodePulser(Node):
         print('    if (px < %d) {' % (maxcount,))
         print('      %s_live[px] = 1' % (self.id,))
         print('      livecount += 1')
+        if not isinstance(self.args.pos, NodeQuote):
+            print('      %s_arg_pos[px] = %s' % (self.id, self.posdata))
         ### more pulse init
         print('      %s_nextstart = clock' % (self.id,))
         print('      %s_birth[px] = clock' % (self.id,))
@@ -465,7 +474,10 @@ class NodePulser(Node):
             print('    if (relage > 1.0) {\n      %s_live[px] = 0\n      livecount -= 1\n      continue\n    }' % (self.id,))
             print('    timeval = %s' % (wave_sample(self.args.timeshape, 'relage'),))
         ### minpos, maxpos, and check if pulse has flown off the edge
-        print('    ppos = %s' % (self.posdata,))
+        if not isinstance(self.args.pos, NodeQuote):
+            print('    ppos = %s_arg_pos[px]' % (self.id,))
+        else:
+            print('    ppos = %s' % (self.posdata,))
         print('    pwidth = %s' % (self.widthdata,))
         if self.args.spaceshape is WaveShape.FLAT:
             print('    minpos = 0')
