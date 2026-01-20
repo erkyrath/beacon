@@ -444,7 +444,7 @@ class NodePulser(Node):
             ### time will be relative to id_birth[px]
             posdata = self.args.pos.generatedata(ctx=ctx)
         else:
-            ### will only be used once, shouldn't have store_vals
+            ### will only be used once, should limit store_vals
             posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
         ### if these have space-dep, assert?
