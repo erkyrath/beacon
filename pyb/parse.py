@@ -5,9 +5,13 @@ import sys
 from lex import parselines
 from compile import compileall
 
+srclines = None
+
 def parse(filename):
+    global srclines
+    
     fl = open(filename)
-    parsetrees = parselines(fl)
+    parsetrees, srclines = parselines(fl)
     fl.close()
 
     #for term in parsetrees:
@@ -20,4 +24,8 @@ program = parse(sys.argv[1])
 program.post()
 program.dump()
 print('// ' + sys.argv[1])
+if False:
+    for ln in srclines:
+        print('// ' + ln)
+    print()
 program.write()

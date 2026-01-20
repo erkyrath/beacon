@@ -7,11 +7,14 @@ pat_number = re.compile('^[-]?[0-9]*[.]?[0-9]+')
 pat_color = re.compile('^[$][0-9a-fA-F]+')
 
 def parselines(fl):
+    lines = []
     trees = []
     stack = [ (0, trees ) ]
     
     for ln in fl.readlines():
         ln = ln.rstrip()
+        lines.append(ln)
+        
         match = pat_white.match(ln)
         if not match:
             indent = 0
@@ -48,7 +51,7 @@ def parselines(fl):
         
         curls.extend(lnterms)
 
-    return trees
+    return (trees, lines)
 
 
 class TokType(StrEnum):
