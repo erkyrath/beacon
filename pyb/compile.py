@@ -441,10 +441,9 @@ class NodePulser(Node):
         durationdata = self.args.duration.generatedata(ctx=ctx)
         if self.quote_pos:
             ### time will be relative to id_birth[px]
-            ### self.quote_pos?
             posdata = self.args.pos.generatedata(ctx=ctx)
         else:
-            ### will only be used once, should limit store_vals
+            ### will only be used at pbirth time, should limit store_vals
             ### except pos is buffered, so what the hell
             posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
@@ -468,7 +467,8 @@ class NodePulser(Node):
         if not self.quote_pos:
             print('      %s_arg_pos[px] = %s' % (self.id, self.posdata))
         ### more pulse init
-        print('      %s_nextstart = clock' % (self.id,))
+        print('      %s_nextstart = clock' % (self.id,)) ### plus interval!
+        ### interval is pbirth time also
         print('      %s_birth[px] = clock' % (self.id,))
         print('    }')
 
