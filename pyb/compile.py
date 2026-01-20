@@ -424,6 +424,7 @@ class NodePulser(Node):
     def printstaticvars(self):
         maxcount = self.args.maxcount
         print('var %s_live = array(%d)' % (self.id, maxcount,))
+        print('var %s_birth = array(%d)' % (self.id, maxcount,))
         print('var %s_livecount = 0' % (self.id,))
         print('var %s_nextstart = 0' % (self.id,))
     
@@ -449,6 +450,7 @@ class NodePulser(Node):
         print('      %s_live[px] = 1' % (self.id,))
         print('      livecount += 1')
         ### more pulse init
+        print('      %s_nextstart = clock' % (self.id,))
         print('      %s_birth[px] = clock' % (self.id,))
         print('    }')
 
