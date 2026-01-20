@@ -449,10 +449,6 @@ class NodePulser(Node):
             ### except pos is buffered, so what the hell
             posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
-        ### if these have space-dep, assert?
-        self.durationdata = durationdata ###
-        self.posdata = posdata ###
-        self.widthdata = widthdata ###
 
         assert self.buffered
         maxcount = self.args.maxcount
@@ -464,7 +460,7 @@ class NodePulser(Node):
         ctx.after('    %s_live[px] = 1' % (self.id,))
         ctx.after('    livecount += 1')
         if not self.quote_pos:
-            ctx.after('    %s_arg_pos[px] = %s' % (self.id, self.posdata))
+            ctx.after('    %s_arg_pos[px] = %s' % (self.id, posdata))
         ### more pulse init
         ctx.after('    %s_nextstart = clock + 0' % (self.id,)) ### plus interval!
         ### interval is pbirth time also
@@ -478,15 +474,15 @@ class NodePulser(Node):
             ctx.after('  timeval = 1')
         else:
             ctx.after('  age = clock - %s_birth[px]' % (self.id,))
-            ctx.after('  relage = age / %s' % (self.durationdata,))
+            ctx.after('  relage = age / %s' % (durationdata,))
             ctx.after('  if (relage > 1.0) {\n      %s_live[px] = 0\n      livecount -= 1\n      continue\n    }' % (self.id,))
             ctx.after('  timeval = %s' % (wave_sample(self.args.timeshape, 'relage'),))
         ### minpos, maxpos, and check if pulse has flown off the edge
         if not self.quote_pos:
             ctx.after('  ppos = %s_arg_pos[px]' % (self.id,))
         else:
-            ctx.after('  ppos = %s' % (self.posdata,))
-        ctx.after('  pwidth = %s' % (self.widthdata,))
+            ctx.after('  ppos = %s' % (posdata,))
+        ctx.after('  pwidth = %s' % (widthdata,))
         if self.args.spaceshape is WaveShape.FLAT:
             ctx.after('  minpos = 0')
             ctx.after('  maxpos = pixelCount')
