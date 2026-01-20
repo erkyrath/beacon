@@ -423,10 +423,9 @@ class NodePulser(Node):
 
     def parseargs(self, args, defmap):
         Node.parseargs(self, args, defmap)
-        self.quote_pos = False
+        self.quote_pos = None
         if isinstance(self.args.pos, NodeQuote):
-            self.quote_pos = True
-            self.args.pos = self.args.pos.args.arg
+            self.quote_pos = self.args.pos.args.arg
         ### width, duration
     
     def printstaticvars(self):
@@ -442,9 +441,11 @@ class NodePulser(Node):
         durationdata = self.args.duration.generatedata(ctx=ctx)
         if self.quote_pos:
             ### time will be relative to id_birth[px]
+            ### self.quote_pos?
             posdata = self.args.pos.generatedata(ctx=ctx)
         else:
             ### will only be used once, should limit store_vals
+            ### except pos is buffered, so what the hell
             posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
         ### if these have space-dep, assert?
