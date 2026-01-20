@@ -25,11 +25,15 @@ class Stanza:
         self.depend = nod.depend
         self.storedvals = []
         self.bottomline = None
+        self.afterlines = []
     
     def store_val(self, nod, key, expr):
         varname = '%s_val_%s' % (nod.id, key,)
         self.storedvals.append( (varname, expr) )
         return varname
+
+    def after(self, ln):
+        self.afterlines.append(ln)
 
     def generatebuffer(self):
         self.bottomline = self.nod.generateexpr(ctx=self)
@@ -46,8 +50,8 @@ class Stanza:
                 print('%s  var %s = %s  // for %s' % (indentstr, varname, expr, self.nod.id,))
             print('%s  %s_pixels[ix] = (%s)' % (indentstr, self.nod.id, self.bottomline,))
             print('%s}' % (indentstr,))
-        if isinstance(self.nod, NodePulser):
-            self.nod.pulserprint()
+        for ln in self.afterlines:
+            print('%s%s' % (indentstr, ln,))
 
 class Program:
     def __init__(self, start, defs):

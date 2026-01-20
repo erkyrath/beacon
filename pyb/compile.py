@@ -453,59 +453,58 @@ class NodePulser(Node):
         self.durationdata = durationdata ###
         self.posdata = posdata ###
         self.widthdata = widthdata ###
-        # This is just the initial buffer-clear.
-        return '0'
 
-    def pulserprint(self):
         assert self.buffered
         maxcount = self.args.maxcount
-        print('  if (clock >= %s_nextstart && %s_livecount < %d) {' % (self.id, self.id, maxcount,))
-        print('    for (var px=0; px<%d; px++) {' % (maxcount,))
-        print('      if (!%s_live[px]) { break }' % (self.id,))
-        print('    }')
-        print('    if (px < %d) {' % (maxcount,))
-        print('      %s_live[px] = 1' % (self.id,))
-        print('      livecount += 1')
+        ctx.after('if (clock >= %s_nextstart && %s_livecount < %d) {' % (self.id, self.id, maxcount,))
+        ctx.after('  for (var px=0; px<%d; px++) {' % (maxcount,))
+        ctx.after('    if (!%s_live[px]) { break }' % (self.id,))
+        ctx.after('  }')
+        ctx.after('  if (px < %d) {' % (maxcount,))
+        ctx.after('    %s_live[px] = 1' % (self.id,))
+        ctx.after('    livecount += 1')
         if not self.quote_pos:
-            print('      %s_arg_pos[px] = %s' % (self.id, self.posdata))
+            ctx.after('    %s_arg_pos[px] = %s' % (self.id, self.posdata))
         ### more pulse init
-        print('      %s_nextstart = clock + 0' % (self.id,)) ### plus interval!
+        ctx.after('    %s_nextstart = clock + 0' % (self.id,)) ### plus interval!
         ### interval is pbirth time also
-        print('      %s_birth[px] = clock' % (self.id,))
-        print('    }')
+        ctx.after('    %s_birth[px] = clock' % (self.id,))
+        ctx.after('  }')
 
-        print('  }')
-        print('  for (var px=0; px<%d; px++) {' % (maxcount,))
-        print('    if (!%s_live[px]) { break }' % (self.id,))
+        ctx.after('}')
+        ctx.after('for (var px=0; px<%d; px++) {' % (maxcount,))
+        ctx.after('  if (!%s_live[px]) { break }' % (self.id,))
         if self.args.timeshape is WaveShape.FLAT:
-            print('    timeval = 1')
+            ctx.after('  timeval = 1')
         else:
-            print('    age = clock - %s_birth[px]' % (self.id,))
-            print('    relage = age / %s' % (self.durationdata,))
-            print('    if (relage > 1.0) {\n      %s_live[px] = 0\n      livecount -= 1\n      continue\n    }' % (self.id,))
-            print('    timeval = %s' % (wave_sample(self.args.timeshape, 'relage'),))
+            ctx.after('  age = clock - %s_birth[px]' % (self.id,))
+            ctx.after('  relage = age / %s' % (self.durationdata,))
+            ctx.after('  if (relage > 1.0) {\n      %s_live[px] = 0\n      livecount -= 1\n      continue\n    }' % (self.id,))
+            ctx.after('  timeval = %s' % (wave_sample(self.args.timeshape, 'relage'),))
         ### minpos, maxpos, and check if pulse has flown off the edge
         if not self.quote_pos:
-            print('    ppos = %s_arg_pos[px]' % (self.id,))
+            ctx.after('  ppos = %s_arg_pos[px]' % (self.id,))
         else:
-            print('    ppos = %s' % (self.posdata,))
-        print('    pwidth = %s' % (self.widthdata,))
+            ctx.after('  ppos = %s' % (self.posdata,))
+        ctx.after('  pwidth = %s' % (self.widthdata,))
         if self.args.spaceshape is WaveShape.FLAT:
-            print('    minpos = 0')
-            print('    maxpos = pixelCount')
+            ctx.after('  minpos = 0')
+            ctx.after('  maxpos = pixelCount')
         else:
-            print('    minpos = max(0, pixelCount*(ppos-pwidth/2))')
-            print('    maxpos = min(pixelCount, pixelCount*(ppos+pwidth/2))')
-        print('    for (var ix=minpos; ix<maxpos; ix++) {')
+            ctx.after('  minpos = max(0, pixelCount*(ppos-pwidth/2))')
+            ctx.after('  maxpos = min(pixelCount, pixelCount*(ppos+pwidth/2))')
+        ctx.after('  for (var ix=minpos; ix<maxpos; ix++) {')
         if self.args.spaceshape is WaveShape.FLAT:
-            print('      spaceval = 1')
+            ctx.after('    spaceval = 1')
         else:
-            print('      relpos = ((ix/pixelCount)-(ppos-pwidth/2)) / pwidth')
-            print('      spaceval = %s' % (wave_sample(self.args.spaceshape, 'relpos'),))
-        print('      %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
-        print('    }')
-        print('  }')
+            ctx.after('    relpos = ((ix/pixelCount)-(ppos-pwidth/2)) / pwidth')
+            ctx.after('    spaceval = %s' % (wave_sample(self.args.spaceshape, 'relpos'),))
+        ctx.after('    %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
+        ctx.after('  }')
+        ctx.after('}')
         
+        # This is just the initial buffer-clear.
+        return '0'
 
 nodeclasses = [
     NodeConstant,
