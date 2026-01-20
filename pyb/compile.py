@@ -33,7 +33,7 @@ def wave_sample(shape, var):
         case WaveShape.SAWDECAY:
             return '(1-%s)' % (var,)
         case WaveShape.SQRTOOTH:
-            return '%s*s' % (var, var,)
+            return '%s*%s' % (var, var,)
         case WaveShape.SQRDECAY:
             return '(1-%s)*(1-%s)' % (var, var,)
         case WaveShape.TRIANGLE:
@@ -471,13 +471,13 @@ class NodePulser(Node):
             print('    minpos = 0')
             print('    maxpos = pixelCount')
         else:
-            print('    minpos = max(0, pixelCount*(ppos-pwidth))')
-            print('    maxpos = min(pixelCount, pixelCount*(ppos+pwidth))')
+            print('    minpos = max(0, pixelCount*(ppos-pwidth/2))')
+            print('    maxpos = min(pixelCount, pixelCount*(ppos+pwidth/2))')
         print('    for (var ix=minpos; ix<maxpos; ix++) {')
         if self.args.spaceshape is WaveShape.FLAT:
             print('      spaceval = 1')
         else:
-            print('      relpos = ((ix/pixelCount)-(ppos-pwidth)) / (2*pwidth)')
+            print('      relpos = ((ix/pixelCount)-(ppos-pwidth/2)) / pwidth')
             print('      spaceval = %s' % (wave_sample(self.args.spaceshape, 'relpos'),))
         print('      %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
         print('    }')
