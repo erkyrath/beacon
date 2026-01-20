@@ -38,12 +38,12 @@ class Stanza:
         indentstr = indent * '  '
         if not (self.depend & AxisDep.SPACE):
             for varname, expr in self.storedvals:
-                print('%svar %s = %s' % (indentstr, varname, expr,))
+                print('%svar %s = %s  // for %s' % (indentstr, varname, expr, self.nod.id,))
             print('%s%s_scalar = (%s)' % (indentstr, self.nod.id, self.bottomline,))
         else:
             print('%sfor (var ix=0; ix<pixelCount; ix++) {' % (indentstr,))
             for varname, expr in self.storedvals:
-                print('%s  var %s = %s' % (indentstr, varname, expr,))
+                print('%s  var %s = %s  // for %s' % (indentstr, varname, expr, self.nod.id,))
             print('%s  %s_pixels[ix] = (%s)' % (indentstr, self.nod.id, self.bottomline,))
             print('%s}' % (indentstr,))
         if isinstance(self.nod, NodePulser):
