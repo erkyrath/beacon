@@ -429,7 +429,6 @@ class NodePulser(Node):
         print('var %s_nextstart = 0' % (self.id,))
     
     def generateexpr(self, ctx):
-        # This is just the initial buffer-clear.
         durationdata = self.args.duration.generatedata(ctx=ctx)
         posdata = self.args.pos.generatedata(ctx=ctx)
         widthdata = self.args.width.generatedata(ctx=ctx)
@@ -437,6 +436,7 @@ class NodePulser(Node):
         self.durationdata = durationdata ###
         self.posdata = posdata ###
         self.widthdata = widthdata ###
+        # This is just the initial buffer-clear.
         return '0'
 
     def pulserprint(self):
