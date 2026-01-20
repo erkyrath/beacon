@@ -439,15 +439,11 @@ class NodePulser(Node):
     
     def generateexpr(self, ctx):
         durationdata = self.args.duration.generatedata(ctx=ctx)
-        if self.args.pos.buffered:
-            raise Exception('pulser pos cannot be buffered')
         if self.quote_pos:
             ### time will be relative to id_birth[px]
             posdata = self.args.pos.generatedata(ctx=ctx)
         else:
-            ### will only be used at pbirth time, should limit store_vals
-            ### except pos is buffered, so what the hell
-            posdata = self.args.pos.generatedata(ctx=ctx)
+            posdata = None
         widthdata = self.args.width.generatedata(ctx=ctx)
 
         assert self.buffered
@@ -460,6 +456,10 @@ class NodePulser(Node):
         ctx.after('    %s_live[px] = 1' % (self.id,))
         ctx.after('    livecount += 1')
         if not self.quote_pos:
+            qctx = Stanza(self)
+            posdata = self.args.pos.generatedata(ctx=qctx)
+            for varname, expr in qctx.storedvals:
+                ctx.after('    %s = %s' % (varname, expr,))
             ctx.after('    %s_arg_pos[px] = %s' % (self.id, posdata))
         ### more pulse init
         ctx.after('    %s_nextstart = clock + 0' % (self.id,)) ### plus interval!
@@ -558,4 +558,4 @@ def compile(term, implicit, defmap):
     return nod
 
 # Late imports
-from program import Program, AxisDep, axisdepname
+from program import Program, Stanza, AxisDep, axisdepname
