@@ -107,6 +107,10 @@ class Program:
             argls = nod.getargls(argf.name, argf.multiple)
             for arg in argls:
                 if isinstance(arg, Node):
+                    if isinstance(nod, NodePulser):
+                        if (arg.depend & AxisDep.SPACE):
+                            raise Exception('pulser arg cannot be SPACE')
+                        continue
                     ### (arg.depend | nod.depend) != nod.depend?
                     ### do we really want to buffer lower-dep cases?
                     ### if we do, Pulser needs an exception
