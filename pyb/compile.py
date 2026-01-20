@@ -469,7 +469,7 @@ class NodePulser(Node):
         if not self.quote_pos:
             print('      %s_arg_pos[px] = %s' % (self.id, self.posdata))
         ### more pulse init
-        print('      %s_nextstart = clock' % (self.id,)) ### plus interval!
+        print('      %s_nextstart = clock + 0' % (self.id,)) ### plus interval!
         ### interval is pbirth time also
         print('      %s_birth[px] = clock' % (self.id,))
         print('    }')
