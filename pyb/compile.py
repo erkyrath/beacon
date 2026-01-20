@@ -18,6 +18,30 @@ class WaveShape(StrEnum):
     SAWDECAY = 'SAWDECAY'
     SQRDECAY = 'SQRDECAY'
     SINE = 'SINE'
+
+def wave_sample(shape, var):
+    # We can assume var is between 0 and 1
+    match shape:
+        case WaveShape.FLAT:
+            return '1'
+        case WaveShape.SQUARE:
+            return '1'
+        case WaveShape.HALFSQUARE:
+            return '(%s < 0.5 ? 1 : 0)' % (var,)
+        case WaveShape.SAWTOOTH:
+            return '%s' % (var,)
+        case WaveShape.SAWDECAY:
+            return '(1-%s)' % (var,)
+        case WaveShape.SQRTOOTH:
+            return '%s*s' % (var, var,)
+        case WaveShape.SQRDECAY:
+            return '(1-%s)*(1-%s)' % (var, var,)
+        case WaveShape.TRIANGLE:
+            return 'triangle(%s)' % (var,)
+        case WaveShape.SINE:
+            return 'sin(%s*PI)' % (var,)
+        case _:
+            raise NotImplementedError('wave_sample: %s' % (shape,))
     
 class ArgFormat:
     def __init__(self, name, typ, anon=False, multiple=False, default=None):
@@ -437,8 +461,7 @@ class NodePulser(Node):
             print('    age = clock - %s_birth[px]' % (self.id,))
             print('    relage = age / %s' % (self.durationdata,))
             print('    if (relage > 1.0) {\n      %s_live[px] = 0\n      livecount -= 1\n      continue\n    }' % (self.id,))
-            print('    timeval = triangle(relage)')
-            ### timeval = sample timeshape(...)
+            print('    timeval = %s' % (wave_sample(self.args.timeshape, 'relage'),))
         ### minpos, maxpos, and check if pulse has flown off the edge
         print('    ppos = %s' % (self.posdata,))
         print('    pwidth = %s' % (self.widthdata,))
@@ -452,8 +475,8 @@ class NodePulser(Node):
         if self.args.spaceshape is WaveShape.FLAT:
             print('      spaceval = 1')
         else:
-            print('      spaceval = (ix/pixelCount)')
-            ### spaceval = sample spaceshape(...)
+            print('      relpos = ((ix/pixelCount)-(ppos-pwidth)) / (2*pwidth)')
+            print('      spaceval = %s' % (wave_sample(self.args.spaceshape, 'relpos'),))
         print('      %s_pixels[ix] += (timeval * spaceval)' % (self.id,))
         print('    }')
         print('  }')
