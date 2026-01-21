@@ -439,11 +439,6 @@ class NodePulser(Node):
     
     def generateexpr(self, ctx):
         durationdata = self.args.duration.generatedata(ctx=ctx)
-        if self.quote_pos:
-            ### time will be relative to id_birth[px]
-            posdata = self.args.pos.generatedata(ctx=ctx)
-        else:
-            posdata = None
         widthdata = self.args.width.generatedata(ctx=ctx)
 
         assert self.buffered
@@ -482,6 +477,10 @@ class NodePulser(Node):
         if not self.quote_pos:
             ctx.after('  ppos = %s_arg_pos[px]' % (self.id,))
         else:
+            ### time will be relative to id_birth[px]
+            qctx = Stanza(self)
+            posdata = self.quote_pos.generatedata(ctx=qctx)
+            qctx.transfer(ctx, indent=1)
             ctx.after('  ppos = %s' % (posdata,))
         ctx.after('  pwidth = %s' % (widthdata,))
         if self.args.spaceshape is WaveShape.FLAT:
