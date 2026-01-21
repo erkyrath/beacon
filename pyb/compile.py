@@ -462,8 +462,11 @@ class NodePulser(Node):
                 ctx.after('    %s = %s' % (varname, expr,))
             ctx.after('    %s_arg_pos[px] = %s' % (self.id, posdata))
         ### more pulse init
-        ctx.after('    %s_nextstart = clock + 0' % (self.id,)) ### plus interval!
-        ### interval is pbirth time also
+        qctx = Stanza(self)
+        intervaldata = self.args.interval.generatedata(ctx=qctx)
+        for varname, expr in qctx.storedvals:
+            ctx.after('    %s = %s' % (varname, expr,))
+        ctx.after('    %s_nextstart = clock + %s' % (self.id, intervaldata,))
         ctx.after('    %s_birth[px] = clock' % (self.id,))
         ctx.after('  }')
 
