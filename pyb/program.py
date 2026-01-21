@@ -20,12 +20,13 @@ def axisdepname(dep):
             return '???%s' % (dep,)
 
 class Stanza:
-    def __init__(self, nod):
+    def __init__(self, nod, timebase=None):
         self.nod = nod
         self.depend = nod.depend
         self.storedvals = []
         self.bottomline = None
         self.afterlines = []
+        self.timebase = timebase
     
     def store_val(self, nod, key, expr):
         varname = '%s_val_%s' % (nod.id, key,)

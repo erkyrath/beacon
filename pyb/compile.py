@@ -167,10 +167,12 @@ class Node:
         if not self.usesimplicit:
             raise Exception('usesimplicit not set')
         if self.implicit is Implicit.TIME:
-            ### relative to start?
-            return "clock"
+            if not ctx.timebase:
+                return 'clock'
+            else:
+                return ctx.timebase
         if self.implicit is Implicit.SPACE:
-            return "(ix/pixelCount)"
+            return '(ix/pixelCount)'
         raise Exception('implicit not set')
 
     def generatedata(self, ctx):
@@ -478,7 +480,7 @@ class NodePulser(Node):
             ctx.after('  ppos = %s_arg_pos[px]' % (self.id,))
         else:
             ### time will be relative to id_birth[px]
-            qctx = Stanza(self)
+            qctx = Stanza(self, timebase='age')
             posdata = self.quote_pos.generatedata(ctx=qctx)
             qctx.transfer(ctx, indent=1)
             ctx.after('  ppos = %s' % (posdata,))
