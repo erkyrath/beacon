@@ -458,14 +458,12 @@ class NodePulser(Node):
         if not self.quote_pos:
             qctx = Stanza(self)
             posdata = self.args.pos.generatedata(ctx=qctx)
-            for varname, expr in qctx.storedvals:
-                ctx.after('    %s = %s' % (varname, expr,))
+            qctx.transfer(ctx, indent=2)
             ctx.after('    %s_arg_pos[px] = %s' % (self.id, posdata))
         ### more pulse init
         qctx = Stanza(self)
         intervaldata = self.args.interval.generatedata(ctx=qctx)
-        for varname, expr in qctx.storedvals:
-            ctx.after('    %s = %s' % (varname, expr,))
+        qctx.transfer(ctx, indent=2)
         ctx.after('    %s_nextstart = clock + %s' % (self.id, intervaldata,))
         ctx.after('    %s_birth[px] = clock' % (self.id,))
         ctx.after('  }')

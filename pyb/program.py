@@ -35,6 +35,11 @@ class Stanza:
     def after(self, ln):
         self.afterlines.append(ln)
 
+    def transfer(self, other, indent=0):
+        indentstr = indent * '  '
+        for varname, expr in self.storedvals:
+            other.after('%s%s = %s' % (indentstr, varname, expr,))
+
     def generatebuffer(self):
         self.bottomline = self.nod.generateexpr(ctx=self)
 
