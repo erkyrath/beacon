@@ -163,7 +163,7 @@ class Node:
     def printstaticvars(self):
         pass
     
-    def generateimplicit(self):
+    def generateimplicit(self, ctx):
         if not self.usesimplicit:
             raise Exception('usesimplicit not set')
         if self.implicit is Implicit.TIME:
@@ -263,7 +263,7 @@ class NodeLinear(Node):
     ]
 
     def generateexpr(self, ctx):
-        param = self.generateimplicit()
+        param = self.generateimplicit(ctx)
         startdata = self.args.start.generatedata(ctx=ctx)
         veldata = self.args.velocity.generatedata(ctx=ctx)
         return '(%s + %s * %s)' % (startdata, param, veldata,)
@@ -364,7 +364,7 @@ class NodeWave(Node):
     ]
 
     def generateexpr(self, ctx):
-        param = self.generateimplicit()
+        param = self.generateimplicit(ctx)
         mindata = self.args.min.generatedata(ctx=ctx)
         maxdata = self.args.max.generatedata(ctx=ctx)
         perioddata = self.args.period.generatedata(ctx=ctx)
